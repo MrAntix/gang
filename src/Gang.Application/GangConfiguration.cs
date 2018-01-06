@@ -51,10 +51,22 @@ namespace Gang.Application
 
         public static GangParameters GetGangParameters(IQueryCollection query)
         {
-            if (!Guid.TryParse(query["gangId"], out var gangId))
+            if (!TryGetString(query, "gangId", out var gangId))
                 return null;
 
             return new GangParameters(gangId);
+        }
+
+        static bool TryGetString(IQueryCollection query, string name, out string value)
+        {
+            if (!query.TryGetValue(name, out var values))
+            {
+                value = default(string);
+                return false;
+            }
+
+            value = values.Single();
+            return true;
         }
 
         static bool TryGetGuid(IQueryCollection query, string name, out Guid value)

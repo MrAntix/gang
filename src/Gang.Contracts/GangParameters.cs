@@ -5,11 +5,11 @@ namespace Gang.Contracts
     public class GangParameters
     {
         public GangParameters(
-            Guid gangId)
+            string gangId)
         {
             GangId = gangId;
         }
 
-        public Guid GangId { get; }
+        public string GangId { get; }
     }
 }

@@ -21,20 +21,7 @@ namespace Gang.Tests
         }
 
         [Fact]
-        public void when_gang_id_is_not_guid()
-        {
-            IQueryCollection qs = new QueryCollection(
-                new Dictionary<string, StringValues>{
-                    {"gangId","oo"}
-                });
-
-            var actual = GangConfiguration.GetGangParameters(qs);
-
-            Assert.Null(actual);
-        }
-
-        [Fact]
-        public void when_gang_id_is_valid_guid()
+        public void when_gang_id_is_not_null()
         {
             var gangId = "2D71D59D29BB4735B76CCEEAFC8CD652";
             IQueryCollection qs = new QueryCollection(
@@ -45,7 +32,7 @@ namespace Gang.Tests
             var actual = GangConfiguration.GetGangParameters(qs);
 
             Assert.NotNull(actual);
-            Assert.Equal(Guid.Parse(gangId), actual.GangId);
+            Assert.Equal(gangId, actual.GangId);
         }
     }
 }

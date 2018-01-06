@@ -3,11 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <UserSecretsId>8c4963d1-3d95-4805-a6c0-edbca33cba8b</UserSecretsId>
+    <TypeScriptToolsVersion>2.5</TypeScriptToolsVersion>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
@@ -24,7 +21,6 @@
   <ItemGroup>
     <Content Update="e2e\**" CopyToPublishDirectory="Never" />
     <Content Update="client\**" CopyToPublishDirectory="Never" />
-    <Content Update="wwwroot\out-tsc\**" CopyToPublishDirectory="Never" />
     <Content Update="**.pdb" CopyToPublishDirectory="Never" />
     <Content Update=".angular-cli.json" CopyToPublishDirectory="Never" />
     <Content Update="tsconfig.json" CopyToPublishDirectory="Never" />
