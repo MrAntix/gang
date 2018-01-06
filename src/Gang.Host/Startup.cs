@@ -1,4 +1,4 @@
-﻿using Gang.Application;
+using Gang.Application;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +22,10 @@ namespace Antix.Gang.Host
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseGang("ws");
+            app
+                .UseDefaultFiles()
+                .UseStaticFiles()
+                .UseGang("/ws");
         }
     }
 }

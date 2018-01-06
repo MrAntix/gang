@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <UserSecretsId>8c4963d1-3d95-4805-a6c0-edbca33cba8b</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +15,22 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Gang.Application\Gang.Application.csproj" />
+  </ItemGroup>
+
+  <Target Name="CustomActionsBeforePublish" BeforeTargets="BeforeBuild" Condition=" '$(Configuration)' == 'Release' ">
+    <Exec Command="ng build --prod" />
+  </Target>
+
+  <ItemGroup>
+    <Content Update="e2e\**" CopyToPublishDirectory="Never" />
+    <Content Update="client\**" CopyToPublishDirectory="Never" />
+    <Content Update="wwwroot\out-tsc\**" CopyToPublishDirectory="Never" />
+    <Content Update="**.pdb" CopyToPublishDirectory="Never" />
+    <Content Update=".angular-cli.json" CopyToPublishDirectory="Never" />
+    <Content Update="tsconfig.json" CopyToPublishDirectory="Never" />
+    <Content Update="tslint.json" CopyToPublishDirectory="Never" />
+    <Content Update="package.json" CopyToPublishDirectory="Never" />
+    <Content Update="package-lock.json" CopyToPublishDirectory="Never" />
   </ItemGroup>
 
 </Project>
