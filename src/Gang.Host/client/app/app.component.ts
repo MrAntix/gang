@@ -62,7 +62,7 @@ export class AppComponent
 
     var users = [];
 
-    this.gang.connect('ws', 'client');
+    this.gang.connect('ws', 'demo');
 
     this.gang.onConnect.subscribe(id => {
 

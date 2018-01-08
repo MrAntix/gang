@@ -29,7 +29,7 @@ namespace Gang
                 Gang gang;
                 if (_gangs.ContainsKey(gangId))
                 {
-                    gang = _gangs[gangId].AddClient(member);
+                    gang = _gangs[gangId].AddMember(member);
                     _gangs = _gangs.SetItem(gangId, gang);
                 }
                 else
@@ -45,7 +45,7 @@ namespace Gang
         public Gang RemoveMember(
             string gangId, IGangMember member)
         {
-            var gang = _gangs[gangId].RemoveClient(member);
+            var gang = _gangs[gangId].RemoveMember(member);
 
             if (gang == null)
                 _gangs = _gangs.Remove(gangId);

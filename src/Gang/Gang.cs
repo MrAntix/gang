@@ -8,33 +8,33 @@ namespace Gang
     {
         public Gang(
             IGangMember host,
-            IEnumerable<IGangMember> clients = null)
+            IEnumerable<IGangMember> members = null)
         {
             Host = host;
-            Clients = clients == null
+            Members = members == null
                 ? ImmutableArray<IGangMember>.Empty
-                : clients.ToImmutableArray();
+                : members.ToImmutableArray();
         }
 
         public IGangMember Host { get; }
-        public IImmutableList<IGangMember> Clients { get; }
+        public IImmutableList<IGangMember> Members { get; }
 
-        public Gang AddClient(IGangMember client)
+        public Gang AddMember(IGangMember member)
         {
 
-            return new Gang(Host, Clients.Add(client));
+            return new Gang(Host, Members.Add(member));
         }
 
-        public Gang RemoveClient(IGangMember client)
+        public Gang RemoveMember(IGangMember member)
         {
-            if (client == Host)
+            if (member == Host)
             {
-                return Clients.Any()
-                    ? new Gang(Clients[0], Clients.Skip(1))
+                return Members.Any()
+                    ? new Gang(Members[0], Members.Skip(1))
                     : null;
             }
 
-            return new Gang(Host, Clients.Remove(client));
+            return new Gang(Host, Members.Remove(member));
         }
 
     }

@@ -41,8 +41,8 @@ namespace Gang
                         gang = _gangs[parameters.GangId];
                         if (gangMember == gang.Host)
                         {
-                            var tasks = gang.Clients
-                                .Select(client => client.SendAsync(GangMessageTypes.State, result))
+                            var tasks = gang.Members
+                                .Select(member => member.SendAsync(GangMessageTypes.State, result))
                                 .ToArray();
 
                             await Task.WhenAll(tasks);
