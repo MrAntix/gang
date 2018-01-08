@@ -1,8 +1,7 @@
-using Gang.Application;
+using Gang.WebSockets;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
-using System;
 using System.Collections.Generic;
 using Xunit;
 
@@ -15,7 +14,7 @@ namespace Gang.Tests
         {
             IQueryCollection qs = new QueryCollection();
 
-            var actual = GangConfiguration.GetGangParameters(qs);
+            var actual = WebSocketGangConfiguration.GetGangParameters(qs);
 
             Assert.Null(actual);
         }
@@ -29,7 +28,7 @@ namespace Gang.Tests
                     {"gangId",gangId}
                 });
 
-            var actual = GangConfiguration.GetGangParameters(qs);
+            var actual = WebSocketGangConfiguration.GetGangParameters(qs);
 
             Assert.NotNull(actual);
             Assert.Equal(gangId, actual.GangId);

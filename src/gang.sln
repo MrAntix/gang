@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gang.Contracts", "Gang.Cont
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gang.Tests", "Gang.Tests\Gang.Tests.csproj", "{C508C960-4C07-4497-A4EC-F701E9033B79}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gang.Application", "Gang.Application\Gang.Application.csproj", "{708FAC9B-A4FB-49D9-A83B-22F390156250}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gang.WebSockets", "Gang.WebSockets\Gang.WebSockets.csproj", "{708FAC9B-A4FB-49D9-A83B-22F390156250}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,1 +1,12 @@
 <h1>Gang</h1>
+
+<p>
+  <label>Name</label>
+  <span><input #name (change)="changeName()" /></span>
+</p>
+
+<ul>
+  <li *ngFor="let user of state.users">
+    {{user.name || 'anonymous'}}
+  </li>
+</ul>

@@ -1,24 +1,27 @@
 ﻿using System;
 using System.Linq;
-using Antix.Gang;
+using Gang.WebSockets.Serialization;
 using Gang.Contracts;
+using Gang.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Gang.Application
+namespace Gang.WebSockets
 {
-    public static class GangConfiguration
+    public static class WebSocketGangConfiguration
     {
-        public static IServiceCollection AddGang(
+        public static IServiceCollection AddWebSocketGangs(
             this IServiceCollection services)
         {
-            services.AddSingleton<IGangWebsocketHandler, GangWebsocketHandler>();
+            services.AddSingleton<ISerializationService, JsonSerializationService>();
+            services.AddSingleton<IGangHandler, GangHandler>();
+            services.AddTransient<GangCollection>();
 
             return services;
         }
 
-        public static IApplicationBuilder UseGang(
+        public static IApplicationBuilder UseWebSocketGangs(
             this IApplicationBuilder app,
             string path)
         {
@@ -30,17 +33,20 @@ namespace Gang.Application
 
         private static void GangAction(IApplicationBuilder app)
         {
-            var handler = app.ApplicationServices.GetRequiredService<IGangWebsocketHandler>();
+            var serializer = app.ApplicationServices.GetRequiredService<ISerializationService>();
+            var handler = app.ApplicationServices.GetRequiredService<IGangHandler>();
 
             app
                 .Use(async (context, next) =>
                 {
                     if (context.WebSockets.IsWebSocketRequest)
                     {
-                        var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                        var webSocket = new WebSocketGangMember(
+                            await context.WebSockets.AcceptWebSocketAsync()
+                            );
                         var parameters = GetGangParameters(context.Request.Query);
 
-                        await handler.HandleAsync(webSocket, parameters);
+                        await handler.HandleAsync(parameters, webSocket);
                     }
                     else
                     {

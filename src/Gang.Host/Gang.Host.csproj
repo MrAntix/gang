@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Gang.Application\Gang.Application.csproj" />
+    <ProjectReference Include="..\Gang.WebSockets\Gang.WebSockets.csproj" />
   </ItemGroup>
 
   <Target Name="CustomActionsBeforePublish" BeforeTargets="BeforeBuild" Condition=" '$(Configuration)' == 'Release' ">
