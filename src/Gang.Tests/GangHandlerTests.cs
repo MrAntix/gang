@@ -103,6 +103,32 @@ namespace Gang.Tests
             Assert.Equal(GangMessageTypes.Command, firstGangMember.Sent[1].Item1);
         }
 
+        [Fact]
+        public void member_can_be_disconnected()
+        {
+            var handler = GetGangHander();
+
+            var firstGangMember = new FakeGangMember("firstGangMember");
+
+            firstGangMember.OnReceiveAction(async () =>
+            {
+                await Task.Delay(10);
+                var member = handler
+                    .GangById(gangParameters.GangId)
+                    .HostOrMemberById(firstGangMember.Id);
+
+                await member.DisconnectAsync();
+
+                return default(byte[]);
+            });
+
+            Assert.True(
+                handler
+                    .HandleAsync(gangParameters, firstGangMember)
+                    .Wait(100)
+                );
+        }
+
         IGangHandler GetGangHander(
             GangCollection gangs = null)
         {

@@ -19,6 +19,13 @@ namespace Gang
         public IGangMember Host { get; }
         public IImmutableList<IGangMember> Members { get; }
 
+        public IGangMember HostOrMemberById(byte[] id)
+        {
+            return Host.Id == id
+                ? Host
+                : Members.Single(m => m.Id == id);
+        }
+
         public Gang AddMember(IGangMember member)
         {
 

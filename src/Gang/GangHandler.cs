@@ -23,6 +23,12 @@ namespace Gang
             _gangs = gangs;
         }
 
+        Gang IGangHandler.GangById(
+            string gangId)
+        {
+            return _gangs[gangId];
+        }
+
         async Task IGangHandler.HandleAsync(
             GangParameters parameters, IGangMember gangMember)
         {
