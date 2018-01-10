@@ -13,12 +13,12 @@ namespace Gang.Tests
         {
             Id = Encoding.UTF8.GetBytes(id);
             Sent = new List<Tuple<GangMessageTypes, byte[]>>();
-            IsOpen = true;
+            IsConnected = true;
 
             _receiveActionAsync = async () =>
             {
                 await Task.Delay(delay);
-                IsOpen = false;
+                IsConnected = false;
 
                 return null;
             };
@@ -26,7 +26,14 @@ namespace Gang.Tests
 
         public byte[] Id { get; }
 
-        public bool IsOpen { get; set; }
+        public bool IsConnected { get; set; }
+
+        Task IGangMember.DisconnectAsync(string reason)
+        {
+            IsConnected = false;
+
+            return Task.CompletedTask;
+        }
 
         public void OnReceiveAction(Func<Task<byte[]>> actionAsync)
         {

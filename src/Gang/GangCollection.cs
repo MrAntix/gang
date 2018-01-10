@@ -21,7 +21,7 @@ namespace Gang
             }
         }
 
-        public Gang AddMember(
+        public void AddMemberToGang(
             string gangId, IGangMember member)
         {
             lock (lockObject)
@@ -37,12 +37,10 @@ namespace Gang
                     gang = new Gang(member);
                     _gangs = _gangs.Add(gangId, gang);
                 }
-
-                return gang;
             }
         }
 
-        public Gang RemoveMember(
+        public void RemoveMemberFromGang(
             string gangId, IGangMember member)
         {
             var gang = _gangs[gangId].RemoveMember(member);
@@ -52,8 +50,6 @@ namespace Gang
 
             else
                 _gangs = _gangs.SetItem(gangId, gang);
-
-            return gang;
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Gang.Contracts
+﻿namespace Gang.Contracts
 {
     public class GangParameters
     {

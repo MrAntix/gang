@@ -64,7 +64,7 @@ namespace Gang.Tests
             firstGangMember.OnReceiveAction(async () =>
             {
                 await Task.Delay(10);
-                firstGangMember.IsOpen = false;
+                firstGangMember.IsConnected = false;
 
                 return new[] { (byte)1 };
             });
@@ -90,7 +90,7 @@ namespace Gang.Tests
             secondGangMember.OnReceiveAction(async () =>
             {
                 await Task.Delay(10);
-                secondGangMember.IsOpen = false;
+                secondGangMember.IsConnected = false;
 
                 return new[] { (byte)1 };
             });

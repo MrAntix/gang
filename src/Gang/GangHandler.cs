@@ -26,14 +26,16 @@ namespace Gang
         async Task IGangHandler.HandleAsync(
             GangParameters parameters, IGangMember gangMember)
         {
-            var gang = _gangs.AddMember(parameters.GangId, gangMember);
+            _gangs.AddMemberToGang(parameters.GangId, gangMember);
+
+            var gang = _gangs[parameters.GangId];
             await gangMember.SendAsync(
                 gang.Host == gangMember ? GangMessageTypes.Host : GangMessageTypes.Member,
                 gangMember.Id);
 
             try
             {
-                while (gangMember.IsOpen)
+                while (gangMember.IsConnected)
                 {
                     var result = await gangMember.ReceiveAsync();
                     if (result != null)
@@ -58,8 +60,9 @@ namespace Gang
             {
             }
 
-            gang = _gangs.RemoveMember(
-                 parameters.GangId, gangMember);
+            _gangs.RemoveMemberFromGang(parameters.GangId, gangMember);
+
+            gang = _gangs[parameters.GangId];
             if (gang != null) await gang.Host.SendAsync(GangMessageTypes.Disconnect, gangMember.Id);
         }
     }

@@ -4,6 +4,8 @@ namespace Gang.Tests
 {
     public class GangCollectionTests
     {
+        const string GANG_ID= "GANG_ID";
+
         [Fact]
         public void first_member_becomes_host()
         {
@@ -12,8 +14,10 @@ namespace Gang.Tests
             var firstGangMember = new FakeGangMember("firstGangMember");
             var secondGangMember = new FakeGangMember("secondGangMember");
 
-            gangs.AddMember("gangId", firstGangMember);
-            var gang = gangs.AddMember("gangId", secondGangMember);
+            gangs.AddMemberToGang(GANG_ID, firstGangMember);
+            gangs.AddMemberToGang(GANG_ID, secondGangMember);
+            
+            var gang = gangs[GANG_ID];
 
             Assert.True(gang.Host == firstGangMember);
         }
@@ -26,10 +30,12 @@ namespace Gang.Tests
             var firstGangMember = new FakeGangMember("firstGangMember");
             var secondGangMember = new FakeGangMember("secondGangMember");
 
-            gangs.AddMember("gangId", firstGangMember);
-            gangs.AddMember("gangId", secondGangMember);
+            gangs.AddMemberToGang(GANG_ID, firstGangMember);
+            gangs.AddMemberToGang(GANG_ID, secondGangMember);
 
-            var gang = gangs.RemoveMember("gangId", firstGangMember);
+            gangs.RemoveMemberFromGang(GANG_ID, firstGangMember);
+
+            var gang = gangs[GANG_ID];
 
             Assert.True(gang.Host == secondGangMember);
         }
@@ -40,10 +46,10 @@ namespace Gang.Tests
             var gangs = new GangCollection();
 
             var gangMember = new FakeGangMember("gangMember");
-            gangs.AddMember("gangId", gangMember);
-            gangs.RemoveMember("gangId", gangMember);
+            gangs.AddMemberToGang(GANG_ID, gangMember);
+            gangs.RemoveMemberFromGang(GANG_ID, gangMember);
 
-            Assert.Null(gangs["gangId"]);
+            Assert.Null(gangs[GANG_ID]);
         }
 
     }

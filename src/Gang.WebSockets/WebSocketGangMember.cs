@@ -27,7 +27,7 @@ namespace Gang.WebSockets
 
         byte[] IGangMember.Id { get { return _id; } }
 
-        bool IGangMember.IsOpen => _webSocket.State == WebSocketState.Open;
+        bool IGangMember.IsConnected => _webSocket.State == WebSocketState.Open;
 
         async Task<byte[]> IGangMember.ReceiveAsync()
         {
@@ -68,6 +68,11 @@ namespace Gang.WebSockets
                 {
                 }
             });
+        }
+
+        async Task IGangMember.DisconnectAsync(string reason)
+        {
+            await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, reason, CancellationToken.None);
         }
     }
 }
