@@ -1,11 +1,12 @@
-﻿using System;
-using System.Linq;
-using Gang.WebSockets.Serialization;
-using Gang.Contracts;
+﻿using Gang.Contracts;
 using Gang.Serialization;
+using Gang.WebSockets.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Gang.WebSockets
 {
@@ -23,36 +24,47 @@ namespace Gang.WebSockets
 
         public static IApplicationBuilder UseWebSocketGangs(
             this IApplicationBuilder app,
-            string path)
+            string path,
+            Func<IApplicationBuilder, GangParameters, Task<bool>> authorizeAsync = null)
         {
             app.UseWebSockets();
-            app.Map(path, GangAction);
-
-            return app;
-        }
-
-        private static void GangAction(IApplicationBuilder app)
-        {
-            var serializer = app.ApplicationServices.GetRequiredService<ISerializationService>();
-            var handler = app.ApplicationServices.GetRequiredService<IGangHandler>();
-
-            app
-                .Use(async (context, next) =>
+            app.Map(path, _ =>
+            {
+                var serializer = app.ApplicationServices.GetRequiredService<ISerializationService>();
+                var handler = app.ApplicationServices.GetRequiredService<IGangHandler>();
+                if (authorizeAsync == null)
                 {
-                    if (context.WebSockets.IsWebSocketRequest)
+                    var authHandler = app.ApplicationServices.GetService<IGangAuthorizationHandler>();
+                    if (authHandler != null)
+                        authorizeAsync = (a, p) => authHandler.AuthorizeAsync(p);
+                }
+
+                app
+                    .Use(async (context, next) =>
                     {
-                        var webSocket = new WebSocketGangMember(
-                            await context.WebSockets.AcceptWebSocketAsync()
-                            );
                         var parameters = GetGangParameters(context.Request.Query);
 
-                        await handler.HandleAsync(parameters, webSocket);
-                    }
-                    else
-                    {
-                        await next();
-                    }
-                });
+                        if (authorizeAsync != null
+                            && !await authorizeAsync(app, parameters))
+                        {
+                            context.Response.StatusCode = 403;
+                            return;
+                        }
+
+                        if (context.WebSockets.IsWebSocketRequest)
+                        {
+                            var webSocket = new WebSocketGangMember(
+                                await context.WebSockets.AcceptWebSocketAsync()
+                                );
+
+                            await handler.HandleAsync(parameters, webSocket);
+                        }
+                        else await next();
+                    });
+
+            });
+
+            return app;
         }
 
         public static GangParameters GetGangParameters(IQueryCollection query)
@@ -60,7 +72,9 @@ namespace Gang.WebSockets
             if (!TryGetString(query, "gangId", out var gangId))
                 return null;
 
-            return new GangParameters(gangId);
+            TryGetString(query, "token", out var token);
+
+            return new GangParameters(gangId, token);
         }
 
         static bool TryGetString(IQueryCollection query, string name, out string value)

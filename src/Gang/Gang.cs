@@ -7,28 +7,27 @@ namespace Gang
     public class Gang
     {
         public Gang(
-            IGangMember host,
-            IEnumerable<IGangMember> members = null)
+            IGangMember hostMember,
+            IEnumerable<IGangMember> otherMembers = null)
         {
-            HostMember = host;
-            OtherMembers = members == null
+            HostMember = hostMember;
+            OtherMembers = otherMembers == null
                 ? ImmutableArray<IGangMember>.Empty
-                : members.ToImmutableArray();
+                : otherMembers.ToImmutableArray();
+            Members=OtherMembers.Add(HostMember);
         }
 
         public IGangMember HostMember { get; }
         public IImmutableList<IGangMember> OtherMembers { get; }
+        public IImmutableList<IGangMember> Members { get;}
 
         public IGangMember MemberById(byte[] id)
         {
-            return HostMember.Id.SequenceEqual(id)
-                ? HostMember
-                : OtherMembers.Single(m => m.Id.SequenceEqual(id));
+            return Members.Single(m => m.Id.SequenceEqual(id));
         }
 
         public Gang AddMember(IGangMember member)
         {
-
             return new Gang(HostMember, OtherMembers.Add(member));
         }
 

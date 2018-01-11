@@ -43,21 +43,23 @@ namespace Gang
             {
                 while (gangMember.IsConnected)
                 {
-                    var result = await gangMember.ReceiveAsync();
-                    if (result != null)
+                    var data = await gangMember.ReceiveAsync();
+                    if (data != null)
                     {
                         gang = _gangs[parameters.GangId];
                         if (gangMember == gang.HostMember)
                         {
                             var tasks = gang.OtherMembers
-                                .Select(member => member.SendAsync(GangMessageTypes.State, result))
+                                .Select(member => member
+                                    .SendAsync(GangMessageTypes.State, data))
                                 .ToArray();
 
                             await Task.WhenAll(tasks);
                         }
                         else
                         {
-                            await gang.HostMember.SendAsync(GangMessageTypes.Command, result);
+                            await gang.HostMember
+                                .SendAsync(GangMessageTypes.Command, data);
                         }
                     }
                 }
@@ -69,7 +71,9 @@ namespace Gang
             _gangs.RemoveMemberFromGang(parameters.GangId, gangMember);
 
             gang = _gangs[parameters.GangId];
-            if (gang != null) await gang.HostMember.SendAsync(GangMessageTypes.Disconnect, gangMember.Id);
+            if (gang != null)
+                await gang.HostMember
+                    .SendAsync(GangMessageTypes.Disconnect, gangMember.Id);
         }
     }
 }

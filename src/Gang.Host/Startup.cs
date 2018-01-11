@@ -1,6 +1,7 @@
-using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Gang;
+using Gang.Contracts;
 using Gang.WebSockets;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -10,14 +11,12 @@ namespace Antix.Gang.Host
 {
     public class Startup
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddWebSocketGangs();
+            services.AddWebSocketGangs()
+                .AddTransient<IGangAuthorizationHandler, HostGangAuthorizationHandler>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
@@ -32,7 +31,15 @@ namespace Antix.Gang.Host
                 .Map("/disconnect", HandleDisconnect);
         }
 
-        private void HandleDisconnect(IApplicationBuilder app)
+        Task<bool> HandleAuthorizationAsync(
+            IApplicationBuilder app, GangParameters parameters)
+        {
+
+            return Task.FromResult(true);
+        }
+
+        void HandleDisconnect(
+            IApplicationBuilder app)
         {
             var gangHandler = app.ApplicationServices
                 .GetRequiredService<IGangHandler>();
