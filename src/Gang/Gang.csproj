@@ -2,6 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <Authors>Anthony Johnston</Authors>
+    <Company>Antix</Company>
+    <Description>A gang relay written in dotnet core</Description>
+    <Copyright>Antix Software Limited 2018</Copyright>
+    <PackageProjectUrl>https://github.com/MrAntix/gang</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/MrAntix/gang</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>gang relay</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,5 +17,9 @@
       <HintPath>..\..\..\..\..\..\..\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.netcore.app\2.0.0\ref\netcoreapp2.0\System.Runtime.dll</HintPath>
     </Reference>
   </ItemGroup>
+
+  <Target Name="CopyPackage" AfterTargets="Pack">
+    <Copy SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="..\..\dist" />
+  </Target>
 
 </Project>

@@ -2,6 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <Authors>Anthony Johnston</Authors>
+    <Company>Antix</Company>
+    <Description>A gang relay for asp.net websockets written in dotnet core</Description>
+    <Copyright>Antix Software Limited 2018</Copyright>
+    <PackageProjectUrl>https://github.com/MrAntix/gang</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/MrAntix/gang</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>websocket gang relay</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,5 +22,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Gang\Gang.csproj" />
   </ItemGroup>
+
+  <Target Name="CopyPackage" AfterTargets="Pack">
+    <Copy SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="..\..\dist\" />
+  </Target>
 
 </Project>
