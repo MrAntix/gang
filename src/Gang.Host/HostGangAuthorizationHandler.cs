@@ -24,7 +24,7 @@ namespace Antix.Gang.Host
             {
                 var gang = _gangHandler.GangById(parameters.GangId);
                 allow = gang == null
-                    || gang.Members.Count < 4;
+                    || gang.Members.Count < 3;
             }
 
             return Task.FromResult(allow);

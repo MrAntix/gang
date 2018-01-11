@@ -42,6 +42,12 @@ namespace Gang.WebSockets
                 app
                     .Use(async (context, next) =>
                     {
+                        if (!context.WebSockets.IsWebSocketRequest)
+                        {
+                            await next();
+                            return;
+                        }
+
                         var parameters = GetGangParameters(context.Request.Query);
 
                         if (authorizeAsync != null
@@ -51,15 +57,11 @@ namespace Gang.WebSockets
                             return;
                         }
 
-                        if (context.WebSockets.IsWebSocketRequest)
-                        {
-                            var webSocket = new WebSocketGangMember(
-                                await context.WebSockets.AcceptWebSocketAsync()
-                                );
+                        var webSocket = new WebSocketGangMember(
+                            await context.WebSockets.AcceptWebSocketAsync()
+                            );
 
-                            await handler.HandleAsync(parameters, webSocket);
-                        }
-                        else await next();
+                        await handler.HandleAsync(parameters, webSocket);
                     });
 
             });
