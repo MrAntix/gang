@@ -49,17 +49,14 @@ namespace Gang.WebSockets
                         }
 
                         var parameters = GetGangParameters(context.Request.Query);
+                        var webSocket = await GetGangMemberAsync(context);
 
                         if (authorizeAsync != null
                             && !await authorizeAsync(app, parameters))
                         {
-                            context.Response.StatusCode = 403;
+                            await webSocket.DisconnectAsync("denied");
                             return;
                         }
-
-                        var webSocket = new WebSocketGangMember(
-                            await context.WebSockets.AcceptWebSocketAsync()
-                            );
 
                         await handler.HandleAsync(parameters, webSocket);
                     });
@@ -67,6 +64,13 @@ namespace Gang.WebSockets
             });
 
             return app;
+        }
+
+        static async Task<IGangMember> GetGangMemberAsync(HttpContext context)
+        {
+            return new WebSocketGangMember(
+                await context.WebSockets.AcceptWebSocketAsync()
+                );
         }
 
         public static GangParameters GetGangParameters(IQueryCollection query)

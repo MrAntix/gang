@@ -108,7 +108,7 @@ export class GangService {
       this.state = GangConnectionState.disconnected;
       this.onDisconnect.next(this.memberId);
 
-      if (e.reason !== 'disconnected') retryConnect();
+      if (!e.reason) retryConnect();
 
     }).bind(this);
 
