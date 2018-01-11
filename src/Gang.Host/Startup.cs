@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+using Gang;
 using Gang.WebSockets;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -25,7 +28,25 @@ namespace Antix.Gang.Host
             app
                 .UseDefaultFiles()
                 .UseStaticFiles()
-                .UseWebSocketGangs("/ws");
+                .UseWebSocketGangs("/ws")
+                .Map("/disconnect", HandleDisconnect);
+        }
+
+        private void HandleDisconnect(IApplicationBuilder app)
+        {
+            var gangHandler = app.ApplicationServices
+                .GetRequiredService<IGangHandler>();
+
+            app.Run(async context =>
+            {
+                var gangId = context.Request.Query["gangId"].FirstOrDefault();
+                var memberId = context.Request.Query["memberId"].FirstOrDefault();
+
+                await gangHandler
+                     .GangById(gangId)
+                     .MemberById(memberId)
+                     .DisconnectAsync();
+            });
         }
     }
 }

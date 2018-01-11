@@ -19,7 +19,7 @@ namespace Gang.Tests
             
             var gang = gangs[GANG_ID];
 
-            Assert.True(gang.Host == firstGangMember);
+            Assert.True(gang.HostMember == firstGangMember);
         }
 
         [Fact]
@@ -37,7 +37,7 @@ namespace Gang.Tests
 
             var gang = gangs[GANG_ID];
 
-            Assert.True(gang.Host == secondGangMember);
+            Assert.True(gang.HostMember == secondGangMember);
         }
 
         [Fact]

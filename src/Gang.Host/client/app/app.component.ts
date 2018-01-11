@@ -1,5 +1,9 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
 import { GangService } from './gang/gang.service';
+
+const gangId = 'demo';
 
 @Component({
   selector: 'app-root',
@@ -14,23 +18,40 @@ export class AppComponent
 
   changeName() {
 
+    if (!this.gang.isConnected) return;
+
     this.gang.sendCommand(
       'setUserName',
       {
-        id: this.gang.id,
+        id: this.gang.memberId,
         name: this.nameInput.nativeElement.value
       });
   }
 
-  constructor(private gang: GangService) {
+  constructor(
+    private gang: GangService,
+    private httpClient: HttpClient) {
 
     this.state = {
       users: []
     }
   }
 
-  get id() { return this.gang.id; }
+  get isConnected() { return this.gang.isConnected; }
+  get memberId() { return this.gang.memberId; }
   state: any;
+
+  connect() {
+
+    this.gang.connect('ws', gangId);
+  }
+
+  disconnect(memberId: string) {
+
+    this.httpClient
+      .get(`/disconnect?gangId=${gangId}&memberId=${memberId}`)
+      .toPromise();
+  }
 
   addUser(command: any): any {
 
@@ -62,8 +83,6 @@ export class AppComponent
 
     var users = [];
 
-    this.gang.connect('ws', 'demo');
-
     this.gang.onConnect.subscribe(id => {
 
       this.gang.sendCommand(
@@ -76,7 +95,7 @@ export class AppComponent
 
     this.gang.onDisconnect.subscribe(id => {
 
-      if (id === this.gang.id) {
+      if (id === this.gang.memberId) {
 
         this.state.users = [];
         return;

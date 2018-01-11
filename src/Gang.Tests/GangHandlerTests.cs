@@ -115,7 +115,7 @@ namespace Gang.Tests
                 await Task.Delay(10);
                 var member = handler
                     .GangById(gangParameters.GangId)
-                    .HostOrMemberById(firstGangMember.Id);
+                    .MemberById(firstGangMember.Id);
 
                 await member.DisconnectAsync();
 

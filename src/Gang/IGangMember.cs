@@ -7,7 +7,7 @@ namespace Gang
         byte[] Id { get; }
 
         bool IsConnected { get; }
-        Task DisconnectAsync(string reason = null);
+        Task DisconnectAsync(string reason = "disconnected");
 
         Task SendAsync(GangMessageTypes type, byte[] message);
         Task<byte[]> ReceiveAsync();

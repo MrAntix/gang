@@ -19,8 +19,9 @@ export class GangService {
 
   private socket: WebSocket;
   state: GangConnectionState;
-  id: string;
+  memberId: string;
   isHost: boolean;
+  get isConnected() { return this.state === GangConnectionState.connected; }
 
   onConnect: Subject<string>;
   onDisconnect: Subject<string>;
@@ -69,14 +70,14 @@ export class GangService {
         switch (reader.result[0]) {
           case 'H':
             this.isHost = true;
-            this.id = reader.result.slice(1);
-            this.onConnect.next(this.id);
+            this.memberId = reader.result.slice(1);
+            this.onConnect.next(this.memberId);
 
             break;
           case 'M':
             this.isHost = false;
-            this.id = reader.result.slice(1);
-            this.onConnect.next(this.id);
+            this.memberId = reader.result.slice(1);
+            this.onConnect.next(this.memberId);
 
             break;
           case 'D':
@@ -101,13 +102,13 @@ export class GangService {
 
     }).bind(this);
 
-    this.socket.onclose = ((e: Event) => {
+    this.socket.onclose = ((e: CloseEvent) => {
       console.debug('GangService.onclose', e);
 
       this.state = GangConnectionState.disconnected;
-      this.onDisconnect.next(this.id);
+      this.onDisconnect.next(this.memberId);
 
-      retryConnect();
+      if (e.reason !== 'disconnected') retryConnect();
 
     }).bind(this);
 

@@ -36,7 +36,7 @@ namespace Gang
 
             var gang = _gangs[parameters.GangId];
             await gangMember.SendAsync(
-                gang.Host == gangMember ? GangMessageTypes.Host : GangMessageTypes.Member,
+                gang.HostMember == gangMember ? GangMessageTypes.Host : GangMessageTypes.Member,
                 gangMember.Id);
 
             try
@@ -47,9 +47,9 @@ namespace Gang
                     if (result != null)
                     {
                         gang = _gangs[parameters.GangId];
-                        if (gangMember == gang.Host)
+                        if (gangMember == gang.HostMember)
                         {
-                            var tasks = gang.Members
+                            var tasks = gang.OtherMembers
                                 .Select(member => member.SendAsync(GangMessageTypes.State, result))
                                 .ToArray();
 
@@ -57,7 +57,7 @@ namespace Gang
                         }
                         else
                         {
-                            await gang.Host.SendAsync(GangMessageTypes.Command, result);
+                            await gang.HostMember.SendAsync(GangMessageTypes.Command, result);
                         }
                     }
                 }
@@ -69,7 +69,7 @@ namespace Gang
             _gangs.RemoveMemberFromGang(parameters.GangId, gangMember);
 
             gang = _gangs[parameters.GangId];
-            if (gang != null) await gang.Host.SendAsync(GangMessageTypes.Disconnect, gangMember.Id);
+            if (gang != null) await gang.HostMember.SendAsync(GangMessageTypes.Disconnect, gangMember.Id);
         }
     }
 }

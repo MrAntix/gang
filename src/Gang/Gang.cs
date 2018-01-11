@@ -10,39 +10,38 @@ namespace Gang
             IGangMember host,
             IEnumerable<IGangMember> members = null)
         {
-            Host = host;
-            Members = members == null
+            HostMember = host;
+            OtherMembers = members == null
                 ? ImmutableArray<IGangMember>.Empty
                 : members.ToImmutableArray();
         }
 
-        public IGangMember Host { get; }
-        public IImmutableList<IGangMember> Members { get; }
+        public IGangMember HostMember { get; }
+        public IImmutableList<IGangMember> OtherMembers { get; }
 
-        public IGangMember HostOrMemberById(byte[] id)
+        public IGangMember MemberById(byte[] id)
         {
-            return Host.Id == id
-                ? Host
-                : Members.Single(m => m.Id == id);
+            return HostMember.Id.SequenceEqual(id)
+                ? HostMember
+                : OtherMembers.Single(m => m.Id.SequenceEqual(id));
         }
 
         public Gang AddMember(IGangMember member)
         {
 
-            return new Gang(Host, Members.Add(member));
+            return new Gang(HostMember, OtherMembers.Add(member));
         }
 
         public Gang RemoveMember(IGangMember member)
         {
-            if (member == Host)
+            if (member == HostMember)
             {
-                return Members.Any()
-                    ? new Gang(Members[0], Members.Skip(1))
+                return OtherMembers.Any()
+                    ? new Gang(OtherMembers[0], OtherMembers.Skip(1))
                     : null;
             }
 
-            return new Gang(Host, Members.Remove(member));
+            return new Gang(HostMember, OtherMembers.Remove(member));
         }
-
     }
 }

@@ -3,10 +3,14 @@
 <p>
   <label>Name</label>
   <span><input #name (change)="changeName()" /></span>
+
+  <button (click)="connect()" title="connect to gang"
+          [disabled]="isConnected">connect</button>
 </p>
 
-<ul>
+<ul class="users">
   <li *ngFor="let user of state.users">
-    {{user.name || 'anonymous'}}
+    <span>{{user.name || 'anonymous'}}</span>
+    <button (click)="disconnect(user.id)" title="disconnect this user">&times;</button>
   </li>
 </ul>
