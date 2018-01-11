@@ -37,6 +37,7 @@ export class AppComponent
     }
   }
 
+  get connectText() { return this.gang.retryingIn ? `retry (${this.gang.retryingIn})` : 'connect'; }
   get isConnected() { return this.gang.isConnected; }
   get memberId() { return this.gang.memberId; }
   state: any;

@@ -5,7 +5,9 @@
   <span><input #name (change)="changeName()" /></span>
 
   <button (click)="connect()" title="connect to gang"
-          [disabled]="isConnected">connect</button>
+          [disabled]="isConnected">
+    {{connectText}}
+  </button>
 </p>
 
 <ul class="users">

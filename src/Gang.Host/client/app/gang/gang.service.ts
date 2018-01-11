@@ -15,7 +15,7 @@ export class GangService {
   private readonly rootUrl: string;
   private retry = RETRY_INIT;
   private retrying: any;
-  private retryingIn: number = undefined;
+  retryingIn: number = undefined;
 
   private socket: WebSocket;
   state: GangConnectionState;
