@@ -3,13 +3,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27205.2004
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gang", "Gang\Gang.csproj", "{97D130E7-C77C-4255-AAC1-737AC2FE9415}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gang", "Gang\Gang.csproj", "{97D130E7-C77C-4255-AAC1-737AC2FE9415}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gang.Host", "Gang.Host\Gang.Host.csproj", "{B4C0B4AC-168B-4327-9E8B-05020BBFD06D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gang.Host", "Gang.Host\Gang.Host.csproj", "{B4C0B4AC-168B-4327-9E8B-05020BBFD06D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gang.Tests", "Gang.Tests\Gang.Tests.csproj", "{C508C960-4C07-4497-A4EC-F701E9033B79}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gang.Tests", "Gang.Tests\Gang.Tests.csproj", "{C508C960-4C07-4497-A4EC-F701E9033B79}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gang.WebSockets", "Gang.WebSockets\Gang.WebSockets.csproj", "{708FAC9B-A4FB-49D9-A83B-22F390156250}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gang.WebSockets", "Gang.WebSockets\Gang.WebSockets.csproj", "{708FAC9B-A4FB-49D9-A83B-22F390156250}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4139EA36-7016-4107-B986-7ACCE8E922E7}"
+	ProjectSection(SolutionItems) = preProject
+		..\README.md = ..\README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
