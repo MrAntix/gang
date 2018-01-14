@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core'
 import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/operator/first';
 
-import { GangConnectionState } from './gang.contracts';
+import { GangConnectionState, GangUrlBuilder } from './gang.contracts';
 
 const NO_RETRY = -1;
 const RETRY_INIT = 5;
@@ -29,10 +29,11 @@ export class GangService {
   onState: Subject<any>;
 
   constructor() {
+    if (!location) throw 'required location object not found';
 
-    const location = window.location;
     const protocol = location.protocol.replace('http', 'ws');
-    this.rootUrl = `${protocol}//${location.host}/`;
+    const host = location.host;
+    this.rootUrl = `${protocol}//${host}/`;
 
     this.onConnect = new Subject<string>();
     this.onDisconnect = new Subject<string>();
@@ -40,13 +41,17 @@ export class GangService {
     this.onState = new Subject<string>();
   }
 
-  connect(url: string, gangId: string): void {
+  connect(url: string, gangId: string, token?: string): void {
 
     this.state = GangConnectionState.connecting;
 
-    const connectUrl = this.rootUrl + url + `?gangId=${gangId}`;
+    const connectUrl = GangUrlBuilder
+      .from(this.rootUrl + url)
+      .set('gangId', gangId)
+      .set('token', token)
+      .build();
 
-    console.debug('GangService.connect');
+    console.debug('GangService.connect', connectUrl);
 
     this.socket = new WebSocket(connectUrl);
 

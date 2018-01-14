@@ -13,7 +13,7 @@ import { AppComponent } from './app.component';
   ],
   imports: [
     BrowserModule, HttpClientModule,
-    GangModule
+    GangModule.forRoot()
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -8,8 +8,13 @@ const components = [
 @NgModule({
   declarations: components,
   exports: [...components],
-  providers: [
-    GangService
-  ]
+  providers: []
 })
-export class GangModule { }
+export class GangModule {
+  static forRoot() {
+
+    return {
+      ngModule: GangModule,
+      providers: [GangService]
+    }
+  }}
