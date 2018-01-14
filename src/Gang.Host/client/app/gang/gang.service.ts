@@ -25,10 +25,15 @@ export class GangService {
   memberId: string;
   isHost: boolean;
 
-  onMemberConnect: Rx.Subject<string>;
-  onMemberDisconnect: Rx.Subject<string>;
-  onCommand: Rx.Subject<any>;
-  onState: Rx.Subject<any>;
+  private memberConnectSubject: Rx.Subject<string>;
+  private memberDisconnectSubject: Rx.Subject<string>;
+  private commandSubject: Rx.Subject<any>;
+  private stateSubject: Rx.Subject<any>;
+
+  onMemberConnect: Rx.Observable<string>;
+  onMemberDisconnect: Rx.Observable<string>;
+  onCommand: Rx.Observable<any>;
+  onState: Rx.Observable<any>;
 
   constructor(
     private webSocketFactory: GangWebSocketFactory) {
@@ -39,10 +44,10 @@ export class GangService {
     const host = location.host;
     this.rootUrl = `${protocol}//${host}/`;
 
-    this.onMemberConnect = new Rx.Subject<string>();
-    this.onMemberDisconnect = new Rx.Subject<string>();
-    this.onCommand = new Rx.Subject<any>();
-    this.onState = new Rx.Subject<any>();
+    this.onMemberConnect = this.memberConnectSubject = new Rx.Subject<string>();
+    this.onMemberDisconnect = this.memberDisconnectSubject = new Rx.Subject<string>();
+    this.onCommand = this.commandSubject = new Rx.Subject<any>();
+    this.onState = this.stateSubject = new Rx.Subject<any>();
   }
 
   connect(url: string, gangId: string, token?: string): void {
@@ -78,7 +83,7 @@ export class GangService {
         console.debug('GangService.onclose');
 
         this.state = GangConnectionState.disconnected;
-        this.onMemberDisconnect.next(this.memberId);
+        this.memberDisconnectSubject.next(this.memberId);
 
         if (!e.reason) retryConnect();
 
@@ -100,28 +105,28 @@ export class GangService {
             case 'H':
               this.isHost = true;
               this.memberId = messageData;
-              this.onMemberConnect.next(this.memberId);
+              this.memberConnectSubject.next(this.memberId);
 
               break;
             case 'M':
               this.isHost = false;
               this.memberId = messageData;
-              this.onMemberConnect.next(this.memberId);
+              this.memberConnectSubject.next(this.memberId);
 
               break;
             case 'D':
               this.isHost = true;
-              this.onMemberDisconnect.next(messageData);
+              this.memberDisconnectSubject.next(messageData);
 
               break;
             case 'C':
               var command = JSON.parse(messageData);
-              this.onCommand.next(command);
+              this.commandSubject.next(command);
 
               break;
             case 'S':
               var state = JSON.parse(messageData);
-              this.onState.next(state);
+              this.stateSubject.next(state);
 
               break;
           }
@@ -170,7 +175,7 @@ export class GangService {
     };
 
     if (this.isHost) {
-      this.onCommand.next(wrapper);
+      this.commandSubject.next(wrapper);
 
       return;
     }
@@ -182,7 +187,7 @@ export class GangService {
 
     if (!this.isHost) throw 'only host can send state';
 
-    this.onState.next(state);
+    this.stateSubject.next(state);
     this.send(state);
   }
 
