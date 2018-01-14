@@ -20,9 +20,10 @@ export class GangService {
 
   private webSocket: GangWebSocket;
   state: GangConnectionState;
+  get isConnected() { return this.state === GangConnectionState.connected; }
+
   memberId: string;
   isHost: boolean;
-  get isConnected() { return this.state === GangConnectionState.connected; }
 
   onMemberConnect: Rx.Subject<string>;
   onMemberDisconnect: Rx.Subject<string>;

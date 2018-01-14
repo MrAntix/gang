@@ -13,13 +13,17 @@ describe('GangService', () => {
   let gangService: GangService;
   let sentMessages: any[] = [];
   let recieveMessage: (message: string) => void;
+  let receiveOpen: () => void;
+  let receiveClose: () => void;
 
   beforeEach(() => {
 
-    let receiveOpen: () => void;
-
     const GangWebSocketFactoryMock = {
-      create(url, onOpen: (e: Event) => void): GangWebSocket {
+      create(
+        url,
+        onOpen: (e: Event) => void,
+        onError: (e: Event) => void,
+        onClose: (e: CloseEvent) => void): GangWebSocket {
 
         var messageSubject = new Rx.Subject<MessageEvent>();
 
@@ -43,6 +47,7 @@ describe('GangService', () => {
         };
 
         receiveOpen = () => onOpen(null);
+        receiveClose = () => onClose(new CloseEvent('close', { reason: 'disconnected' }))
 
         return new GangWebSocket(messageSubject, data => {
 
@@ -86,7 +91,7 @@ describe('GangService', () => {
       expect(gangService.memberId).toBe('MemberId');
       expect(gangService.isHost).toBe(false);
       done();
-    })
+    });
 
     recieveMessage('MMemberId');
   });
@@ -98,7 +103,7 @@ describe('GangService', () => {
       expect(memberId).toBe('OtherMemberId');
       expect(gangService.isHost).toBe(true);
       done();
-    })
+    });
 
     recieveMessage('DOtherMemberId');
   });
@@ -120,7 +125,7 @@ describe('GangService', () => {
 
       expect(state).not.toBeNull();
       done();
-    })
+    });
 
     recieveMessage('S{}');
   });
@@ -131,7 +136,7 @@ describe('GangService', () => {
 
       expect(() => gangService.sendState({})).toThrow();
       done();
-    })
+    });
 
     recieveMessage('MMemberId');
   });
@@ -142,7 +147,7 @@ describe('GangService', () => {
 
       expect(() => gangService.sendState({})).not.toThrow();
       done();
-    })
+    });
 
     recieveMessage('HMemberId');
   });
@@ -154,7 +159,7 @@ describe('GangService', () => {
       gangService.sendCommand('do-it', {});
       expect(sentMessages.length).not.toBe(1);
       done();
-    })
+    });
 
     recieveMessage('MMemberId');
   });
@@ -165,7 +170,7 @@ describe('GangService', () => {
 
       gangService.sendCommand('do-it', {});
       expect(sentMessages.length).not.toBe(0);
-    })
+    });
 
     gangService.onCommand.subscribe(command => {
 
@@ -173,6 +178,22 @@ describe('GangService', () => {
     });
 
     recieveMessage('HMemberId');
+  });
+
+  it('close triggers local onMemberDisconnect to allow cleanup', done => {
+
+    gangService.onMemberConnect.subscribe(memberId => {
+
+      receiveClose();
+    });
+
+    gangService.onMemberDisconnect.subscribe(memberId => {
+
+      expect(memberId).toBe('MemberId');
+      done();
+    });
+
+    recieveMessage('MMemberId');
   });
 });
 

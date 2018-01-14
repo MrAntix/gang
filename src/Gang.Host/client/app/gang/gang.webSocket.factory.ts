@@ -9,7 +9,7 @@ export class GangWebSocketFactory {
     url,
     onOpen: (e: Event) => void,
     onError: (e: Event) => void,
-    onClose: (e: CloseEvent) => void,
+    onClose: (e: CloseEvent) => void
   ): GangWebSocket {
 
     console.debug('GangWebSocketFactory.create', url);
