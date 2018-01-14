@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 
 import { GangService } from './gang.service';
+import { GangWebSocketFactory } from './gang.webSocket.factory';
 
 const components = [
 ];
@@ -15,6 +16,6 @@ export class GangModule {
 
     return {
       ngModule: GangModule,
-      providers: [GangService]
+      providers: [GangService, GangWebSocketFactory]
     }
   }}

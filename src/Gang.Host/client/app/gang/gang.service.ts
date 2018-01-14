@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core'
 
-import { Subject } from 'rxjs/Subject';
+import * as Rx from 'rxjs/Rx';
 import 'rxjs/add/operator/first';
 
 import { GangConnectionState, GangUrlBuilder } from './gang.contracts';
+import { GangWebSocketFactory, GangWebSocket } from './gang.webSocket.factory';
 
 const NO_RETRY = -1;
 const RETRY_INIT = 5;
@@ -17,28 +18,30 @@ export class GangService {
   private retrying: any;
   retryingIn: number = undefined;
 
-  private socket: WebSocket;
+  private webSocket: GangWebSocket;
   state: GangConnectionState;
   memberId: string;
   isHost: boolean;
   get isConnected() { return this.state === GangConnectionState.connected; }
 
-  onConnect: Subject<string>;
-  onDisconnect: Subject<string>;
-  onCommand: Subject<any>;
-  onState: Subject<any>;
+  onConnect: Rx.Subject<string>;
+  onDisconnect: Rx.Subject<string>;
+  onCommand: Rx.Subject<any>;
+  onState: Rx.Subject<any>;
 
-  constructor() {
+  constructor(
+    private webSocketFactory: GangWebSocketFactory) {
+
     if (!location) throw 'required location object not found';
 
     const protocol = location.protocol.replace('http', 'ws');
     const host = location.host;
     this.rootUrl = `${protocol}//${host}/`;
 
-    this.onConnect = new Subject<string>();
-    this.onDisconnect = new Subject<string>();
-    this.onCommand = new Subject<string>();
-    this.onState = new Subject<string>();
+    this.onConnect = new Rx.Subject<string>();
+    this.onDisconnect = new Rx.Subject<string>();
+    this.onCommand = new Rx.Subject<string>();
+    this.onState = new Rx.Subject<string>();
   }
 
   connect(url: string, gangId: string, token?: string): void {
@@ -51,81 +54,82 @@ export class GangService {
       .set('token', token)
       .build();
 
-    console.debug('GangService.connect', connectUrl);
+    console.debug('GangService.connect', this.rootUrl + url, connectUrl);
 
-    this.socket = new WebSocket(connectUrl);
+    this.webSocket = this.webSocketFactory.create(
+      connectUrl,
+      (e: Event) => {
+        console.debug('GangService.onopen', e);
 
-    this.socket.onopen = ((e: Event) => {
-      console.debug('GangService.onopen', e);
+        this.state = GangConnectionState.connected;
+        this.retry = RETRY_INIT;
+        this.retryingIn = undefined;
 
-      this.state = GangConnectionState.connected;
-      this.retry = RETRY_INIT;
-      this.retryingIn = undefined;
+        clearRetryConnect();
 
-      clearRetryConnect();
+      },
+      (e: Event) => {
+        console.error('GangService.onerror', e);
 
-    }).bind(this);
+        this.state = GangConnectionState.error;
+      },
+      (e: CloseEvent) => {
+        console.debug('GangService.onclose');
 
-    this.socket.onmessage = ((e: MessageEvent) => {
+        this.state = GangConnectionState.disconnected;
+        this.onDisconnect.next(this.memberId);
 
-      var reader = new FileReader();
-      reader.onload = () => {
-        console.debug('GangService.onmessage', reader.result);
+        if (!e.reason) retryConnect();
 
-        switch (reader.result[0]) {
-          case 'H':
-            this.isHost = true;
-            this.memberId = reader.result.slice(1);
-            this.onConnect.next(this.memberId);
+      });
 
-            break;
-          case 'M':
-            this.isHost = false;
-            this.memberId = reader.result.slice(1);
-            this.onConnect.next(this.memberId);
+    this.webSocket
+      .subscribe(
+      (e: MessageEvent) => {
 
-            break;
-          case 'D':
-            this.isHost = true;
-            this.onDisconnect.next(reader.result.slice(1));
+        var reader = new FileReader();
+        reader.onload = () => {
+          console.debug('GangService.onmessage', reader.result);
 
-            break;
-          case 'C':
-            var command = JSON.parse(reader.result.slice(1));
-            this.onCommand.next(command);
+          switch (reader.result[0]) {
+            case 'H':
+              this.isHost = true;
+              this.memberId = reader.result.slice(1);
+              this.onConnect.next(this.memberId);
 
-            break;
-          case 'S':
-            var state = JSON.parse(reader.result.slice(1));
-            this.onState.next(state);
+              break;
+            case 'M':
+              this.isHost = false;
+              this.memberId = reader.result.slice(1);
+              this.onConnect.next(this.memberId);
 
-            break;
-        }
-      };
+              break;
+            case 'D':
+              this.isHost = true;
+              this.onDisconnect.next(reader.result.slice(1));
 
-      reader.readAsText(e.data);
+              break;
+            case 'C':
+              var command = JSON.parse(reader.result.slice(1));
+              this.onCommand.next(command);
 
-    }).bind(this);
+              break;
+            case 'S':
+              var state = JSON.parse(reader.result.slice(1));
+              this.onState.next(state);
 
-    this.socket.onclose = ((e: CloseEvent) => {
-      console.debug('GangService.onclose', e);
+              break;
+          }
+        };
 
-      this.state = GangConnectionState.disconnected;
-      this.onDisconnect.next(this.memberId);
+        reader.readAsText(e.data);
 
-      if (!e.reason) retryConnect();
-
-    }).bind(this);
-
-    this.socket.onerror = ((e: Event) => {
-      console.error('GangService.onerror', e);
-
-      this.state = GangConnectionState.error;
-      retryConnect();
-    }).bind(this);
+      });
 
     const retryConnect = (() => {
-      if (this.retry === NO_RETRY || this.retrying || this.socket.readyState === 1) return;
+      if (this.retry === NO_RETRY
+        || this.retrying
+        || this.state === GangConnectionState.connected) return;
 
       console.debug('GangService.retryConnect in', this.retry);
       this.retryingIn = this.retry;
@@ -186,6 +190,6 @@ export class GangService {
         type: 'text/plain'
       });
 
-    this.socket.send(blob);
+    this.webSocket.send(blob);
   }
 }

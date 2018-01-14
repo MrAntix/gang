@@ -24,7 +24,10 @@ export class GangUrlBuilder {
 
     this.protocol = protocolSplit[0];
 
-    const path = protocolSplit[1].split('?');
+    const path = protocolSplit
+      .slice(1)
+      .join(':')
+      .split('?');
 
     this.root = path[0];
     this.parameters = {};

@@ -6,12 +6,21 @@ import { GangUrlBuilder } from './gang.contracts';
 describe('GangUrlBuilder', () => {
 
   it('when no existing params', async(() => {
-    const urlBuilder = new GangUrlBuilder('http://www.domain.com');
+    const urlBuilder = new GangUrlBuilder('http://www.domain.com/path');
     urlBuilder.set('one', 'a');
 
     const url = urlBuilder.build();
 
-    expect(url).toBe('http://www.domain.com?one=a');
+    expect(url).toBe('http://www.domain.com/path?one=a');
+  }));
+
+  it('when has port number', async(() => {
+    const urlBuilder = new GangUrlBuilder('http://domain:1234/path');
+    urlBuilder.set('one', 'a');
+
+    const url = urlBuilder.build();
+
+    expect(url).toBe('http://domain:1234/path?one=a');
   }));
 
   it('when existing params', async(() => {
