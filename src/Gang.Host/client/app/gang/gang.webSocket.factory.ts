@@ -7,8 +7,8 @@ export class GangWebSocketFactory {
 
   create(
     url,
-    onOpen: (e: Event) => any,
-    onError: (e: Event) => any,
+    onOpen: (e: Event) => void,
+    onError: (e: Event) => void,
     onClose: (e: CloseEvent) => void,
   ): GangWebSocket {
 
@@ -53,9 +53,9 @@ export class GangWebSocket {
   ) { }
 
   subscribe(
-    onMessage: (e: MessageEvent) => any,
-    onError?: (e: Event) => any,
-    onComplete?: () => any
+    onMessage: (e: MessageEvent) => void,
+    onError?: (e: Event) => void,
+    onComplete?: () => void
   ): Rx.Subscription {
 
     return this.subject.subscribe(onMessage, onError, onComplete);

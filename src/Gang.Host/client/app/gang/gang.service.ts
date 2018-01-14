@@ -89,33 +89,37 @@ export class GangService {
 
         var reader = new FileReader();
         reader.onload = () => {
-          console.debug('GangService.onmessage', reader.result);
 
-          switch (reader.result[0]) {
+          const messageType = reader.result[0];
+          const messageData = reader.result.slice(1);
+          console.debug('GangService.onmessage type:', messageType, 'data:', messageData);
+
+          switch (messageType) {
+            default: throw `unknown message type: ${messageType}`;
             case 'H':
               this.isHost = true;
-              this.memberId = reader.result.slice(1);
+              this.memberId = messageData;
               this.onConnect.next(this.memberId);
 
               break;
             case 'M':
               this.isHost = false;
-              this.memberId = reader.result.slice(1);
+              this.memberId = messageData;
               this.onConnect.next(this.memberId);
 
               break;
             case 'D':
               this.isHost = true;
-              this.onDisconnect.next(reader.result.slice(1));
+              this.onDisconnect.next(messageData);
 
               break;
             case 'C':
-              var command = JSON.parse(reader.result.slice(1));
+              var command = JSON.parse(messageData);
               this.onCommand.next(command);
 
               break;
             case 'S':
-              var state = JSON.parse(reader.result.slice(1));
+              var state = JSON.parse(messageData);
               this.onState.next(state);
 
               break;
@@ -123,7 +127,6 @@ export class GangService {
         };
 
         reader.readAsText(e.data);
-
       });
 
     const retryConnect = (() => {
