@@ -84,7 +84,7 @@ export class AppComponent
 
     var users = [];
 
-    this.gang.onConnect.subscribe(id => {
+    this.gang.onMemberConnect.subscribe(id => {
 
       this.gang.sendCommand(
         'addUser',
@@ -94,7 +94,7 @@ export class AppComponent
         });
     });
 
-    this.gang.onDisconnect.subscribe(id => {
+    this.gang.onMemberDisconnect.subscribe(id => {
 
       if (id === this.gang.memberId) {
 

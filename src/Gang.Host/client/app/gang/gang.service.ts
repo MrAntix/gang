@@ -24,8 +24,8 @@ export class GangService {
   isHost: boolean;
   get isConnected() { return this.state === GangConnectionState.connected; }
 
-  onConnect: Rx.Subject<string>;
-  onDisconnect: Rx.Subject<string>;
+  onMemberConnect: Rx.Subject<string>;
+  onMemberDisconnect: Rx.Subject<string>;
   onCommand: Rx.Subject<any>;
   onState: Rx.Subject<any>;
 
@@ -38,10 +38,10 @@ export class GangService {
     const host = location.host;
     this.rootUrl = `${protocol}//${host}/`;
 
-    this.onConnect = new Rx.Subject<string>();
-    this.onDisconnect = new Rx.Subject<string>();
-    this.onCommand = new Rx.Subject<string>();
-    this.onState = new Rx.Subject<string>();
+    this.onMemberConnect = new Rx.Subject<string>();
+    this.onMemberDisconnect = new Rx.Subject<string>();
+    this.onCommand = new Rx.Subject<any>();
+    this.onState = new Rx.Subject<any>();
   }
 
   connect(url: string, gangId: string, token?: string): void {
@@ -77,7 +77,7 @@ export class GangService {
         console.debug('GangService.onclose');
 
         this.state = GangConnectionState.disconnected;
-        this.onDisconnect.next(this.memberId);
+        this.onMemberDisconnect.next(this.memberId);
 
         if (!e.reason) retryConnect();
 
@@ -99,18 +99,18 @@ export class GangService {
             case 'H':
               this.isHost = true;
               this.memberId = messageData;
-              this.onConnect.next(this.memberId);
+              this.onMemberConnect.next(this.memberId);
 
               break;
             case 'M':
               this.isHost = false;
               this.memberId = messageData;
-              this.onConnect.next(this.memberId);
+              this.onMemberConnect.next(this.memberId);
 
               break;
             case 'D':
               this.isHost = true;
-              this.onDisconnect.next(messageData);
+              this.onMemberDisconnect.next(messageData);
 
               break;
             case 'C':
