@@ -134,7 +134,7 @@ describe('GangService', () => {
     })
 
     recieveMessage('MMemberId');
-  })
+  });
 
   it('can send state if host', done => {
 
@@ -145,7 +145,7 @@ describe('GangService', () => {
     })
 
     recieveMessage('HMemberId');
-  })
+  });
 
   it('sends command if not host', done => {
 
@@ -157,7 +157,7 @@ describe('GangService', () => {
     })
 
     recieveMessage('MMemberId');
-  })
+  });
 
   it('executes command if host', done => {
 
@@ -173,7 +173,7 @@ describe('GangService', () => {
     });
 
     recieveMessage('HMemberId');
-  })
+  });
 });
 
 describe('GangUrlBuilder', () => {
