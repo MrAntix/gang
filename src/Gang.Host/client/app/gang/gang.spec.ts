@@ -66,7 +66,7 @@ describe('GangService', () => {
     receiveOpen();
   });
 
-  it('on Host message, host is true and memberId set', (done) => {
+  it('on Host message, host is true and memberId set', done => {
 
     gangService.onConnect.subscribe(memberId => {
 
@@ -79,7 +79,7 @@ describe('GangService', () => {
     recieveMessage('HMemberId');
   });
 
-  it('on Member message, host is false', (done) => {
+  it('on Member message, host is false', done => {
 
     gangService.onConnect.subscribe(memberId => {
 
@@ -91,7 +91,7 @@ describe('GangService', () => {
     recieveMessage('MMemberId');
   });
 
-  it('on Disconnect message, host is true', (done) => {
+  it('on Disconnect message, host is true', done => {
 
     gangService.onDisconnect.subscribe(memberId => {
 
@@ -103,7 +103,7 @@ describe('GangService', () => {
     recieveMessage('DOtherMemberId');
   });
 
-  it('on Command message', (done) => {
+  it('on Command message', done => {
 
     gangService.onCommand.subscribe(command => {
 
@@ -114,7 +114,7 @@ describe('GangService', () => {
     recieveMessage('C{}');
   });
 
-  it('on State message', (done) => {
+  it('on State message', done => {
 
     gangService.onState.subscribe(state => {
 
