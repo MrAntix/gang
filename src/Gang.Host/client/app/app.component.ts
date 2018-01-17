@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { GangService } from './gang/gang.service';
+import { GangService } from '../../dist/ng-gang';
 
 const gangId = 'demo';
 
