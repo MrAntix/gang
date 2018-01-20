@@ -12,7 +12,7 @@
   },
   "ngPackage": {
     "$schema": "../node_modules/ng-packagr/ng-package.schema.json",
-    "dest": "dist/ng-gang",
+    "dest": "../../dist/ng-gang",
     "workingDirectory": "../.ng_build",
     "lib": {
       "entryFile": "src/index.ts"

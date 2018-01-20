@@ -5,7 +5,7 @@
   "scripts": {
     "ng": "ng",
     "build-demo-watch": "ng build --watch",
-    "build-lib": "rimraf dist && ng-packagr -p gang/package.json",
+    "build-lib": "rimraf ../../dist/ng-gang && ng-packagr -p gang/package.json",
     "test": "ng test"
   },
   "private": true,
