@@ -8,13 +8,18 @@
     "types": [
       "jasmine",
       "node"
-    ]
+    ],
+    "paths": {
+      "@antix/gang":  [
+        "./dist/gang"
+      ]
+    }
   },
   "files": [
     "test.ts"
   ],
   "include": [
-    "**/*.spec.ts",
-    "**/*.d.ts"
+    "../**/*.spec.ts",
+    "../**/*.d.ts"
   ]
 }

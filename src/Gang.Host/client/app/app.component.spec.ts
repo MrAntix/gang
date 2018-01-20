@@ -1,14 +1,18 @@
 import { TestBed, async } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 
-import { GangModule } from './gang/gang.module';
+import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
+
+import { GangModule } from '../../dist/ng-gang';
 
 describe('AppComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
-        GangModule
+        CommonModule, HttpClientModule,
+        GangModule.forRoot()
       ],
       declarations: [
         AppComponent

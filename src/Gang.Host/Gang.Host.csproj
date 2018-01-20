@@ -29,4 +29,8 @@
     <Content Update="package-lock.json" CopyToPublishDirectory="Never" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="dist\" />
+  </ItemGroup>
+
 </Project>
