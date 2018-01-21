@@ -17,6 +17,19 @@ Gangs are controlled by a single relay server, but the work is done by the curre
 | Gang              | Core library for relay server | https://www.nuget.org/packages/Gang               |
 | Gang.WebSockets   | Gang for Web Sockets          | https://www.nuget.org/packages/Gang.WebSockets    |
 | ng-gang           | Angular 5 Client Service      | https://www.npmjs.com/package/ng-gang             |
+
+## Demo
+
+This is a simple Gang ToDo app, written with Angular 5 and TypeScript with a DotNet Core relay. 
+(note there is also the Gang.Host project in $/src/gang.sln)
+
+Clone the repo and open the solution $/demo/gang-demo.sln
+
+Make sure you build the client app, ```npm install``` then ```ng build```
+
+Run in visual studio and the ui will popup up, open as many browsers on that url as you want to see the collaboration in action
+
+![gang demo](assets/gang-demo.gif)
  
 ## Building a Gang Relay Server
 
@@ -81,15 +94,3 @@ There is also token based auth, so you can secure entry to the gang.
 
 Members can be disconnected by the server, you'll need to implement an endpoint to call this. 
 See https://github.com/MrAntix/gang/blob/master/src/Gang.Host/Startup.cs as an example.
-
-## Demo
-
-Clone the repo and open the solution $/demo/gang-demo.sln
-
-This is a simple Gang ToDo app, written with Angular 5 and TypeScript with a DotNet Core relay
-
-Make sure you build the client app, ```npm install``` then ```ng build```
-
-Run in visual studio and the ui will popup up, open as many browsers on that url as you want to see the collaboration in action
-
-![gang demo](assets/gang-demo.gif)
