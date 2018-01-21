@@ -1,6 +1,15 @@
 # gang
 
-State sharing algorithm.
+A state sharing algorithm using a websocket relay server in c# dotnetcore and JS client for Angular 5
+
+- [Overview](#Overview)
+- [Packages](#Packages)
+- [Demo](#Demo)
+- [Building a Gang Relay Server](#Building-a-Gang-Relay-Server)
+- [Building a Gang Client App](#Building-a-Gang-Client-App)
+- [Authentication](#Authentication)
+
+## Overview [](#){name=Overview}
 
 A gang has a set of members running the same code with one member designated as the host.
 
@@ -10,7 +19,7 @@ Should the host be disconnected from the gang, an other becomes the host.
 
 Gangs are controlled by a single relay server, but the work is done by the current host.
 
-### Packages
+## Packages
 
 | Library           | Description                   | Url                                               |
 | :---------------- | :-----------------------------| :------------------------------------------------ |
@@ -88,7 +97,7 @@ this.gang.onState.subscribe(state => {
 ```
 4. Optionally you have onMemberConnect, onMemberDisconnect to subscribe to to manage users if you need to.
 
-## Authentication?
+## Authentication
 
 There is also token based auth, so you can secure entry to the gang.
 
