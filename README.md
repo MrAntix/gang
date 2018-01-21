@@ -9,6 +9,14 @@ All members can issue commands, these are sent to the current host. The host exe
 Should the host be disconnected from the gang, an other becomes the host. 
 
 Gangs are controlled by a single relay server, but the work is done by the current host.
+
+### Packages
+
+| Library           | Description                   | Url                                               |
+| :---------------- | :-----------------------------| :------------------------------------------------ |
+| Gang              | Core library for relay server | https://www.nuget.org/packages/Gang               |
+| Gang.WebSockets   | Gang for Web Sockets          | https://www.nuget.org/packages/Gang.WebSockets    |
+| ng-gang           | Angular 5 Client Service      | https://www.npmjs.com/package/ng-gang             |
  
 ## Building a Gang Relay Server
 
