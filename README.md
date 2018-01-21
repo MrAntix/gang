@@ -1,6 +1,6 @@
 # gang
 
-A state sharing algorithm using a websocket relay server in c# dotnetcore and JS client for Angular 5
+A state sharing algorithm using a websocket relay server in c# on dotnetcore and JS client for Angular 5
 
 - [Overview](#Overview)
 - [Packages](#Packages)
@@ -11,9 +11,10 @@ A state sharing algorithm using a websocket relay server in c# dotnetcore and JS
 
 ## Overview
 
-A gang has a set of members running the same code with one member designated as the host.
+A gang has a set of members running the same code, one member is designated as the host.
 
-All members can issue commands, these are sent to the current host. The host executes the command and broadcasts the current state to all members.
+All members can issue commands, these are sent to the current host. 
+The host executes the command and broadcasts the current state to all members.
 
 Should the host be disconnected from the gang, an other becomes the host. 
 
@@ -36,7 +37,8 @@ Clone the repo and open the solution $/demo/gang-demo.sln
 
 Make sure you build the client app, ```npm install``` then ```ng build```
 
-Run in visual studio and the ui will popup up, open as many browsers on that url as you want to see the collaboration in action
+Run in visual studio and the ui will popup up.
+Open as many browsers as you want on that url to see the collaboration in action
 
 ![gang demo](assets/gang-demo.gif)
  
@@ -44,7 +46,7 @@ Run in visual studio and the ui will popup up, open as many browsers on that url
 
 1. Create a new Asp.Net Core Web Application
 2. Add nuget package for Gang.WebSockets
-3. In Startup.cs, configure services in Startup.ConfigureServices
+3. Configure services in Startup.ConfigureServices
 
 ```
 public void ConfigureServices(IServiceCollection services)
@@ -74,11 +76,12 @@ You can install it from npm in the usual way.
 
 Have a look at the demo app code here https://github.com/MrAntix/gang/tree/master/demo/Gang.Demo/client/app/todo
 
-1. Connect to the relay using ```gang.connect({url}, {gang-id})``` e.g.
+1. Connect to the relay using ```gang.connect({relative-path}, {gang-id})``` e.g.
 ```
 this.gang.connect('gang-relay', 'todo-demo');
 ```
-2. Subscribe to the commands, and call your handlers to alter the state calling gang.sendState() with the mutated state. e.g.
+2. Subscribe to the commands. Call your handlers to alter the state. 
+3. Call gang.sendState() with the mutated state. e.g.
 ```
 this.gang.onCommand.subscribe(wrapper => {
 
@@ -88,18 +91,21 @@ this.gang.onCommand.subscribe(wrapper => {
   this.gang.sendState(newState);
 });
 ```
-3. Subscribe to state updates, this will pass new states from the host to your client, simply replace your state with the new one. (note here I have an apply method to turn the json coming from the server in to proper objects) e.g.
+3. Subscribe to state updates. This will pass new states from the host to your client, 
+4. simply replace your state with the new one.
+5. (note here I have an apply method to turn the json coming from the server in to proper objects) e.g.
 ```
 this.gang.onState.subscribe(state => {
 
     this.state = state.map(item => TodoItem.apply(item));
 });
 ```
-4. Optionally you have onMemberConnect, onMemberDisconnect to subscribe to to manage users if you need to.
+4. Optionally you have onMemberConnect, onMemberDisconnect observables to manage users if you need to.
 
 ## Authentication
 
-There is also token based auth, so you can secure entry to the gang.
+There is token based auth, so you can secure entry to the gang. 
+This can be passed on connect and authenticated server-side.
 
-Members can be disconnected by the server, you'll need to implement an endpoint to call this. 
+Members can be disconnected by the server, you'll need to implement an endpoint to call this by a member. 
 See https://github.com/MrAntix/gang/blob/master/src/Gang.Host/Startup.cs as an example.
