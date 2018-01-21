@@ -11,6 +11,7 @@
   },
   "private": true,
   "dependencies": {
+    "ng-gang": "1.0.0",
     "@angular/animations": "^5.0.0",
     "@angular/common": "^5.0.0",
     "@angular/compiler": "^5.0.0",
@@ -44,6 +45,10 @@
     "ts-node": "~3.2.0",
     "tslint": "~5.7.0",
     "typescript": "~2.4.2"
+  },
+  "-vs-binding": {
+    "ProjectOpened": [
+      "build-watch"
+    ]
   }
-, "-vs-binding":{"ProjectOpened":["build-watch"]}
 }
