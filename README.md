@@ -2,12 +2,12 @@
 
 A state sharing algorithm using a websocket relay server in c# on dotnetcore and JS client for Angular 5
 
-- [Overview](#Overview)
-- [Packages](#Packages)
-- [Demo](#Demo)
-- [Building a Gang Relay Server](#Building-a-Gang-Relay-Server)
-- [Building a Gang Client App](#Building-a-Gang-Client-App)
-- [Authentication](#Authentication)
+- [Overview](#overview)
+- [Packages](#packages)
+- [Demo](#demo)
+- [Building a Gang Relay Server](#building-a-gang-relay-server)
+- [Building a Gang Client App](#building-a-gang-client-app)
+- [Authentication](#authentication)
 
 ## Overview
 
