@@ -9,7 +9,7 @@ A state sharing algorithm using a websocket relay server in c# dotnetcore and JS
 - [Building a Gang Client App](#Building-a-Gang-Client-App)
 - [Authentication](#Authentication)
 
-## Overview [](#){name=Overview}
+## Overview
 
 A gang has a set of members running the same code with one member designated as the host.
 
