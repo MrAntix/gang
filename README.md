@@ -77,3 +77,5 @@ This is a simple Gang ToDo app, written with Angular 5 and TypeScript with a Dot
 Make sure you build the client app, ```npm install``` then ```ng build```
 
 Run in visual studio and the ui will popup up, open as many browsers on that url as you want to see the collaboration in action
+
+![gang demo](assets/gang-demo.gif)
