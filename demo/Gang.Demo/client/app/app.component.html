@@ -1,0 +1,22 @@
+<h1>Gang Demo</h1>
+
+<h2>Things To Do</h2>
+<ul>
+  <li *ngFor="let item of state">
+    <div *ngIf="!item.isCompleted">
+      <input #text [value]="item.text" />
+      <button (click)="completeItem(item.id)">
+        Complete
+      </button>
+    </div>
+    <div *ngIf="item.isCompleted">
+      <s>{{item.text}}</s>
+    </div>
+  </li>
+</ul>
+
+<h3>Add new thing to do</h3>
+<p>
+  <input #text />
+  <button (click)="createItem(text)">Add</button>
+</p>
