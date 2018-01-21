@@ -40,7 +40,7 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 ```
 See https://github.com/MrAntix/gang/blob/master/demo/Gang.Demo/Startup.cs 
 
-When you run the app, the relay will be running on ```/gang-relay```
+When you run the app, the relay will be running on ```ws://localhost:{someport}/gang-relay```
 
 ## Building a Gang Client App
 
@@ -75,6 +75,12 @@ this.gang.onState.subscribe(state => {
 ```
 4. Optionally you have onMemberConnect, onMemberDisconnect to subscribe to to manage users if you need to.
 
+## Authentication?
+
+There is also token based auth, so you can secure entry to the gang.
+
+Members can be disconnected by the server, you'll need to implement an endpoint to call this. 
+See https://github.com/MrAntix/gang/blob/master/src/Gang.Host/Startup.cs as an example.
 
 ## Demo
 
