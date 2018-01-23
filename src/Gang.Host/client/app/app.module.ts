@@ -5,7 +5,7 @@ import { HttpClientModule } from '@angular/common/http';
 
 import { AppComponent } from './app.component';
 
-import { GangModule } from '../../dist/ng-gang';
+import { GangModule } from '../gang/src/gang.module';
 
 @NgModule({
   declarations: [

@@ -6,7 +6,7 @@ import { GangModule } from './gang.module';
 import { GangService } from './gang.service';
 import { GangWebSocketFactory, GangWebSocket } from './gang.webSocket.factory';
 
-import { GangUrlBuilder } from './gang.contracts';
+import { GangUrlBuilder, Gang } from './gang.contracts';
 
 describe('GangService', () => {
 
@@ -250,3 +250,15 @@ describe('GangUrlBuilder', () => {
     expect(urlBuilder.protocol).toBe('wss');
   }));
 });
+
+describe('Gang', () => {
+
+  it('can getId', async(() => {
+
+    const id = Gang.getId();
+    expect(id).not.toBeNull();
+
+    console.info('Gang.getId', id);
+  }));
+
+})

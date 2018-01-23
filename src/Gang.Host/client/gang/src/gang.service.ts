@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core'
 import * as Rx from 'rxjs/Rx';
 import 'rxjs/add/operator/first';
 
-import { GangConnectionState, GangUrlBuilder } from './gang.contracts';
+import { Gang, GangConnectionState, GangUrlBuilder } from './gang.contracts';
 import { GangWebSocketFactory, GangWebSocket } from './gang.webSocket.factory';
 
 const NO_RETRY = -1;
@@ -170,9 +170,19 @@ export class GangService {
   sendCommand(type: string, command: any): void {
 
     var wrapper = {
+      id: Gang.getId(),
+      on: new Date(),
       type: type,
       command: command
     };
+
+    console.debug('GangService.sendCommand', wrapper);
+
+    if (!this.isConnected) {
+      this.commandSubject.next(wrapper);
+
+      return;
+    }
 
     if (this.isHost) {
       this.commandSubject.next(wrapper);

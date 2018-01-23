@@ -33,7 +33,7 @@ export class StateService {
       console.log('onMemberConnect', memberId);
 
       this.gang.sendCommand('UserConnected', null);
-    })
+    });
   }
 
   createItem(text: string) {

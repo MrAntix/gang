@@ -4,8 +4,8 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
-    "build-demo-watch": "ng build --watch",
-    "build-lib": "rimraf ../../dist/ng-gang && ng-packagr -p gang/package.json",
+    "build-host-watch": "ng build --watch",
+    "build-lib": "rimraf ../../dist/ng-gang && ng-packagr -p client/gang/package.json",
     "test": "ng test"
   },
   "private": true,
