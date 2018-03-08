@@ -12,6 +12,20 @@ export class GangMessage {
     public readonly content: string) { }
 }
 
+export class GangCommandWrapper {
+
+  constructor(
+    public readonly type: string,
+    public readonly command: string) {
+
+    this.id = Gang.getId();
+    this.on = new Date();
+  }
+
+  readonly id: string;
+  readonly on: Date;
+}
+
 export class GangUrlBuilder {
 
   constructor(

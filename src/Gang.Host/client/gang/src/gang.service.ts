@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core'
 import * as Rx from 'rxjs/Rx';
 import 'rxjs/add/operator/first';
 
-import { Gang, GangConnectionState, GangUrlBuilder } from './gang.contracts';
+import { Gang, GangConnectionState, GangUrlBuilder, GangCommandWrapper } from './gang.contracts';
 import { GangWebSocketFactory, GangWebSocket } from './gang.webSocket.factory';
 
 const NO_RETRY = -1;
@@ -19,8 +19,9 @@ export class GangService {
   retryingIn: number = undefined;
 
   private webSocket: GangWebSocket;
-  state: GangConnectionState;
-  get isConnected() { return this.state === GangConnectionState.connected; }
+  private connectionState: GangConnectionState;
+  get state() { return this.connectionState; }
+  get isConnected() { return this.connectionState === GangConnectionState.connected; }
 
   memberId: string;
   isHost: boolean;
@@ -29,6 +30,8 @@ export class GangService {
   private memberDisconnectSubject: Rx.Subject<string>;
   private commandSubject: Rx.Subject<any>;
   private stateSubject: Rx.Subject<any>;
+  private lastState: any;
+  private unsentCommands: GangCommandWrapper[] = [];
 
   onMemberConnect: Rx.Observable<string>;
   onMemberDisconnect: Rx.Observable<string>;
@@ -52,7 +55,7 @@ export class GangService {
 
   connect(url: string, gangId: string, token?: string): void {
 
-    this.state = GangConnectionState.connecting;
+    this.connectionState = GangConnectionState.connecting;
 
     const connectUrl = GangUrlBuilder
       .from(this.rootUrl + url)
@@ -67,9 +70,17 @@ export class GangService {
       (e: Event) => {
         console.debug('GangService.onopen', e);
 
-        this.state = GangConnectionState.connected;
+        this.connectionState = GangConnectionState.connected;
         this.retry = RETRY_INIT;
         this.retryingIn = undefined;
+
+        if (this.lastState) {
+          this.stateSubject.next(this.lastState);
+
+          let wrapper;
+          while (wrapper = this.unsentCommands.shift())
+            this.sendCommandWrapper(wrapper);
+        }
 
         clearRetryConnect();
 
@@ -77,12 +88,12 @@ export class GangService {
       (e: Event) => {
         console.error('GangService.onerror', e);
 
-        this.state = GangConnectionState.error;
+        this.connectionState = GangConnectionState.error;
       },
       (e: CloseEvent) => {
         console.debug('GangService.onclose');
 
-        this.state = GangConnectionState.disconnected;
+        this.connectionState = GangConnectionState.disconnected;
         this.memberDisconnectSubject.next(this.memberId);
 
         if (!e.reason) retryConnect();
@@ -138,7 +149,7 @@ export class GangService {
     const retryConnect = (() => {
       if (this.retry === NO_RETRY
         || this.retrying
-        || this.state === GangConnectionState.connected) return;
+        || this.connectionState === GangConnectionState.connected) return;
 
       console.debug('GangService.retryConnect in', this.retry);
       this.retryingIn = this.retry;
@@ -169,20 +180,22 @@ export class GangService {
 
   sendCommand(type: string, command: any): void {
 
-    var wrapper = {
-      id: Gang.getId(),
-      on: new Date(),
-      type: type,
-      command: command
-    };
+    var wrapper = new GangCommandWrapper(type, command);
 
     console.debug('GangService.sendCommand', wrapper);
 
     if (!this.isConnected) {
       this.commandSubject.next(wrapper);
+      this.unsentCommands.push(wrapper);
 
       return;
     }
+
+    this.sendCommandWrapper(wrapper);
+  }
+
+  private sendCommandWrapper(
+    wrapper: GangCommandWrapper) {
 
     if (this.isHost) {
       this.commandSubject.next(wrapper);
@@ -196,6 +209,8 @@ export class GangService {
   sendState(state: any): void {
 
     if (!this.isHost) throw 'only host can send state';
+
+    if (this.isConnected) this.lastState = state;
 
     this.stateSubject.next(state);
     this.send(state);
