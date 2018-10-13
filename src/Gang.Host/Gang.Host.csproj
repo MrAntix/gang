@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <UserSecretsId>8c4963d1-3d95-4805-a6c0-edbca33cba8b</UserSecretsId>
     <TypeScriptToolsVersion>2.6</TypeScriptToolsVersion>
+    <TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
   </PropertyGroup>
 
   <ItemGroup>
