@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core'
+import { Observable, Subject } from 'rxjs';
 
-import * as Rx from 'rxjs/Rx';
-import 'rxjs/add/operator/first';
-
-import { Gang, GangConnectionState, GangUrlBuilder, GangCommandWrapper } from './gang.contracts';
+import { GangConnectionState, GangUrlBuilder, GangCommandWrapper } from './gang.contracts';
 import { GangWebSocketFactory, GangWebSocket } from './gang.webSocket.factory';
 
 const NO_RETRY = -1;
@@ -26,17 +24,17 @@ export class GangService {
   memberId: string;
   isHost: boolean;
 
-  private memberConnectSubject: Rx.Subject<string>;
-  private memberDisconnectSubject: Rx.Subject<string>;
-  private commandSubject: Rx.Subject<any>;
-  private stateSubject: Rx.Subject<any>;
+  private memberConnectSubject: Subject<string>;
+  private memberDisconnectSubject: Subject<string>;
+  private commandSubject: Subject<any>;
+  private stateSubject: Subject<any>;
   private lastState: any;
   private unsentCommands: GangCommandWrapper[] = [];
 
-  onMemberConnect: Rx.Observable<string>;
-  onMemberDisconnect: Rx.Observable<string>;
-  onCommand: Rx.Observable<any>;
-  onState: Rx.Observable<any>;
+  onMemberConnect: Observable<string>;
+  onMemberDisconnect: Observable<string>;
+  onCommand: Observable<any>;
+  onState: Observable<any>;
 
   constructor(
     private webSocketFactory: GangWebSocketFactory) {
@@ -47,10 +45,10 @@ export class GangService {
     const host = location.host;
     this.rootUrl = `${protocol}//${host}/`;
 
-    this.onMemberConnect = this.memberConnectSubject = new Rx.Subject<string>();
-    this.onMemberDisconnect = this.memberDisconnectSubject = new Rx.Subject<string>();
-    this.onCommand = this.commandSubject = new Rx.Subject<any>();
-    this.onState = this.stateSubject = new Rx.Subject<any>();
+    this.onMemberConnect = this.memberConnectSubject = new Subject<string>();
+    this.onMemberDisconnect = this.memberDisconnectSubject = new Subject<string>();
+    this.onCommand = this.commandSubject = new Subject<any>();
+    this.onState = this.stateSubject = new Subject<any>();
   }
 
   connect(url: string, gangId: string, token?: string): void {
@@ -108,7 +106,7 @@ export class GangService {
         reader.onload = () => {
 
           const messageType = reader.result[0];
-          const messageData = reader.result.slice(1);
+          const messageData = reader.result.slice(1) as string;
           console.debug('GangService.onmessage type:', messageType, 'data:', messageData);
 
           switch (messageType) {

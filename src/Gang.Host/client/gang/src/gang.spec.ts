@@ -1,12 +1,10 @@
 import { TestBed, async } from '@angular/core/testing';
 
-import * as Rx from 'rxjs/Rx';
-
-import { GangModule } from './gang.module';
 import { GangService } from './gang.service';
 import { GangWebSocketFactory, GangWebSocket } from './gang.webSocket.factory';
 
 import { GangUrlBuilder, Gang } from './gang.contracts';
+import { Subject } from 'rxjs';
 
 describe('GangService', () => {
 
@@ -25,7 +23,7 @@ describe('GangService', () => {
         onError: (e: Event) => void,
         onClose: (e: CloseEvent) => void): GangWebSocket {
 
-        var messageSubject = new Rx.Subject<MessageEvent>();
+        var messageSubject = new Subject<MessageEvent>();
 
         messageSubject.subscribe(e => {
         });

@@ -1,14 +1,14 @@
 {
   "name": "ng-gang",
-  "version": "1.1.0",
+  "version": "1.0.1",
   "repository": "https://github.com/MrAntix/gang.git",
   "author": "ant <aj@antix.co.uk>",
   "license": "MIT",
   "private": true,
   "peerDependencies": {
-    "@angular/core": "^5.0.0",
-    "@angular/common": "^5.0.0",
-    "rxjs": "^5.5.2"
+    "@angular/core": "6.1.10",
+    "@angular/common": "6.1.10",
+    "rxjs": "^6.3.3"
   },
   "ngPackage": {
     "$schema": "../node_modules/ng-packagr/ng-package.schema.json",
