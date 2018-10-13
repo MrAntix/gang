@@ -1,6 +1,6 @@
 # gang
 
-A state sharing algorithm using a websocket relay server in c# on dotnetcore and JS client for Angular 5
+A state sharing algorithm using a websocket relay server in c# on dotnetcore and JS client for Angular 6
 
 - [Overview](#overview)
 - [Packages](#packages)
@@ -26,11 +26,11 @@ Gangs are controlled by a single relay server, but the work is done by the curre
 | :---------------- | :-----------------------------| :------------------------------------------------ |
 | Gang              | Core library for relay server | https://www.nuget.org/packages/Gang               |
 | Gang.WebSockets   | Gang for Web Sockets          | https://www.nuget.org/packages/Gang.WebSockets    |
-| ng-gang           | Angular 5 Client Service      | https://www.npmjs.com/package/ng-gang             |
+| ng-gang           | Angular 6 Client Service      | https://www.npmjs.com/package/ng-gang             |
 
 ## Demo
 
-This is a simple Gang ToDo app, written with Angular 5 and TypeScript with a DotNet Core relay. 
+This is a simple Gang ToDo app, written with Angular 6 and TypeScript with a DotNet Core relay. 
 (note there is also the Gang.Host project in $/src/gang.sln)
 
 Clone the repo and open the solution $/demo/gang-demo.sln
@@ -68,7 +68,7 @@ When you run the app, the relay will be running on ```ws://localhost:{someport}/
 
 ## Building a Gang Client App
 
-There is a support for Angular 5 https://www.npmjs.com/package/ng-gang
+There is a support for Angular 6 https://www.npmjs.com/package/ng-gang
 
 You can install it from npm in the usual way.
 

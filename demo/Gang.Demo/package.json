@@ -22,7 +22,7 @@
     "@angular/platform-browser-dynamic": "6.1.10",
     "@angular/router": "6.1.10",
     "core-js": "^2.5.7",
-    "ng-gang": "link:../../src/Gang.Host/dist/ng-gang",
+    "ng-gang": "^1.0.1",
     "rxjs": "^6.3.3",
     "zone.js": "^0.8.26"
   },

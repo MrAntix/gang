@@ -3976,13 +3976,11 @@ neo-async@^2.5.0:
   version "2.5.2"
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.5.2.tgz#489105ce7bc54e709d736b195f82135048c50fcc"
 
-ng-gang@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/ng-gang/-/ng-gang-1.0.0.tgz#fd3fe14b22f708a1c81f719e3695dbc85e3a2283"
-
-"ng-gang@link:../../src/Gang.Host/dist/ng-gang":
-  version "0.0.0"
-  uid ""
+ng-gang@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/ng-gang/-/ng-gang-1.0.1.tgz#54dee9e359c339bcbd6f25c0a44a1e4f7fd3b541"
+  dependencies:
+    tslib "^1.9.0"
 
 nice-try@^1.0.4:
   version "1.0.5"
