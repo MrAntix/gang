@@ -20,7 +20,6 @@
   </Target>
 
   <ItemGroup>
-    <Content Update="e2e\**" CopyToPublishDirectory="Never" />
     <Content Update="client\**" CopyToPublishDirectory="Never" />
     <Content Update="**.pdb" CopyToPublishDirectory="Never" />
     <Content Update=".angular-cli.json" CopyToPublishDirectory="Never" />
