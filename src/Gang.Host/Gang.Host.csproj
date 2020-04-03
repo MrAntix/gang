@@ -1,15 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>8c4963d1-3d95-4805-a6c0-edbca33cba8b</UserSecretsId>
     <TypeScriptToolsVersion>2.6</TypeScriptToolsVersion>
     <TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.9" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Gang.WebSockets\Gang.WebSockets.csproj" />
