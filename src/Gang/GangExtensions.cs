@@ -5,7 +5,7 @@ namespace Gang
     public static class GangExtensions
     {
         public static IGangMember MemberById(
-            this Gang gang,
+            this GangMemberCollection gang,
             string id)
         {
             return gang.MemberById(

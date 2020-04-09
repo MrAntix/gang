@@ -1,18 +1,25 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
 
 namespace Gang
 {
     public class GangCollection
     {
         static readonly object lockObject = new object();
-        IImmutableDictionary<string, Gang> _gangs;
+
+        IImmutableDictionary<string, GangMemberCollection> _gangs;
 
         public GangCollection()
         {
-            _gangs = ImmutableDictionary<string, Gang>.Empty;
+            _gangs = ImmutableDictionary<string, GangMemberCollection>.Empty;
         }
 
-        public Gang this[string gangId]
+        public bool ContainsGang(string gangId)
+        {
+            return _gangs.ContainsKey(gangId);
+        }
+
+        public GangMemberCollection this[string gangId]
         {
             get
             {
@@ -21,22 +28,30 @@ namespace Gang
             }
         }
 
-        public void AddMemberToGang(
+        public GangMemberCollection AddGang(
+            string gangId)
+        {
+            lock (lockObject)
+            {
+                var gang = new GangMemberCollection();
+                _gangs = _gangs.Add(gangId, gang);
+
+                return gang;
+            }
+        }
+
+        public GangMemberCollection AddMemberToGang(
             string gangId, IGangMember member)
         {
             lock (lockObject)
             {
-                Gang gang;
-                if (_gangs.ContainsKey(gangId))
-                {
-                    gang = _gangs[gangId].AddMember(member);
-                    _gangs = _gangs.SetItem(gangId, gang);
-                }
-                else
-                {
-                    gang = new Gang(member);
-                    _gangs = _gangs.Add(gangId, gang);
-                }
+                var gang = ContainsGang(gangId)
+                    ? _gangs[gangId].AddMember(member)
+                    : AddGang(gangId).AddMember(member);
+
+                _gangs = _gangs.SetItem(gangId, gang);
+
+                return gang;
             }
         }
 
@@ -46,10 +61,13 @@ namespace Gang
             var gang = _gangs[gangId].RemoveMember(member);
 
             if (gang == null)
+            {
                 _gangs = _gangs.Remove(gangId);
-
+            }
             else
+            {
                 _gangs = _gangs.SetItem(gangId, gang);
+            }
         }
     }
 }

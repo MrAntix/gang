@@ -6,7 +6,7 @@ import { Observable, Observer, Subject, Subscription } from 'rxjs';
 export class GangWebSocketFactory {
 
   create(
-    url,
+    url: string,
     onOpen: (e: Event) => void,
     onError: (e: Event) => void,
     onClose: (e: CloseEvent) => void

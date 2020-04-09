@@ -27,24 +27,31 @@ namespace Gang.WebSockets
 
         byte[] IGangMember.Id { get { return _id; } }
 
-        bool IGangMember.IsConnected => _webSocket.State == WebSocketState.Open;
-
-        async Task<byte[]> IGangMember.ReceiveAsync()
+        async Task IGangMember.ConnectAsync(Func<byte[], Task> onReceiveAsync)
         {
-            var data = new MemoryStream();
-            var result = default(WebSocketReceiveResult);
             do
             {
-                result = await _webSocket
-                   .ReceiveAsync(_buffer, CancellationToken.None);
+                using var data = new MemoryStream();
+                WebSocketReceiveResult result;
+                do
+                {
+                    result = await _webSocket
+                       .ReceiveAsync(_buffer, CancellationToken.None);
 
-                if (result.MessageType != WebSocketMessageType.Binary) return null;
+                    if (result.MessageType != WebSocketMessageType.Binary) break;
 
-                await data.WriteAsync(_buffer.Array, 0, result.Count);
+                    await data.WriteAsync(_buffer.Array, 0, result.Count);
 
-            } while (!result.EndOfMessage);
+                } while (!result.EndOfMessage);
 
-            return data.ToArray();
+                await onReceiveAsync(data.ToArray());
+            } while (_webSocket.State == WebSocketState.Open);
+        }
+
+        async Task IGangMember.DisconnectAsync(string reason)
+        {
+            await _webSocket.CloseAsync(
+                WebSocketCloseStatus.NormalClosure, reason, CancellationToken.None);
         }
 
         async Task IGangMember.SendAsync(GangMessageTypes type, byte[] data)
@@ -70,9 +77,9 @@ namespace Gang.WebSockets
             });
         }
 
-        async Task IGangMember.DisconnectAsync(string reason)
+        void IDisposable.Dispose()
         {
-            await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, reason, CancellationToken.None);
+            _webSocket.Dispose();
         }
     }
 }

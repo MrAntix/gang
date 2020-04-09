@@ -7,44 +7,34 @@ namespace Gang.Tests
 {
     public class FakeGangMember : IGangMember
     {
-        Func<Task<byte[]>> _receiveActionAsync;
+        readonly TaskCompletionSource<bool> _connected;
 
-        public FakeGangMember(string id, int delay = 50)
+        public FakeGangMember(
+            string id, int delay = 50)
         {
             Id = Encoding.UTF8.GetBytes(id);
             Sent = new List<Tuple<GangMessageTypes, byte[]>>();
-            IsConnected = true;
+            _connected = new TaskCompletionSource<bool>(delay);
 
-            _receiveActionAsync = async () =>
-            {
-                await Task.Delay(delay);
-                IsConnected = false;
-
-                return null;
-            };
+            Task.Delay(delay).ContinueWith((_) => Disconnect());
         }
 
         public byte[] Id { get; }
 
-        public bool IsConnected { get; set; }
+        public Action<Func<byte[], Task>> OnConnect { get; set; }
+
+        async Task IGangMember.ConnectAsync(Func<byte[], Task> onReceiveAsync)
+        {
+            OnConnect?.Invoke(onReceiveAsync);
+
+            await _connected.Task;
+        }
 
         Task IGangMember.DisconnectAsync(string reason)
         {
-            IsConnected = false;
+            _connected.SetResult(true);
 
             return Task.CompletedTask;
-        }
-
-        public void OnReceiveAction(Func<Task<byte[]>> actionAsync)
-        {
-            _receiveActionAsync = actionAsync;
-        }
-
-        async Task<byte[]> IGangMember.ReceiveAsync()
-        {
-            return _receiveActionAsync == null
-                 ? null
-                 : await _receiveActionAsync();
         }
 
         Task IGangMember.SendAsync(GangMessageTypes type, byte[] message)
@@ -54,5 +44,16 @@ namespace Gang.Tests
         }
 
         public IList<Tuple<GangMessageTypes, byte[]>> Sent { get; }
+
+        void Disconnect()
+        {
+            _connected.SetResult(true);
+        }
+
+        void IDisposable.Dispose()
+        {
+            Disconnect();
+        }
+
     }
 }

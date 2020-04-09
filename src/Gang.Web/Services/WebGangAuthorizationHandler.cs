@@ -1,15 +1,14 @@
-using Gang;
 using Gang.Contracts;
 using System.Threading.Tasks;
 
-namespace Antix.Gang.Host
+namespace Gang.Web.Services
 {
-    public class HostGangAuthorizationHandler :
+    public class WebGangAuthorizationHandler :
         IGangAuthorizationHandler
     {
         private readonly IGangHandler _gangHandler;
 
-        public HostGangAuthorizationHandler(
+        public WebGangAuthorizationHandler(
             IGangHandler gangHandler)
         {
             _gangHandler = gangHandler;

@@ -54,19 +54,19 @@ export class AppComponent
       .toPromise();
   }
 
-  addUser(command: any): any {
+  // addUser(command: any): any {
 
-    return {
-      users: [...this.state.users, command]
-    };
-  }
+  //   return {
+  //     users: [...this.state.users, command]
+  //   };
+  // }
 
-  removeUser(command: any): any {
+  // removeUser(command: any): any {
 
-    return {
-      users: this.state.users.filter(u => u.id !== command.id)
-    };
-  }
+  //   return {
+  //     users: this.state.users.filter(u => u.id !== command.id)
+  //   };
+  // }
 
   setUserName(command: any): any {
 
@@ -84,30 +84,30 @@ export class AppComponent
 
     var users = [];
 
-    this.gang.onMemberConnect.subscribe(id => {
+    // this.gang.onMemberConnect.subscribe(id => {
 
-      this.gang.sendCommand(
-        'addUser',
-        {
-          id: id,
-          name: this.nameInput.nativeElement.value
-        });
-    });
+    //   this.gang.sendCommand(
+    //     'addUser',
+    //     {
+    //       id: id,
+    //       name: this.nameInput.nativeElement.value
+    //     });
+    // });
 
-    this.gang.onMemberDisconnect.subscribe(id => {
+    // this.gang.onMemberDisconnect.subscribe(id => {
 
-      if (id === this.gang.memberId) {
+    //   if (id === this.gang.memberId) {
 
-        this.state.users = [];
-        return;
-      }
+    //     this.state.users = [];
+    //     return;
+    //   }
 
-      this.gang.sendCommand(
-        'removeUser',
-        {
-          id: id
-        });
-    });
+    //   this.gang.sendCommand(
+    //     'removeUser',
+    //     {
+    //       id: id
+    //     });
+    // });
 
     this.gang.onCommand.subscribe(wrapper => {
 

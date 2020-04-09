@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Antix.Gang.Host
+namespace Gang.Web
 {
     public class Program
     {

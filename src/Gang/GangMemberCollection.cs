@@ -4,43 +4,48 @@ using System.Linq;
 
 namespace Gang
 {
-    public class Gang
+    public class GangMemberCollection
     {
-        public Gang(
-            IGangMember hostMember,
+        public GangMemberCollection(
+            IGangMember hostMember = null,
             IEnumerable<IGangMember> otherMembers = null)
         {
             HostMember = hostMember;
             OtherMembers = otherMembers == null
                 ? ImmutableArray<IGangMember>.Empty
                 : otherMembers.ToImmutableArray();
-            Members=OtherMembers.Add(HostMember);
+            Members = HostMember == null
+                ? OtherMembers
+                : OtherMembers.Add(HostMember);
         }
 
         public IGangMember HostMember { get; }
         public IImmutableList<IGangMember> OtherMembers { get; }
-        public IImmutableList<IGangMember> Members { get;}
+        public IImmutableList<IGangMember> Members { get; }
 
         public IGangMember MemberById(byte[] id)
         {
             return Members.Single(m => m.Id.SequenceEqual(id));
         }
 
-        public Gang AddMember(IGangMember member)
+        public GangMemberCollection AddMember(IGangMember member)
         {
-            return new Gang(HostMember, OtherMembers.Add(member));
+            if (HostMember == null)
+                return new GangMemberCollection(member);
+
+            return new GangMemberCollection(HostMember, OtherMembers.Add(member));
         }
 
-        public Gang RemoveMember(IGangMember member)
+        public GangMemberCollection RemoveMember(IGangMember member)
         {
             if (member == HostMember)
             {
                 return OtherMembers.Any()
-                    ? new Gang(OtherMembers[0], OtherMembers.Skip(1))
+                    ? new GangMemberCollection(OtherMembers[0], OtherMembers.Skip(1))
                     : null;
             }
 
-            return new Gang(HostMember, OtherMembers.Remove(member));
+            return new GangMemberCollection(HostMember, OtherMembers.Remove(member));
         }
     }
 }

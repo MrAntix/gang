@@ -1,4 +1,5 @@
 ﻿using Gang.Contracts;
+using Gang.Events;
 using Gang.Serialization;
 using Gang.WebSockets.Serialization;
 using Microsoft.AspNetCore.Builder;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 
 namespace Gang.WebSockets
@@ -49,16 +51,15 @@ namespace Gang.WebSockets
                         }
 
                         var parameters = GetGangParameters(context.Request.Query);
-                        var webSocket = await GetGangMemberAsync(context);
-
+                        var member = await GetGangMemberAsync(context);
                         if (authorizeAsync != null
                             && !await authorizeAsync(app, parameters))
                         {
-                            await webSocket.DisconnectAsync("denied");
+                            await member.DisconnectAsync("denied");
                             return;
                         }
 
-                        await handler.HandleAsync(parameters, webSocket);
+                        await handler.HandleAsync(parameters, member);
                     });
 
             });
