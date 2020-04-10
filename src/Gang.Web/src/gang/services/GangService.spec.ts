@@ -1,6 +1,6 @@
 import { Subject } from 'rxjs';
 
-import { GangWebSocket } from '../contracts';
+import { GangWebSocket } from '../models';
 import { GangService } from './GangService';
 
 describe('GangService', () => {
@@ -21,7 +21,7 @@ describe('GangService', () => {
 
       var messageSubject = new Subject<MessageEvent>();
 
-      messageSubject.subscribe(e => {
+      messageSubject.subscribe(() => {
       });
 
       recieveMessage = (message) => {
@@ -56,7 +56,7 @@ describe('GangService', () => {
 
   it('on Host message, host is true and memberId set', done => {
 
-    gangService.onMemberConnect.subscribe(() => {
+    gangService.onMemberConnected.subscribe(() => {
 
       expect(gangService.memberId).toBe('MemberId');
       expect(gangService.isHost).toBe(true);
@@ -69,7 +69,7 @@ describe('GangService', () => {
 
   it('on Member message, host is false', done => {
 
-    gangService.onMemberConnect.subscribe(() => {
+    gangService.onMemberConnected.subscribe(() => {
 
       expect(gangService.memberId).toBe('MemberId');
       expect(gangService.isHost).toBe(false);
@@ -81,7 +81,7 @@ describe('GangService', () => {
 
   it('on Disconnect message, host is true', done => {
 
-    gangService.onMemberDisconnect.subscribe(memberId => {
+    gangService.onMemberDisconnected.subscribe(memberId => {
 
       expect(memberId).toBe('OtherMemberId');
       expect(gangService.isHost).toBe(true);
@@ -115,7 +115,7 @@ describe('GangService', () => {
 
   it('cannot send state if not host', done => {
 
-    gangService.onMemberConnect.subscribe(() => {
+    gangService.onMemberConnected.subscribe(() => {
 
       expect(() => gangService.sendState({})).toThrow();
       done();
@@ -126,7 +126,7 @@ describe('GangService', () => {
 
   it('can send state if host', done => {
 
-    gangService.onMemberConnect.subscribe(() => {
+    gangService.onMemberConnected.subscribe(() => {
 
       expect(() => gangService.sendState({})).not.toThrow();
       done();
@@ -137,7 +137,7 @@ describe('GangService', () => {
 
   it('sends command if not host', done => {
 
-    gangService.onMemberConnect.subscribe(() => {
+    gangService.onMemberConnected.subscribe(() => {
 
       gangService.sendCommand('do-it', {});
       expect(sentMessages.length).not.toBe(1);
@@ -149,7 +149,7 @@ describe('GangService', () => {
 
   it('executes command if host', done => {
 
-    gangService.onMemberConnect.subscribe(() => {
+    gangService.onMemberConnected.subscribe(() => {
 
       gangService.sendCommand('do-it', {});
       expect(sentMessages.length).not.toBe(0);
@@ -165,12 +165,12 @@ describe('GangService', () => {
 
   it('close triggers local onMemberDisconnect to allow cleanup', done => {
 
-    gangService.onMemberConnect.subscribe(() => {
+    gangService.onMemberConnected.subscribe(() => {
 
       receiveClose();
     });
 
-    gangService.onMemberDisconnect.subscribe(memberId => {
+    gangService.onMemberDisconnected.subscribe(memberId => {
 
       expect(memberId).toBe('MemberId');
       done();

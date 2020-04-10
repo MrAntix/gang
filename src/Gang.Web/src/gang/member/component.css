@@ -1,6 +1,0 @@
-@import '../../global/component.css';
-
-:host {
-  display: inline-block;
-  background-color: turquoise;
-}

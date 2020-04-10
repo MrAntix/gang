@@ -10,8 +10,6 @@ export namespace Components {
     }
     interface AppRoot {
     }
-    interface GangMember {
-    }
 }
 declare global {
     interface HTMLAppHomeElement extends Components.AppHome, HTMLStencilElement {
@@ -26,16 +24,9 @@ declare global {
         prototype: HTMLAppRootElement;
         new (): HTMLAppRootElement;
     };
-    interface HTMLGangMemberElement extends Components.GangMember, HTMLStencilElement {
-    }
-    var HTMLGangMemberElement: {
-        prototype: HTMLGangMemberElement;
-        new (): HTMLGangMemberElement;
-    };
     interface HTMLElementTagNameMap {
         "app-home": HTMLAppHomeElement;
         "app-root": HTMLAppRootElement;
-        "gang-member": HTMLGangMemberElement;
     }
 }
 declare namespace LocalJSX {
@@ -43,12 +34,9 @@ declare namespace LocalJSX {
     }
     interface AppRoot {
     }
-    interface GangMember {
-    }
     interface IntrinsicElements {
         "app-home": AppHome;
         "app-root": AppRoot;
-        "gang-member": GangMember;
     }
 }
 export { LocalJSX as JSX };
@@ -57,7 +45,6 @@ declare module "@stencil/core" {
         interface IntrinsicElements {
             "app-home": LocalJSX.AppHome & JSXBase.HTMLAttributes<HTMLAppHomeElement>;
             "app-root": LocalJSX.AppRoot & JSXBase.HTMLAttributes<HTMLAppRootElement>;
-            "gang-member": LocalJSX.GangMember & JSXBase.HTMLAttributes<HTMLGangMemberElement>;
         }
     }
 }

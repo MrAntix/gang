@@ -1,6 +1,6 @@
 {
-  "name": "Stencil Starter",
-  "short_name": "Stencil",
+  "name": "Gang Web Demo",
+  "short_name": "Gang",
   "start_url": "/",
   "display": "standalone",
   "icons": [{

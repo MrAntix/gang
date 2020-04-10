@@ -23,7 +23,7 @@ namespace Gang.Web.Services
             _connected = new TaskCompletionSource<bool>();
             _serialization = serialization;
             _handlers = new Dictionary<string, Func<JObject, Task>>{
-                { "addUser", o=> UpdateUser(o.ToObject<UpdateUserCommand>()) }
+                { "updateUser", o=> UpdateUser(o.ToObject<UpdateUserCommand>()) }
             }.ToImmutableDictionary();
         }
 

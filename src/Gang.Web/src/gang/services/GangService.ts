@@ -1,4 +1,4 @@
-import { Subject, Observable } from "rxjs";
+import { BehaviorSubject, Subject, Observable } from "rxjs";
 
 import {
   GangWebSocket,
@@ -9,7 +9,7 @@ import {
   RETRY_INIT,
   RETRY_MAX,
   IGangWebSocketFactory,
-} from "../contracts";
+} from "../models";
 
 export class GangService {
   private readonly rootUrl: string;
@@ -29,34 +29,37 @@ export class GangService {
   memberId: string;
   isHost: boolean;
 
-  private memberConnectSubject: Subject<string>;
-  private memberDisconnectSubject: Subject<string>;
+  private memberConnectedSubject: Subject<string>;
+  private memberDisconnectedSubject: Subject<string>;
   private commandSubject: Subject<any>;
-  private stateSubject: Subject<any>;
+  private stateSubject: BehaviorSubject<any>;
   private lastState: any;
   private unsentCommands: GangCommandWrapper[] = [];
 
-  onMemberConnect: Observable<string>;
-  onMemberDisconnect: Observable<string>;
+  onMemberConnected: Observable<string>;
+  onMemberDisconnected: Observable<string>;
   onCommand: Observable<any>;
   onState: Observable<any>;
 
-  constructor(private webSocketFactory: IGangWebSocketFactory) {
+  constructor(
+    private webSocketFactory: IGangWebSocketFactory,
+    defaultState: any = {}) {
     if (!location) throw "required location object not found";
+
     const protocol = location.protocol.replace("http", "ws");
     const host = location.host;
     this.rootUrl = `${protocol}//${host}/`;
-    this.onMemberConnect = this.memberConnectSubject = new Subject<string>();
-    this.onMemberDisconnect = this.memberDisconnectSubject = new Subject<
-      string
-    >();
+
+    this.onMemberConnected = this.memberConnectedSubject = new Subject<string>();
+    this.onMemberDisconnected = this.memberDisconnectedSubject = new Subject<string>();
     this.onCommand = this.commandSubject = new Subject<any>();
-    this.onState = this.stateSubject = new Subject<any>();
+    this.onState = this.stateSubject = new BehaviorSubject<any>(defaultState);
   }
 
   connect(url: string, gangId: string, token?: string): void {
     this.connectionState = GangConnectionState.connecting;
-    const connectUrl = GangUrlBuilder.from(this.rootUrl + url)
+    const connectUrl = GangUrlBuilder
+      .from(this.rootUrl + url)
       .set("gangId", gangId)
       .set("token", token)
       .build();
@@ -66,55 +69,65 @@ export class GangService {
       connectUrl,
       (e: Event) => {
         console.debug("GangService.onopen", e);
+
         this.connectionState = GangConnectionState.connected;
         this.retry = RETRY_INIT;
         this.retryingIn = undefined;
+
         if (this.lastState) {
           this.stateSubject.next(this.lastState);
           let wrapper;
           while ((wrapper = this.unsentCommands.shift()))
             this.sendCommandWrapper(wrapper);
         }
+
         clearRetryConnect();
       },
       (e: Event) => {
         console.error("GangService.onerror", e);
+
         this.connectionState = GangConnectionState.error;
       },
       (e: CloseEvent) => {
         console.debug("GangService.onclose");
+
         this.connectionState = GangConnectionState.disconnected;
-        this.memberDisconnectSubject.next(this.memberId);
+        this.memberDisconnectedSubject.next(this.memberId);
+
         if (!e.reason) retryConnect();
       }
     );
+
     this.webSocket.subscribe((e: MessageEvent) => {
       var reader = new FileReader();
+
       reader.onload = () => {
         const messageType = reader.result[0];
         const messageData = reader.result.slice(1) as string;
+
         console.debug(
-          "GangService.onmessage type:",
-          messageType,
-          "data:",
-          messageData
+          "GangService.onmessage type:", messageType,
+          "data:", messageData
         );
+
         switch (messageType) {
           default:
             throw `unknown message type: ${messageType}`;
           case "H":
             this.isHost = true;
             this.memberId = messageData;
-            this.memberConnectSubject.next(this.memberId);
+            this.memberConnectedSubject.next(messageData);
             break;
           case "M":
             this.isHost = false;
             this.memberId = messageData;
-            this.memberConnectSubject.next(this.memberId);
+            this.memberConnectedSubject.next(messageData);
             break;
-          case "D":
-            this.isHost = true;
-            this.memberDisconnectSubject.next(messageData);
+          case "+":
+            this.memberConnectedSubject.next(messageData);
+            break;
+          case "-":
+            this.memberDisconnectedSubject.next(messageData);
             break;
           case "C":
             var command = JSON.parse(messageData);

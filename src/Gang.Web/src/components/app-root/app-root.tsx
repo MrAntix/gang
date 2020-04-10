@@ -1,5 +1,8 @@
 import { Component, h } from '@stencil/core';
 
+import { GangContext } from '../../gang';
+import { mapGangEvents } from '../../gang/services';
+import { IAppState } from '../../app/models';
 
 @Component({
   tag: 'app-root',
@@ -8,12 +11,35 @@ import { Component, h } from '@stencil/core';
 })
 export class AppRoot {
 
+  service = GangContext.service;
+
+  componentWillLoad() {
+
+    this.service.connect('ws', 'demo');
+    mapGangEvents(this.service, this);
+  }
+
+  onState(state: IAppState) {
+    console.log('app-root', { state })
+  }
+
+  onCommand(command: any) {
+    console.log('app-root', { command })
+  }
+
+  onMemberConnected(memberId: any) {
+    console.log('app-root', { memberId })
+  }
+
+  onMemberDisconnected(memberId: any) {
+    console.log('app-root', { memberId })
+  }
+
   render() {
     return (
       <div>
         <header>
           <h1>Gang Web</h1>
-          <gang-member />
         </header>
 
         <main>

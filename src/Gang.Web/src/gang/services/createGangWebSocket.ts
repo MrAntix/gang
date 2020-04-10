@@ -1,5 +1,5 @@
 import { Subject, Observable, Observer } from 'rxjs';
-import { GangWebSocket } from '../contracts';
+import { GangWebSocket } from '../models';
 
 export function createGangWebSocket(
   url: string,
