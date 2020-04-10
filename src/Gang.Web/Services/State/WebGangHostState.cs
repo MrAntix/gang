@@ -3,14 +3,17 @@ using System.Collections.Immutable;
 
 namespace Gang.Web.Services.State
 {
-    public class WebGangHostState
+  public class WebGangHostState
+  {
+    public WebGangHostState(
+        IEnumerable<WebGangUser> users,
+        IEnumerable<WebGangMessage> messages)
     {
-        public WebGangHostState(
-            IEnumerable<WebGangUser> users)
-        {
-            Users = users?.ToImmutableList();
-        }
-
-        public IImmutableList<WebGangUser> Users { get; }
+      Users = users?.ToImmutableList();
+      Messages = messages?.ToImmutableList();
     }
+
+    public IImmutableList<WebGangUser> Users { get; }
+    public IImmutableList<WebGangMessage> Messages { get; }
+  }
 }

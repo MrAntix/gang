@@ -1,8 +1,6 @@
-using System;
-
 namespace Gang.Web.Services.State
 {
-    public class WebGangUser
+  public class WebGangUser
     {
         public WebGangUser(
             string id,

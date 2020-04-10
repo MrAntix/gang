@@ -1,3 +1,82 @@
-:host{
+:host {
+  --padding-unit: 4px;
+  display: flex;
+  flex-wrap: wrap;
+}
 
+pre,
+ol {
+  padding: 0;
+}
+
+pre {
+  white-space: pre-wrap;
+}
+
+li {
+  list-style: none;
+  margin: 0;
+}
+
+.section {
+  display: flex;
+  padding: var(--padding-unit);
+}
+
+.column {
+  overflow-y: auto;
+  max-height: calc(100vh - 100px);
+}
+
+.text,
+.input {
+  padding: var(--padding-unit);
+}
+
+.input {
+  font: inherit;
+  border: none;
+}
+
+.button {
+  font: inherit;
+  border: none;
+  padding: var(--padding-unit);
+  background-color: #ccc;
+}
+
+.row {
+  display: flex;
+}
+
+.messages {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 100px);
+}
+
+.messages-list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+.message-audit {
+  justify-content: space-between;
+  font-size: .8em;
+  opacity: .8;
+}
+
+.message-text {
+  white-space: pre-wrap;
+}
+
+li.message:not(:last-child) {
+  padding: var(--padding-unit) 0;
+  border-bottom: solid 1px rgba(0, 0, 0, .1);
+  margin: var(--padding-unit) 0;
+}
+
+.message.input {
+  flex: 1 1 auto;
 }

@@ -69,7 +69,7 @@ namespace Gang
                     else
                     {
                         await gang.HostMember
-                            .SendAsync(GangMessageTypes.Command, data);
+                            .SendAsync(GangMessageTypes.Command, data, gangMember.Id);
                     }
 
                     _events.OnNext(new GangMemberDataEvent(parameters.GangId, gangMember, data));

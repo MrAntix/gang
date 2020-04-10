@@ -1,8 +1,8 @@
 import { Component, h, Host, State } from '@stencil/core';
 
 import { GangContext } from '../../gang';
-import { mapGangEvents } from '../../gang/services';
-import { IAppState, IAppUser } from '../../app/models';
+import { mapGangEvents, getGangId } from '../../gang/services';
+import { IAppState, IAppUser, IAppMessage } from '../../app/models';
 
 @Component({
   tag: 'app-home',
@@ -12,8 +12,14 @@ import { IAppState, IAppUser } from '../../app/models';
 export class AppHome {
 
   service = GangContext.service;
-  @State() state: IAppState;
+  @State() users: IAppUser[] = [];
+  @State() messages: IAppMessage[] = [];
   @State() currentUser: IAppUser;
+  @State() userNames: { [id: string]: string } = {};
+
+  messageInput: HTMLTextAreaElement;
+  messagesList: HTMLOListElement;
+  messagesCount: number = 0;
 
   componentWillLoad() {
 
@@ -23,10 +29,14 @@ export class AppHome {
   onState(state: IAppState) {
     console.log('app-home', { state })
 
-    this.state = state;
+    this.users = state.users || [];
+    this.messages = state.messages || [];
     this.currentUser = state?.users?.find(
       u => u.id === this.service.memberId
     );
+    this.userNames = state?.users?.reduce((map, user) =>
+      (map[user.id] = user.name) && map,
+      {});
   }
 
   onMemberConnected(id) {
@@ -38,25 +48,50 @@ export class AppHome {
 
   render() {
     return <Host>
-      <ol>
-        <li>
-          <input
-            onChange={(e: any) => this.updateUser({
-              name: e.target.value
-            })}
-            value={this.currentUser?.name}
+      <div class="section users">
+        <ol>
+          <li>
+            <input class="input user-name"
+              onChange={(e: any) => this.updateUser({
+                name: e.target.value
+              })}
+              value={this.currentUser?.name}
+            />
+          </li>
+
+          {this.users?.filter(u => u !== this.currentUser)
+            .map(user => <li class="text">{user?.name}</li>)}
+        </ol>
+      </div>
+
+      <div class="section messages">
+        <ol class="messages-list" ref={el => this.messagesList = el}>
+          {this.messages?.map(message => <li class="message">
+            <div class="row message-audit">
+              <span class="text message-user-name">{this.userNames[message.userId]}</span>
+              <span class="text message-on">{formatDate(message.on)}</span>
+            </div>
+            <div class="text message-text">{message.text}</div>
+          </li>)}
+        </ol>
+
+        <form class="row"
+          onSubmit={e => this.addMessage(e, this.messageInput.value)}
+        >
+          <textarea class="input message" ref={el => this.messageInput = el}
+            rows={2}
           />
-        </li>
-
-        {this.state?.users?.filter(u => u !== this.currentUser)
-          .map(user => <li>{user?.name}</li>)}
-      </ol>
-
-      <pre>
-        State: {
-          JSON.stringify(this.state)
-        }</pre>
+          <button class="button">Send</button>
+        </form>
+      </div>
     </Host>
+  }
+
+  componentDidRender() {
+    if (this.messagesCount !== this.messages.length) {
+      this.messagesList.scrollTop = this.messagesList.scrollHeight;
+      this.messagesCount = this.messages.length
+    }
   }
 
   updateUser(change: Partial<IAppUser>) {
@@ -67,4 +102,23 @@ export class AppHome {
         ...change
       });
   }
+
+  addMessage(e: Event, text: string) {
+    e.preventDefault();
+
+    this.service
+      .sendCommand('addMessage', {
+        id: getGangId(),
+        text
+      });
+
+    this.messageInput.value = '';
+  }
+}
+
+const messageDateFormatter = Intl.DateTimeFormat(
+  'default', {}).format;
+function formatDate(date: string) {
+
+  return messageDateFormatter(new Date(date));
 }

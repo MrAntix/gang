@@ -54,7 +54,7 @@ namespace Gang.WebSockets
                 WebSocketCloseStatus.NormalClosure, reason, CancellationToken.None);
         }
 
-        async Task IGangMember.SendAsync(GangMessageTypes type, byte[] data)
+        async Task IGangMember.SendAsync(GangMessageTypes type, byte[] data, byte[] memberId)
         {
             await _sendQueue.Enqueue(async () =>
             {

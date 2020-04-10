@@ -10,6 +10,6 @@ namespace Gang
         Task ConnectAsync(Func<byte[], Task> onReceive);
         Task DisconnectAsync(string reason = "disconnected");
 
-        Task SendAsync(GangMessageTypes type, byte[] data);
+        Task SendAsync(GangMessageTypes type, byte[] data, byte[] memberId = null);
     }
 }
