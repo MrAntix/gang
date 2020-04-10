@@ -5,7 +5,8 @@
   "description": "Stencil App Starter",
   "scripts": {
     "dev": "stencil build --dev --watch",
-    "build": "stencil build",
+    "build": "npm run icons && stencil build",
+    "icons": "node package-icons.js",
     "start": "stencil build --dev --watch --serve",
     "test": "stencil test --spec --e2e",
     "test.watch": "stencil test --spec --e2e --watchAll",
@@ -18,7 +19,11 @@
     "@types/puppeteer": "2.0.1",
     "jest": "24.9.0",
     "jest-cli": "24.9.0",
-    "puppeteer": "2.1.1"
+    "puppeteer": "2.1.1",
+    "convert-svg-to-png": "^0.5.0",
+    "imagemin": "^7.0.1",
+    "imagemin-pngquant": "^8.0.0",
+    "to-ico": "^1.1.5"
   },
   "license": "MIT",
   "dependencies": {
