@@ -28,31 +28,23 @@ namespace Gang
             }
         }
 
-        public bool TryAddGang(
-            string gangId,
-            out GangMemberCollection gang)
+        public GangMemberCollection AddMemberToGang(
+            string gangId, IGangMember member,
+            Action<GangMemberCollection> onNewGang = null)
         {
             lock (lockObject)
             {
-                if (ContainsGang(gangId))
+                var gang = this[gangId];
+                if (gang == null)
                 {
-                    gang = _gangs[gangId];
-                    return false;
+                    gang = new GangMemberCollection();
+                    _gangs = _gangs.Add(gangId, gang);
+
+                    onNewGang?.Invoke(gang);
                 }
 
-                gang = new GangMemberCollection();
-                _gangs = _gangs.Add(gangId, gang);
-
-                return true;
-            }
-        }
-
-        public GangMemberCollection AddMemberToGang(
-            string gangId, IGangMember member)
-        {
-            lock (lockObject)
-            {
-                var gang = _gangs[gangId].AddMember(member);
+                gang = gang
+                    .AddMember(member);
 
                 _gangs = _gangs.SetItem(gangId, gang);
 

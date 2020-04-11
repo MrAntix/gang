@@ -23,17 +23,21 @@ namespace Gang.Tests
 
         public Action<Func<byte[], Task>> OnConnect { get; set; }
 
+        void Disconnect()
+        {
+            if (!_connected.Task.IsCompleted)
+                _connected.SetResult(true);
+        }
+
         async Task IGangMember.ConnectAsync(Func<byte[], Task> onReceiveAsync)
         {
             OnConnect?.Invoke(onReceiveAsync);
-
             await _connected.Task;
         }
 
         Task IGangMember.DisconnectAsync(string reason)
         {
-            _connected.SetResult(true);
-
+            Disconnect();
             return Task.CompletedTask;
         }
 
@@ -44,11 +48,6 @@ namespace Gang.Tests
         }
 
         public IList<Tuple<GangMessageTypes, byte[]>> Received { get; }
-
-        void Disconnect()
-        {
-            _connected.SetResult(true);
-        }
 
         void IDisposable.Dispose()
         {

@@ -31,12 +31,9 @@ namespace Gang
         async Task IGangHandler.HandleAsync(
             GangParameters parameters, IGangMember gangMember)
         {
-            if (_gangs.TryAddGang(parameters.GangId, out var gang))
-            {
-                _events.OnNext(new GangAddedEvent(parameters.GangId));
-            }
-
-            gang = _gangs.AddMemberToGang(parameters.GangId, gangMember);
+            var gang = _gangs.AddMemberToGang(
+                parameters.GangId, gangMember,
+                _ => _events.OnNext(new GangAddedEvent(parameters.GangId)));
 
             if (gang.HostMember == gangMember)
             {
