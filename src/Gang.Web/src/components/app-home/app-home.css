@@ -80,4 +80,6 @@ li.message:not(:last-child) {
 
 .message.input {
   flex: 1 1 auto;
+  resize: vertical;
+  max-height: 6em;
 }
