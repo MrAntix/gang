@@ -25,6 +25,13 @@ namespace Gang.WebSockets
             _id = Encoding.UTF8.GetBytes($"{Guid.NewGuid():N}");
         }
 
+        async Task DisconnectAsync(string reason = "disconnected")
+        {
+            if (_webSocket.State == WebSocketState.Open)
+                await _webSocket.CloseAsync(
+                    WebSocketCloseStatus.NormalClosure, reason, CancellationToken.None);
+        }
+
         byte[] IGangMember.Id { get { return _id; } }
 
         async Task IGangMember.ConnectAsync(Func<byte[], Task> onReceiveAsync)
@@ -80,13 +87,6 @@ namespace Gang.WebSockets
         {
             DisconnectAsync("disposed").GetAwaiter().GetResult();
             _webSocket.Dispose();
-        }
-
-        async Task DisconnectAsync(string reason = "disconnected")
-        {
-            if (_webSocket.State == WebSocketState.Open)
-                await _webSocket.CloseAsync(
-                    WebSocketCloseStatus.NormalClosure, reason, CancellationToken.None);
         }
     }
 }

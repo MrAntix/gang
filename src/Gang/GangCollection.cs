@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 
 namespace Gang
 {
-    public class GangCollection
+    public class GangCollection : IEnumerable<GangMemberCollection>
     {
         static readonly object lockObject = new object();
 
@@ -43,7 +45,7 @@ namespace Gang
                     onNewGang?.Invoke(gang);
                 }
 
-                gang = gang
+                gang = this[gangId]
                     .AddMember(member);
 
                 _gangs = _gangs.SetItem(gangId, gang);
@@ -66,5 +68,8 @@ namespace Gang
                 _gangs = _gangs.SetItem(gangId, gang);
             }
         }
+
+        IEnumerator<GangMemberCollection> IEnumerable<GangMemberCollection>.GetEnumerator() => _gangs.Values.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => _gangs.Values.GetEnumerator();
     }
 }

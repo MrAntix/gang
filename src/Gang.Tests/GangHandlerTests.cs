@@ -1,4 +1,7 @@
 ﻿using Gang.Contracts;
+using Gang.Events;
+using System;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -123,9 +126,27 @@ namespace Gang.Tests
         }
 
         [Fact]
-        public void event_on_gang_created()
+        public void add_host_member_on_gang_added_event()
         {
+            var handler = GetGangHander();
 
+            var firstGangMember = new FakeGangMember("firstGangMember");
+            var hostMember = new FakeGangMember("host");
+
+            using (handler.Events
+                .OfType<GangAddedEvent>()
+                .Subscribe(async e =>
+
+                 await handler.HandleAsync(new GangParameters(e.GangId), hostMember)
+             ))
+            {
+                handler.HandleAsync(gangParameters, firstGangMember);
+
+                var gang = handler.GangById(gangParameters.GangId);
+                Assert.Equal(2, gang.Members.Count);
+
+                Assert.Equal(hostMember, gang.HostMember);
+            }
         }
 
         IGangHandler GetGangHander(

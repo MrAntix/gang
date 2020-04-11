@@ -4,7 +4,7 @@
     {
         public GangParameters(
             string gangId,
-            string token)
+            string token = null)
         {
             GangId = gangId;
             Token = token;

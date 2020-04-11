@@ -89,7 +89,7 @@ namespace Gang.Web.Services
       ));
     }
 
-    async Task AddUser(string userId, GangMessageAudit audit)
+    async Task AddUser(string userId, GangMessageAudit _)
     {
       await SetState(
           new WebGangHostState(
@@ -98,7 +98,7 @@ namespace Gang.Web.Services
           ));
     }
 
-    async Task RemoveUser(string userId, GangMessageAudit audit)
+    async Task RemoveUser(string userId, GangMessageAudit _)
     {
       var user = _state.Users.First(u => u.Id == userId);
       await SetState(
@@ -108,7 +108,7 @@ namespace Gang.Web.Services
           ));
     }
 
-    async Task UpdateUser(UpdateUserCommand command, GangMessageAudit audit)
+    async Task UpdateUser(UpdateUserCommand command, GangMessageAudit _)
     {
       var user = _state.Users.First(u => u.Id == command.Id);
       await SetState(

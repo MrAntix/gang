@@ -17,9 +17,12 @@ namespace Gang.Tests
             gangs.AddMemberToGang(GANG_ID, firstGangMember);
             gangs.AddMemberToGang(GANG_ID, secondGangMember);
 
+            Assert.Single(gangs);
+
             var gang = gangs[GANG_ID];
 
             Assert.True(gang.HostMember == firstGangMember);
+            Assert.True(gang.HostMember != secondGangMember);
         }
 
         [Fact]

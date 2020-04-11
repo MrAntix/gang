@@ -55,13 +55,15 @@ export class AppHome {
         <ol>
           <li>
             <input class="input user-name"
+              placeholder="(set your name)"
               onChange={(e: any) => this.updateUser({
                 name: e.target.value
               })}
-              value={this.currentUser?.name || '(set your name)'}
+              value={this.currentUser?.name}
             />
           </li>
 
+          <li class="heading">Other Users</li>
           {this.users?.filter(u => u !== this.currentUser)
             .map(user => <li class="text">{user?.name || '(anon)'}</li>)}
         </ol>
@@ -82,7 +84,7 @@ export class AppHome {
           onSubmit={e => this.addMessage(e, this.newMessageText)}
         >
           <textarea class="input message"
-            rows={2}
+            rows={2} placeholder="(type the message to send here)"
             value={this.newMessageText}
             onInput={(e: any) => this.newMessageText = e.target.value}
             onKeyPress={e => e.key === 'Enter' && !e.shiftKey && this.addMessage(e, this.newMessageText)}
