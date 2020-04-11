@@ -28,15 +28,22 @@ namespace Gang
             }
         }
 
-        public GangMemberCollection AddGang(
-            string gangId)
+        public bool TryAddGang(
+            string gangId,
+            out GangMemberCollection gang)
         {
             lock (lockObject)
             {
-                var gang = new GangMemberCollection();
+                if (ContainsGang(gangId))
+                {
+                    gang = _gangs[gangId];
+                    return false;
+                }
+
+                gang = new GangMemberCollection();
                 _gangs = _gangs.Add(gangId, gang);
 
-                return gang;
+                return true;
             }
         }
 
@@ -45,9 +52,7 @@ namespace Gang
         {
             lock (lockObject)
             {
-                var gang = ContainsGang(gangId)
-                    ? _gangs[gangId].AddMember(member)
-                    : AddGang(gangId).AddMember(member);
+                var gang = _gangs[gangId].AddMember(member);
 
                 _gangs = _gangs.SetItem(gangId, gang);
 

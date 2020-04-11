@@ -12,12 +12,13 @@ import { IAppState, IAppUser, IAppMessage } from '../../app/models';
 export class AppHome {
 
   service = GangContext.service;
-  @State() users: IAppUser[] = [];
   @State() messages: IAppMessage[] = [];
+  @State() newMessageText: string;
+
+  @State() users: IAppUser[] = [];
   @State() currentUser: IAppUser;
   @State() userNames: { [id: string]: string } = {};
 
-  messageInput: HTMLTextAreaElement;
   messagesList: HTMLOListElement;
   messagesCount: number = 0;
 
@@ -31,18 +32,20 @@ export class AppHome {
 
     this.users = state.users || [];
     this.messages = state.messages || [];
-    this.currentUser = state?.users?.find(
+
+    this.currentUser = this.users.find(
       u => u.id === this.service.memberId
     );
-    this.userNames = state?.users?.reduce((map, user) =>
-      (map[user.id] = user.name) && map,
-      {});
+    this.userNames = this.users.reduce((map, user) => {
+      map[user.id] = user.name;
+      return map;
+    }, {});
   }
 
-  onMemberConnected(id) {
+  onMemberConnected(id: string) {
     this.updateUser({
       id,
-      name: this.currentUser?.name ?? 'Anonymous'
+      name: this.currentUser?.name
     })
   }
 
@@ -55,12 +58,12 @@ export class AppHome {
               onChange={(e: any) => this.updateUser({
                 name: e.target.value
               })}
-              value={this.currentUser?.name}
+              value={this.currentUser?.name || '(set your name)'}
             />
           </li>
 
           {this.users?.filter(u => u !== this.currentUser)
-            .map(user => <li class="text">{user?.name}</li>)}
+            .map(user => <li class="text">{user?.name || '(anon)'}</li>)}
         </ol>
       </div>
 
@@ -76,21 +79,27 @@ export class AppHome {
         </ol>
 
         <form class="row"
-          onSubmit={e => this.addMessage(e, this.messageInput.value)}
+          onSubmit={e => this.addMessage(e, this.newMessageText)}
         >
-          <textarea class="input message" ref={el => this.messageInput = el}
+          <textarea class="input message"
             rows={2}
+            value={this.newMessageText}
+            onInput={(e: any) => this.newMessageText = e.target.value}
+            onKeyPress={e => e.key === 'Enter' && !e.shiftKey && this.addMessage(e, this.newMessageText)}
           />
-          <button class="button">Send</button>
+          <button class="button"
+            disabled={!this.newMessageText}
+          >Send</button>
         </form>
       </div>
     </Host>
   }
 
   componentDidRender() {
+
     if (this.messagesCount !== this.messages.length) {
-      this.messagesList.scrollTop = this.messagesList.scrollHeight;
-      this.messagesCount = this.messages.length
+      const lastMessage = this.messagesList.querySelector('li:last-child');
+      lastMessage.scrollIntoView({ block: 'end', behavior: 'smooth' });
     }
   }
 
@@ -106,13 +115,16 @@ export class AppHome {
   addMessage(e: Event, text: string) {
     e.preventDefault();
 
+    console.debug('addMessage', { text })
+    if (!text) return;
+
     this.service
       .sendCommand('addMessage', {
         id: getGangId(),
         text
       });
 
-    this.messageInput.value = '';
+    this.newMessageText = '';
   }
 }
 

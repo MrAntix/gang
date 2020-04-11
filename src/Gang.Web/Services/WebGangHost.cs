@@ -93,7 +93,7 @@ namespace Gang.Web.Services
     {
       await SetState(
           new WebGangHostState(
-            _state.Users.Add(new WebGangUser(userId, "Anon")),
+            _state.Users.Add(new WebGangUser(userId, null)),
             _state.Messages
           ));
     }
@@ -128,13 +128,14 @@ namespace Gang.Web.Services
                 command.Id, DateTimeOffset.UtcNow,
                 Encoding.UTF8.GetString(audit.MemberId),
                 command.Text)
-              )
+              ).TakeLast(10)
           ));
     }
 
     void Disconnect()
     {
-      _connected.SetResult(true);
+      if (!_connected.Task.IsCompleted)
+        _connected.SetResult(true);
     }
 
     void IDisposable.Dispose()

@@ -37,9 +37,9 @@ namespace Gang.Tests
             return Task.CompletedTask;
         }
 
-        Task IGangMember.SendAsync(GangMessageTypes type, byte[] message)
+        Task IGangMember.SendAsync(GangMessageTypes type, byte[] data, byte[] memberId)
         {
-            Received.Add(Tuple.Create(type, message));
+            Received.Add(Tuple.Create(type, data));
             return Task.CompletedTask;
         }
 

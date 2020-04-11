@@ -50,8 +50,7 @@ namespace Gang.WebSockets
 
         async Task IGangMember.DisconnectAsync(string reason)
         {
-            await _webSocket.CloseAsync(
-                WebSocketCloseStatus.NormalClosure, reason, CancellationToken.None);
+            await DisconnectAsync(reason);
         }
 
         async Task IGangMember.SendAsync(GangMessageTypes type, byte[] data, byte[] memberId)
@@ -79,7 +78,15 @@ namespace Gang.WebSockets
 
         void IDisposable.Dispose()
         {
+            DisconnectAsync("disposed").GetAwaiter().GetResult();
             _webSocket.Dispose();
+        }
+
+        async Task DisconnectAsync(string reason = "disconnected")
+        {
+            if (_webSocket.State == WebSocketState.Open)
+                await _webSocket.CloseAsync(
+                    WebSocketCloseStatus.NormalClosure, reason, CancellationToken.None);
         }
     }
 }
