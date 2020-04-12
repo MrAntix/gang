@@ -50,6 +50,10 @@ li {
   display: flex;
 }
 
+.users .user-name.other:not(.is-online) {
+  opacity: .25;
+}
+
 .messages {
   flex: 1 1 auto;
   display: flex;
@@ -72,7 +76,7 @@ li {
   white-space: pre-wrap;
 }
 
-li.message:not(:last-child) {
+.messages-list .message:not(:last-child) {
   padding: var(--padding-unit) 0;
   border-bottom: solid 1px rgba(0, 0, 0, .1);
   margin: var(--padding-unit) 0;

@@ -23,7 +23,7 @@ namespace Gang.Web.Services
             _connected = new TaskCompletionSource<bool>();
             _serialization = serialization;
             _handlers = new Dictionary<string, Func<JObject, GangMessageAudit, Task>>{
-                { "updateUser", (o, a)=> UpdateUser(o.ToObject<UpdateUserCommand>(), a) },
+                { "updateUser", (o, a)=> UpdateUser(o.ToObject<UpdateUserNameCommand>(), a) },
                 { "addMessage", (o, a)=> AddMessage(o.ToObject<AddMessageCommand>(), a) }
             }.ToImmutableDictionary();
         }
@@ -60,11 +60,15 @@ namespace Gang.Web.Services
 
                     break;
                 case GangMessageTypes.Connect:
-                    await AddUser(message, audit);
+                    await UpdateUser(new UpdateUserIsOnlineCommand(
+                        message, true
+                        ), audit);
 
                     break;
                 case GangMessageTypes.Disconnect:
-                    await RemoveUser(message, audit);
+                    await UpdateUser(new UpdateUserIsOnlineCommand(
+                        message, false
+                        ), audit);
 
                     break;
             }
@@ -89,26 +93,7 @@ namespace Gang.Web.Services
             ));
         }
 
-        async Task AddUser(string userId, GangMessageAudit _)
-        {
-            await SetState(
-                new WebGangHostState(
-                  _state.Users.Add(new WebGangUser(userId, null)),
-                  _state.Messages
-                ));
-        }
-
-        async Task RemoveUser(string userId, GangMessageAudit _)
-        {
-            var user = _state.Users.First(u => u.Id == userId);
-            await SetState(
-                new WebGangHostState(
-                  _state.Users.Remove(user),
-                  _state.Messages
-                ));
-        }
-
-        async Task UpdateUser(UpdateUserCommand command, GangMessageAudit _)
+        async Task UpdateUser(UpdateUserNameCommand command, GangMessageAudit _)
         {
             var user = _state.Users.First(u => u.Id == command.Id);
             await SetState(
@@ -116,6 +101,24 @@ namespace Gang.Web.Services
                   _state.Users.Replace(user, user.Update(command)),
                   _state.Messages
                 ));
+        }
+
+        async Task UpdateUser(UpdateUserIsOnlineCommand command, GangMessageAudit _)
+        {
+            var user = _state.Users.FirstOrDefault(u => u.Id == command.Id);
+            if (user == null)
+                await SetState(
+                    new WebGangHostState(
+                  _state.Users.Add(new WebGangUser(command.Id, null, command.IsOnline)),
+                  _state.Messages
+                ));
+
+            else
+                await SetState(
+                    new WebGangHostState(
+                      _state.Users.Replace(user, user.Update(command)),
+                      _state.Messages
+                    ));
         }
 
         async Task AddMessage(AddMessageCommand command, GangMessageAudit audit)

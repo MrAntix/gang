@@ -2,9 +2,9 @@ using Gang.Web.Services.State;
 
 namespace Gang.Web.Services.Commands
 {
-  public class UpdateUserCommand: IWebGangUserChange
+    public class UpdateUserNameCommand : IWebGangUserChangeName
     {
-        public UpdateUserCommand(
+        public UpdateUserNameCommand(
             string id,
             string name)
         {

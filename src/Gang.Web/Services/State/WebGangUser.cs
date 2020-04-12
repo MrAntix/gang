@@ -1,23 +1,36 @@
 namespace Gang.Web.Services.State
 {
-  public class WebGangUser
+    public class WebGangUser
     {
         public WebGangUser(
             string id,
-            string name)
+            string name,
+            bool isOnline)
         {
             Id = id;
             Name = name;
+            IsOnline = isOnline;
         }
 
         public string Id { get; }
         public string Name { get; }
+        public bool IsOnline { get; }
 
-        public WebGangUser Update(IWebGangUserChange change)
+        public WebGangUser Update(IWebGangUserChangeName change)
         {
             return new WebGangUser(
                 Id,
-                change.Name
+                change.Name,
+                IsOnline
+                );
+        }
+
+        public WebGangUser Update(IWebGangUserChangeIsOnline change)
+        {
+            return new WebGangUser(
+                Id,
+                Name,
+                change.IsOnline
                 );
         }
     }

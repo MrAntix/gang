@@ -1,7 +1,7 @@
 import { Component, h, Host, State } from '@stencil/core';
 
 import { GangContext } from '../../gang';
-import { mapGangEvents, getGangId } from '../../gang/services';
+import { mapGangEvents, getGangId, GangStore } from '../../gang/services';
 import { IAppState, IAppUser, IAppMessage } from '../../app/models';
 
 @Component({
@@ -31,6 +31,9 @@ export class AppHome {
     console.log('app-home', { state })
 
     this.users = state.users || [];
+    this.users.sort((a, b) => a.isOnline && b.isOnline
+      ? a.name?.localeCompare(b.name)
+      : a.isOnline ? -1 : 1)
     this.messages = state.messages || [];
 
     this.currentUser = this.users.find(
@@ -45,27 +48,28 @@ export class AppHome {
   onMemberConnected(id: string) {
     this.updateUser({
       id,
-      name: this.currentUser?.name
+      name: this.currentUser?.name || GangStore.get('name')
     })
   }
 
   render() {
-    return <Host>
+    return <Host>{JSON.stringify(this.users)}
       <div class="section users">
         <ol>
           <li>
             <input class="input user-name"
               placeholder="(set your name)"
-              onChange={(e: any) => this.updateUser({
-                name: e.target.value
-              })}
+              onChange={(e: any) => this.updateUserName(e.target.value)}
               value={this.currentUser?.name}
             />
           </li>
-
           <li class="heading">Other Users</li>
           {this.users?.filter(u => u !== this.currentUser)
-            .map(user => <li class="text">{user?.name || '(anon)'}</li>)}
+            .map(user => <li class={{
+              "user-name other text": true,
+              "is-online": user.isOnline
+            }}
+            >{user?.name || '(anon)'}</li>)}
         </ol>
       </div>
 
@@ -112,6 +116,12 @@ export class AppHome {
         ...this.currentUser,
         ...change
       });
+  }
+
+  updateUserName(name: string) {
+
+    GangStore.set('name', name);
+    this.updateUser({ name });
   }
 
   addMessage(e: Event, text: string) {

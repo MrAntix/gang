@@ -1,7 +1,7 @@
 import { Component, h } from '@stencil/core';
 
 import { GangContext } from '../../gang';
-import { mapGangEvents } from '../../gang/services';
+import { mapGangEvents, GangStore, getGangId } from '../../gang/services';
 import { IAppState } from '../../app/models';
 
 @Component({
@@ -15,7 +15,10 @@ export class AppRoot {
 
   componentWillLoad() {
 
-    this.service.connect('ws', 'demo');
+    let token = GangStore.get('token', () => getGangId());
+    console.log('store token', { token });
+
+    this.service.connect('ws', 'demo', token);
     mapGangEvents(this.service, this);
   }
 
