@@ -30,10 +30,7 @@ export class AppHome {
   onState(state: IAppState) {
     console.log('app-home', { state })
 
-    this.users = state.users || [];
-    this.users.sort((a, b) => a.isOnline && b.isOnline
-      ? a.name?.localeCompare(b.name)
-      : a.isOnline ? -1 : 1)
+    this.users = sortUsers(state.users || []);
     this.messages = state.messages || [];
 
     this.currentUser = this.users.find(
@@ -140,9 +137,17 @@ export class AppHome {
   }
 }
 
-const messageDateFormatter = Intl.DateTimeFormat(
-  'default', {}).format;
+const messageDateFormatter = Intl.DateTimeFormat('default', {}).format;
 function formatDate(date: string) {
 
   return messageDateFormatter(new Date(date));
+}
+
+function sortUsers(users: IAppUser[]): IAppUser[] {
+  const sorted = [...users];
+
+  sorted.sort((a, b) => a.isOnline && b.isOnline
+    ? a.name?.localeCompare(b.name)
+    : a.isOnline ? -1 : 1);
+  return sorted;
 }
