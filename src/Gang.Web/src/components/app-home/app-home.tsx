@@ -50,7 +50,7 @@ export class AppHome {
   }
 
   render() {
-    return <Host>{JSON.stringify(this.users)}
+    return <Host>
       <div class="section users">
         <ol>
           <li>
