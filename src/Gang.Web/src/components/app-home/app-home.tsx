@@ -72,12 +72,17 @@ export class AppHome {
 
       <div class="section messages">
         <ol class="messages-list" ref={el => this.messagesList = el}>
-          {this.messages?.map(message => <li class="message">
-            <div class="row message-audit">
-              <span class="text message-user-name">{this.userNames[message.userId]}</span>
+          {this.messages?.map(message => <li class={{
+            "message": true,
+            "current-user": message.userId === this.currentUser?.id
+          }}>
+            <div class="row info">
               <span class="text message-on">{formatDate(message.on)}</span>
             </div>
-            <div class="text message-text">{message.text}</div>
+            <div class="row detail">
+              <span class="text message-user-name">{this.userNames[message.userId]}</span>
+              <div class="text message-text">{message.text}</div>
+            </div>
           </li>)}
         </ol>
 
@@ -102,7 +107,7 @@ export class AppHome {
 
     if (this.messagesCount !== this.messages.length) {
       const lastMessage = this.messagesList.querySelector('li:last-child');
-      lastMessage.scrollIntoView({ block: 'end', behavior: 'smooth' });
+      lastMessage.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
   }
 

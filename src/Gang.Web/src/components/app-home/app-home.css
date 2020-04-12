@@ -1,5 +1,7 @@
 :host {
   --padding-unit: 4px;
+  --callout-size: 5px;
+  --callout-border-radius: 5px;
   display: flex;
   flex-wrap: wrap;
 }
@@ -28,6 +30,11 @@ li {
   max-height: calc(100vh - 110px);
 }
 
+.heading {
+  font-weight: bold;
+}
+
+.heading,
 .text,
 .input {
   padding: var(--padding-unit);
@@ -42,8 +49,8 @@ li {
   font: inherit;
   border: none;
   padding: var(--padding-unit);
-  background-color: #369;
-  color: #fff;
+  background-color: #eee;
+  color: #444;
 }
 
 .row {
@@ -61,19 +68,61 @@ li {
   max-height: calc(100vh - 110px);
 }
 
+.message.current-user {
+  justify-content: flex-end;
+}
+
 .messages-list {
   flex: 1 1 auto;
   overflow-y: auto;
 }
 
-.message-audit {
-  justify-content: space-between;
+.messages-list .info {
   font-size: .8em;
   opacity: .8;
 }
 
-.message-text {
+.messages-list .detail {
+  display: flex;
+}
+
+.messages-list .current-user .detail {
+  flex-flow: row-reverse;
+}
+
+.messages-list .current-user .message-text {
+  background-color: #eee;
+  color: #444;
+}
+
+.messages-list .message-text {
+  position: relative;
   white-space: pre-wrap;
+  border-radius: var(--callout-border-radius);
+  padding: var(--padding-unit) calc(2 * var(--padding-unit));
+  margin: 0 var(--padding-unit);
+  color: #eee;
+  background-color: #369;
+}
+
+.messages-list .message-text::after {
+  position: absolute;
+  top: calc(.9em - var(--callout-size));
+  content: '';
+  border: solid var(--callout-size) transparent;
+  display: inline-block;
+  width:0;
+  height: 0;
+}
+
+.message:not(.current-user) .message-text::after {
+  left: calc(-2 * var(--callout-size));
+  border-right-color: #369;
+}
+
+.message.current-user .message-text::after {
+  right: calc(-2 * var(--callout-size));
+  border-left-color: #eee;
 }
 
 .messages-list .message:not(:last-child) {
