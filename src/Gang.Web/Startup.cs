@@ -1,6 +1,5 @@
 using Gang.Contracts;
 using Gang.Events;
-using Gang.Serialization;
 using Gang.Web.Services;
 using Gang.WebSockets;
 using Microsoft.AspNetCore.Builder;
@@ -19,7 +18,7 @@ namespace Gang.Web
         {
             services.AddWebSocketGangs()
                 .AddTransient<WebGangHost>()
-                .AddGangAuthorizationHandler<WebGangAuthorizationHandler>();
+                .AddGangAuthenticationHandler<WebGangAuthenticationHandler>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

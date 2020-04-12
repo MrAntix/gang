@@ -1,8 +1,8 @@
 ﻿using Gang.Tasks;
 using System;
 using System.IO;
+using System.Net.Sockets;
 using System.Net.WebSockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,16 +13,15 @@ namespace Gang.WebSockets
         readonly TaskQueue _sendQueue;
         readonly WebSocket _webSocket;
         readonly ArraySegment<byte> _buffer;
-        readonly byte[] _id;
 
         public WebSocketGangMember(
+            byte[] id,
             WebSocket webSocket)
         {
+            Id = id;
             _webSocket = webSocket;
-
             _sendQueue = new TaskQueue();
             _buffer = new ArraySegment<byte>(new byte[1024 * 4]);
-            _id = Encoding.UTF8.GetBytes($"{Guid.NewGuid():N}");
         }
 
         async Task DisconnectAsync(string reason = "disconnected")
@@ -32,7 +31,7 @@ namespace Gang.WebSockets
                     WebSocketCloseStatus.NormalClosure, reason, CancellationToken.None);
         }
 
-        byte[] IGangMember.Id { get { return _id; } }
+        public byte[] Id { get; }
 
         async Task IGangMember.ConnectAsync(Func<byte[], Task> onReceiveAsync)
         {
@@ -52,6 +51,7 @@ namespace Gang.WebSockets
                 } while (!result.EndOfMessage);
 
                 await onReceiveAsync(data.ToArray());
+
             } while (_webSocket.State == WebSocketState.Open);
         }
 

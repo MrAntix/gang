@@ -1,5 +1,4 @@
 ﻿using Gang.Contracts;
-using Gang.Events;
 using Gang.Serialization;
 using Gang.WebSockets.Serialization;
 using Microsoft.AspNetCore.Builder;
@@ -17,29 +16,23 @@ namespace Gang.WebSockets
         public static IServiceCollection AddWebSocketGangs(
             this IServiceCollection services)
         {
-            services.AddSingleton<ISerializationService, JsonSerializationService>();
-            services.AddSingleton<IGangHandler, GangHandler>();
-            services.AddTransient<GangCollection>();
+            services.AddGangs();
+            services.AddSingleton<IGangSerializationService, WebSocketGangJsonSerializationService>();
 
             return services;
         }
 
         public static IApplicationBuilder UseWebSocketGangs(
             this IApplicationBuilder app,
-            string path,
-            Func<IApplicationBuilder, GangParameters, Task<bool>> authorizeAsync = null)
+            string path
+            )
         {
             app.UseWebSockets();
             app.Map(path, _ =>
             {
-                var serializer = app.ApplicationServices.GetRequiredService<ISerializationService>();
+                var serializer = app.ApplicationServices.GetRequiredService<IGangSerializationService>();
                 var handler = app.ApplicationServices.GetRequiredService<IGangHandler>();
-                if (authorizeAsync == null)
-                {
-                    var authHandler = app.ApplicationServices.GetService<IGangAuthorizationHandler>();
-                    if (authHandler != null)
-                        authorizeAsync = (a, p) => authHandler.AuthorizeAsync(p);
-                }
+                var authenticateAsync = app.ApplicationServices.GetRequiredService<Func<GangParameters, Task<byte[]>>>();
 
                 app
                     .Use(async (context, next) =>
@@ -51,15 +44,16 @@ namespace Gang.WebSockets
                         }
 
                         var parameters = GetGangParameters(context.Request.Query);
-                        var member = await GetGangMemberAsync(context);
-                        if (authorizeAsync != null
-                            && !await authorizeAsync(app, parameters))
-                        {
-                            await member.DisconnectAsync("denied");
-                            return;
-                        }
 
-                        await handler.HandleAsync(parameters, member);
+                        var gangMemberId = await authenticateAsync(parameters);
+                        using var gangMember = await GetGangMemberAsync(gangMemberId, context);
+
+                        if (gangMember.Id != null)
+                            await handler.HandleAsync(parameters, gangMember);
+
+                        else
+                            await gangMember.DisconnectAsync("denied");
+
                     });
 
             });
@@ -67,9 +61,14 @@ namespace Gang.WebSockets
             return app;
         }
 
-        static async Task<IGangMember> GetGangMemberAsync(HttpContext context)
+
+        static async Task<IGangMember> GetGangMemberAsync(
+            byte[] id,
+            HttpContext context
+            )
         {
             return new WebSocketGangMember(
+                id,
                 await context.WebSockets.AcceptWebSocketAsync()
                 );
         }

@@ -2,7 +2,7 @@
 
 namespace Gang.Serialization
 {
-    public interface ISerializationService
+    public interface IGangSerializationService
     {
         string Serialize(object value);
         object Deserialize(string value, Type type);

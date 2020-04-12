@@ -13,7 +13,7 @@ namespace Gang.Tests
             string id, int delay = 50)
         {
             Id = Encoding.UTF8.GetBytes(id);
-            Received = new List<Tuple<GangMessageTypes, byte[]>>();
+            Sent = new List<Tuple<GangMessageTypes, byte[]>>();
             _connected = new TaskCompletionSource<bool>(delay);
 
             Task.Delay(delay).ContinueWith((_) => Disconnect());
@@ -43,16 +43,15 @@ namespace Gang.Tests
 
         Task IGangMember.SendAsync(GangMessageTypes type, byte[] data, byte[] memberId)
         {
-            Received.Add(Tuple.Create(type, data));
+            Sent.Add(Tuple.Create(type, data));
             return Task.CompletedTask;
         }
 
-        public IList<Tuple<GangMessageTypes, byte[]>> Received { get; }
+        public IList<Tuple<GangMessageTypes, byte[]>> Sent { get; }
 
         void IDisposable.Dispose()
         {
             Disconnect();
         }
-
     }
 }

@@ -5,12 +5,12 @@ using System;
 
 namespace Gang.WebSockets.Serialization
 {
-    public class JsonSerializationService :
-        ISerializationService
+    public class WebSocketGangJsonSerializationService :
+        IGangSerializationService
     {
         readonly JsonSerializerSettings _jsonSerializerSettings;
 
-        public JsonSerializationService()
+        public WebSocketGangJsonSerializationService()
         {
             _jsonSerializerSettings = new JsonSerializerSettings
             {
@@ -19,13 +19,13 @@ namespace Gang.WebSockets.Serialization
             };
         }
 
-        object ISerializationService
+        object IGangSerializationService
             .Deserialize(string value, Type type)
         {
             return JsonConvert.DeserializeObject(value, type, _jsonSerializerSettings);
         }
 
-        string ISerializationService
+        string IGangSerializationService
             .Serialize(object value)
         {
             return JsonConvert.SerializeObject(value, _jsonSerializerSettings);

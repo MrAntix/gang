@@ -14,7 +14,8 @@ namespace Gang
         readonly Subject<GangEvent> _events;
 
         public GangHandler(
-            GangCollection gangs)
+            GangCollection gangs
+            )
         {
             _gangs = gangs;
             _events = new Subject<GangEvent>();
@@ -31,9 +32,11 @@ namespace Gang
         async Task IGangHandler.HandleAsync(
             GangParameters parameters, IGangMember gangMember)
         {
-            var gang = _gangs.AddMemberToGang(
-                parameters.GangId, gangMember,
-                _ => _events.OnNext(new GangAddedEvent(parameters.GangId)));
+            var gang = _gangs[parameters.GangId];
+
+            gang = _gangs.AddMemberToGang(
+               parameters.GangId, gangMember,
+               _ => _events.OnNext(new GangAddedEvent(parameters.GangId)));
 
             if (gang.HostMember == gangMember)
             {
