@@ -1,5 +1,6 @@
 :root {
   --padding-unit: .5em;
+  --border-radius: 5px;
   --callout-size: 1em;
   --callout-border-radius: 15px;
 

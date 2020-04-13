@@ -1,3 +1,5 @@
+@import '../../global/component.css';
+
 :host {
   display: flex;
   flex-wrap: wrap;
@@ -49,11 +51,10 @@ li {
 }
 
 .button {
-  font: inherit;
-  border: none;
-  padding: var(--padding-unit);
   background-color: var(--current-user-color);
   color: var(--current-user-color-alt);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
 .row {
@@ -160,4 +161,6 @@ li {
   flex: 1 1 auto;
   resize: vertical;
   max-height: 6em;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }

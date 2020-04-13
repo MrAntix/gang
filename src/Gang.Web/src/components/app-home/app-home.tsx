@@ -149,7 +149,8 @@ export class AppHome {
 
   scrollToLastMessage() {
     const lastMessage = this.messagesList.querySelector('li:last-child');
-    lastMessage.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    lastMessage && lastMessage
+      .scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 }
 

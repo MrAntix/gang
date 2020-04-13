@@ -1,4 +1,4 @@
-﻿using Gang.Contracts;
+using Gang.Contracts;
 using Gang.Serialization;
 using Gang.WebSockets.Serialization;
 using Microsoft.AspNetCore.Builder;
@@ -60,7 +60,6 @@ namespace Gang.WebSockets
 
             return app;
         }
-
 
         static async Task<IGangMember> GetGangMemberAsync(
             byte[] id,

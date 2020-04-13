@@ -1,4 +1,4 @@
-import { Component, h, Listen } from '@stencil/core';
+import { Component, h, Listen, State } from '@stencil/core';
 
 import { GangContext } from '../../gang';
 import { mapGangEvents, GangStore, getGangId } from '../../gang/services';
@@ -13,6 +13,8 @@ export class AppRoot {
 
   service = GangContext.service;
   token = GangStore.get('token', () => getGangId());
+
+  @State() isConnected: boolean = false
 
   @Listen('resize', { target: 'window' })
   onResize() {
@@ -48,11 +50,15 @@ export class AppRoot {
   }
 
   onMemberConnected(memberId: any) {
-    console.log('app-root', { memberId })
+    console.log('app-root', { memberId });
+
+    this.isConnected = true;
   }
 
   onMemberDisconnected(memberId: any) {
-    console.log('app-root', { memberId })
+    console.log('app-root', { memberId });
+
+    this.isConnected = false;
   }
 
   render() {
@@ -60,14 +66,21 @@ export class AppRoot {
       <div>
         <header>
           <h1>Gang Web</h1>
+          {!this.isConnected
+            && <button
+              onClick={() => this.onVisibilitychange()}
+            >Connect</button>
+          }
         </header>
 
         <main>
-          <stencil-router>
-            <stencil-route-switch scrollTopOffset={0}>
-              <stencil-route url='/' component='app-home' exact={true} />
-            </stencil-route-switch>
-          </stencil-router>
+          {this.isConnected
+            && <stencil-router>
+              <stencil-route-switch scrollTopOffset={0}>
+                <stencil-route url='/' component='app-home' exact={true} />
+              </stencil-route-switch>
+            </stencil-router>
+          }
         </main>
       </div>
     );

@@ -1,5 +1,13 @@
-:host {
-  background-color: tomato;
-  min-width: 2em;
-  max-width: 2em;
+button {
+  font: inherit;
+  border: none;
+  padding: var(--padding-unit);
+  background-color: var(--primary-color);
+  color: var(--primary-color-alt);
+}
+
+button,
+input,
+textarea {
+  border-radius: var(--border-radius);
 }

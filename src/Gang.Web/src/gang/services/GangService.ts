@@ -160,12 +160,14 @@ export class GangService {
       }, 1000);
       if (this.retry < RETRY_MAX) this.retry *= 2;
     }).bind(this);
+
     const clearRetryConnect = (() => {
       if (this.retrying) {
         clearInterval(this.retrying);
         this.retrying = 0;
       }
     }).bind(this);
+    
     retryConnect();
   }
 
