@@ -30,7 +30,7 @@ li {
 .column {
   overflow: auto;
   overflow-x: hidden;
-  max-height: calc(100vh - 110px);
+  max-height: calc(100 * var(--vh) - var(--page-header-height));
 }
 
 .heading {
@@ -76,8 +76,8 @@ li {
   flex: 100 1 auto;
   display: flex;
   flex-direction: column;
-  min-width: 300px;
-  max-height: calc(100vh - 110px);
+  min-width: 15em;
+  max-height: calc(100 * var(--vh) - var(--page-header-height));
 }
 
 .messages-list {

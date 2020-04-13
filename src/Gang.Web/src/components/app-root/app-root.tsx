@@ -1,4 +1,4 @@
-import { Component, h } from '@stencil/core';
+import { Component, h, Listen } from '@stencil/core';
 
 import { GangContext } from '../../gang';
 import { mapGangEvents, GangStore, getGangId } from '../../gang/services';
@@ -13,7 +13,15 @@ export class AppRoot {
 
   service = GangContext.service;
 
+  @Listen('resize', { target: 'window' })
+  onResize() {
+    console.log('resize');
+    document.documentElement
+      .style.setProperty('--vh', `${window.innerHeight / 100}px`);
+  }
+
   componentWillLoad() {
+    this.onResize();
 
     let token = GangStore.get('token', () => getGangId());
     console.log('store token', { token });

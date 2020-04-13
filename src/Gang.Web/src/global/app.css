@@ -16,10 +16,14 @@
 
   --lowlight: rgba(255, 255, 255, .05);
   --highlight: rgba(0, 0, 0, .1);
+
+  --vh: 1vh;
+  --page-header-height: 70px;
 }
 
 body {
   background-color: var(--color);
   color: var(--color-alt);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: var(--padding-unit) 0;
 }
