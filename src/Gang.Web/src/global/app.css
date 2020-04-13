@@ -1,4 +1,25 @@
+:root {
+  --padding-unit: 4px;
+  --callout-size: 5px;
+  --callout-border-radius: 15px;
+
+  --color: #333;
+  --color-alt: #ddd;
+
+  --primary-color: #369;
+  --primary-color-alt: #fff;
+
+  --user-color: var(--color-alt);
+  --user-color-alt: var(--color);
+  --current-user-color: var(--primary-color);
+  --current-user-color-alt: var(--primary-color-alt);
+
+  --lowlight: rgba(255, 255, 255, .05);
+  --highlight: rgba(0, 0, 0, .1);
+}
+
 body {
-  background-color: #ddd;
+  background-color: var(--color);
+  color: var(--color-alt);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }

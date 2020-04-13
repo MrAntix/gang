@@ -1,13 +1,14 @@
 :host {
-  --padding-unit: 4px;
-  --callout-size: 5px;
-  --callout-border-radius: 5px;
   display: flex;
+  flex-flow: row-reverse;
   flex-wrap: wrap;
+  max-width: 50em;
+  margin: 0 auto;
 }
 
 pre,
 ol {
+  flex: 1 1 auto;
   padding: 0;
 }
 
@@ -16,8 +17,10 @@ pre {
 }
 
 li {
+  display: flex;
   list-style: none;
   margin: 0;
+  padding: var(--padding-unit) 0;
 }
 
 .section {
@@ -26,7 +29,8 @@ li {
 }
 
 .column {
-  overflow-y: auto;
+  overflow: auto;
+  overflow-x: hidden;
   max-height: calc(100vh - 110px);
 }
 
@@ -49,12 +53,20 @@ li {
   font: inherit;
   border: none;
   padding: var(--padding-unit);
-  background-color: #eee;
-  color: #444;
+  background-color: var(--current-user-color);
+  color: var(--current-user-color-alt);
 }
 
 .row {
   display: flex;
+}
+
+.users {
+  flex: 1 0 auto;
+}
+
+.users .input.user-name {
+  flex: 1 1 auto;
 }
 
 .users .user-name.other:not(.is-online) {
@@ -62,76 +74,90 @@ li {
 }
 
 .messages {
-  flex: 1 1 auto;
+  flex: 100 1 auto;
   display: flex;
   flex-direction: column;
+  min-width: 300px;
   max-height: calc(100vh - 110px);
-}
-
-.message.current-user {
-  justify-content: flex-end;
 }
 
 .messages-list {
   flex: 1 1 auto;
-  overflow-y: auto;
+  overflow: auto;
+  overflow-x: hidden;
 }
 
-.messages-list .info {
-  font-size: .8em;
-  opacity: .8;
-}
-
-.messages-list .detail {
+.messages-list .message {
   display: flex;
+  flex-direction: column;
 }
 
-.messages-list .current-user .detail {
+.messages-list .message.current-user {
+  align-items: flex-end;
+}
+
+.messages-list .message.current-user .detail {
   flex-flow: row-reverse;
 }
 
-.messages-list .current-user .message-text {
-  background-color: #eee;
-  color: #444;
+.messages-list .info {
+  font-size: .667em;
+  opacity: .667;
+  margin: var(--padding-unit);
 }
 
-.messages-list .message-text {
+.messages-list .message .detail {
+  display: flex;
+}
+
+.messages-list .message.current-user .user-name {
+  display: none;
+}
+
+.messages-list .message.current-user .message-text {
+  background-color: var(--current-user-color);
+  color: var(--current-user-color-alt);
+}
+
+.messages-list .message .message-text {
   position: relative;
   white-space: pre-wrap;
   border-radius: var(--callout-border-radius);
   padding: var(--padding-unit) calc(2 * var(--padding-unit));
   margin: 0 var(--padding-unit);
-  color: #eee;
-  background-color: #369;
+  background-color: var(--user-color);
+  color: var(--user-color-alt);
 }
 
-.messages-list .message-text::after {
+.messages-list .message .message-text::after {
   position: absolute;
-  top: calc(.9em - var(--callout-size));
   content: '';
   border: solid var(--callout-size) transparent;
   display: inline-block;
-  width:0;
+  width: 0;
   height: 0;
+  opacity: .9;
 }
 
-.message:not(.current-user) .message-text::after {
-  left: calc(-2 * var(--callout-size));
-  border-right-color: #369;
+.messages-list .message:not(.current-user) .message-text::after {
+  top: calc(.9em - var(--callout-size));
+  left: calc(-2 * var(--callout-size) + 1px);
+  border-right-color: var(--user-color);
 }
 
-.message.current-user .message-text::after {
-  right: calc(-2 * var(--callout-size));
-  border-left-color: #eee;
+.messages-list .message.current-user .message-text::after {
+  right: calc(.9em - var(--callout-size));
+  bottom: calc(-2 * var(--callout-size));
+  border-top-color: var(--current-user-color);
 }
 
 .messages-list .message:not(:last-child) {
   padding: var(--padding-unit) 0;
-  border-bottom: solid 1px rgba(0, 0, 0, .1);
+  border-bottom: solid 2px var(--highlight);
   margin: var(--padding-unit) 0;
 }
 
-.message.input {
+.messages .message.input {
   flex: 1 1 auto;
   resize: vertical;
   max-height: 6em;

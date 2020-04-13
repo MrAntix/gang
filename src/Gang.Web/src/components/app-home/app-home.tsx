@@ -76,12 +76,12 @@ export class AppHome {
             "message": true,
             "current-user": message.userId === this.currentUser?.id
           }}>
+            <div class="row detail">
+              <span class="text user-name">{this.userNames[message.userId]}</span>
+              <div class="text message-text">{message.text}</div>
+            </div>
             <div class="row info">
               <span class="text message-on">{formatDate(message.on)}</span>
-            </div>
-            <div class="row detail">
-              <span class="text message-user-name">{this.userNames[message.userId]}</span>
-              <div class="text message-text">{message.text}</div>
             </div>
           </li>)}
         </ol>
@@ -142,7 +142,15 @@ export class AppHome {
   }
 }
 
-const messageDateFormatter = Intl.DateTimeFormat('default', {}).format;
+const messageDateFormatter = Intl.DateTimeFormat('en-GB', {
+  weekday: 'short',
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
+  second: 'numeric'
+}).format;
 function formatDate(date: string) {
 
   return messageDateFormatter(new Date(date));
