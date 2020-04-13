@@ -169,6 +169,10 @@ export class GangService {
     retryConnect();
   }
 
+  disconnect(){
+    this.webSocket.close();
+  }
+
   sendCommand(type: string, command: any): void {
     var wrapper = new GangCommandWrapper(type, command);
     console.debug("GangService.sendCommand", wrapper);

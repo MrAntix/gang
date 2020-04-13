@@ -35,5 +35,5 @@ export function createGangWebSocket(
 
   const subject = Subject.create(observer, observable);
 
-  return new GangWebSocket(subject, observer.next);
+  return new GangWebSocket(subject, observer.next, () => webSocket.close());
 }

@@ -12,6 +12,7 @@ import { IAppState } from '../../app/models';
 export class AppRoot {
 
   service = GangContext.service;
+  token = GangStore.get('token', () => getGangId());
 
   @Listen('resize', { target: 'window' })
   onResize() {
@@ -20,13 +21,21 @@ export class AppRoot {
       .style.setProperty('--vh', `${window.innerHeight / 100}px`);
   }
 
+  @Listen('visibilitychange', { target: 'document' })
+  onVisibilitychange() {
+    console.log('visibilitychange');
+
+    if (document.hidden)
+      this.service.disconnect();
+    else
+      this.service.connect('ws', 'demo', this.token);
+  }
+
   componentWillLoad() {
     this.onResize();
+    this.onVisibilitychange();
 
-    let token = GangStore.get('token', () => getGangId());
-    console.log('store token', { token });
-
-    this.service.connect('ws', 'demo', token);
+    this.service.connect('ws', 'demo', this.token);
     mapGangEvents(this.service, this);
   }
 
