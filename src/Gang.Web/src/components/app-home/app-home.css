@@ -135,7 +135,7 @@ li {
   display: inline-block;
   width: 0;
   height: 0;
-  opacity: .9;
+  opacity: .99;
 }
 
 .messages-list .message:not(.current-user) .message-text::after {

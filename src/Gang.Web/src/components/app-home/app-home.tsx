@@ -1,4 +1,4 @@
-import { Component, h, Host, State } from '@stencil/core';
+import { Component, h, Host, State, Listen } from '@stencil/core';
 
 import { GangContext } from '../../gang';
 import { mapGangEvents, getGangId, GangStore } from '../../gang/services';
@@ -21,6 +21,11 @@ export class AppHome {
 
   messagesList: HTMLOListElement;
   messagesCount: number = 0;
+
+  @Listen('resize', { target: 'window' })
+  onResize() {
+    this.scrollToLastMessage();
+  }
 
   componentWillLoad() {
 
@@ -106,10 +111,9 @@ export class AppHome {
   }
 
   componentDidRender() {
-
     if (this.messagesCount !== this.messages.length) {
-      const lastMessage = this.messagesList.querySelector('li:last-child');
-      lastMessage.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      this.messagesCount = this.messages.length;
+      this.scrollToLastMessage();
     }
   }
 
@@ -141,6 +145,11 @@ export class AppHome {
       });
 
     this.newMessageText = '';
+  }
+
+  scrollToLastMessage() {
+    const lastMessage = this.messagesList.querySelector('li:last-child');
+    lastMessage.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 }
 
