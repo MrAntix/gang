@@ -1,0 +1,13 @@
+{
+  "name": "Gang Web Demo",
+  "short_name": "Gang",
+  "start_url": "/",
+  "display": "standalone",
+  "icons": [{
+    "src": "assets/icon-512x512.png",
+    "sizes": "512x512",
+    "type": "image/png"
+  }],
+  "background_color": "#16161d",
+  "theme_color": "#16161d"
+}

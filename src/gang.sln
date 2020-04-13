@@ -1,11 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27205.2004
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29911.98
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gang", "Gang\Gang.csproj", "{97D130E7-C77C-4255-AAC1-737AC2FE9415}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gang.Host", "Gang.Host\Gang.Host.csproj", "{B4C0B4AC-168B-4327-9E8B-05020BBFD06D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gang.Tests", "Gang.Tests\Gang.Tests.csproj", "{C508C960-4C07-4497-A4EC-F701E9033B79}"
 EndProject
@@ -13,8 +11,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gang.WebSockets", "Gang.Web
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4139EA36-7016-4107-B986-7ACCE8E922E7}"
 	ProjectSection(SolutionItems) = preProject
+		..\.editorconfig = ..\.editorconfig
+		..\nuget.config = ..\nuget.config
 		..\README.md = ..\README.md
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gang.Web", "Gang.Web\Gang.Web.csproj", "{A957A724-5CC0-4D0E-843D-48C763C6B17B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,10 +28,6 @@ Global
 		{97D130E7-C77C-4255-AAC1-737AC2FE9415}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97D130E7-C77C-4255-AAC1-737AC2FE9415}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{97D130E7-C77C-4255-AAC1-737AC2FE9415}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B4C0B4AC-168B-4327-9E8B-05020BBFD06D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B4C0B4AC-168B-4327-9E8B-05020BBFD06D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B4C0B4AC-168B-4327-9E8B-05020BBFD06D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B4C0B4AC-168B-4327-9E8B-05020BBFD06D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C508C960-4C07-4497-A4EC-F701E9033B79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C508C960-4C07-4497-A4EC-F701E9033B79}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C508C960-4C07-4497-A4EC-F701E9033B79}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -38,6 +36,10 @@ Global
 		{708FAC9B-A4FB-49D9-A83B-22F390156250}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{708FAC9B-A4FB-49D9-A83B-22F390156250}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{708FAC9B-A4FB-49D9-A83B-22F390156250}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A957A724-5CC0-4D0E-843D-48C763C6B17B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A957A724-5CC0-4D0E-843D-48C763C6B17B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A957A724-5CC0-4D0E-843D-48C763C6B17B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A957A724-5CC0-4D0E-843D-48C763C6B17B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

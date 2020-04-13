@@ -1,15 +1,15 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace Gang
 {
-    public interface IGangMember
+    public interface IGangMember : IDisposable
     {
         byte[] Id { get; }
 
-        bool IsConnected { get; }
+        Task ConnectAsync(Func<byte[], Task> onReceive);
         Task DisconnectAsync(string reason = "disconnected");
 
-        Task SendAsync(GangMessageTypes type, byte[] message);
-        Task<byte[]> ReceiveAsync();
+        Task SendAsync(GangMessageTypes type, byte[] data, byte[] memberId = null);
     }
 }

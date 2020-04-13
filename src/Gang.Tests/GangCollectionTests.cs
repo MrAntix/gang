@@ -4,7 +4,7 @@ namespace Gang.Tests
 {
     public class GangCollectionTests
     {
-        const string GANG_ID= "GANG_ID";
+        const string GANG_ID = "GANG_ID";
 
         [Fact]
         public void first_member_becomes_host()
@@ -16,10 +16,13 @@ namespace Gang.Tests
 
             gangs.AddMemberToGang(GANG_ID, firstGangMember);
             gangs.AddMemberToGang(GANG_ID, secondGangMember);
-            
+
+            Assert.Single(gangs);
+
             var gang = gangs[GANG_ID];
 
             Assert.True(gang.HostMember == firstGangMember);
+            Assert.True(gang.HostMember != secondGangMember);
         }
 
         [Fact]

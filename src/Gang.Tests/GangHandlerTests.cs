@@ -1,5 +1,7 @@
 ﻿using Gang.Contracts;
-using Gang.WebSockets.Serialization;
+using Gang.Events;
+using System;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -29,8 +31,8 @@ namespace Gang.Tests
             var secondGangMember = new FakeGangMember("secondGangMember");
 
             await Task.WhenAll(
-                handler.HandleAsync((GangParameters)gangParameters, (IGangMember)firstGangMember),
-                handler.HandleAsync((GangParameters)gangParameters, (IGangMember)secondGangMember)
+                handler.HandleAsync(gangParameters, firstGangMember),
+                handler.HandleAsync(gangParameters, secondGangMember)
             );
 
             Assert.Equal(GangMessageTypes.Member, secondGangMember.Sent[0].Item1);
@@ -45,8 +47,8 @@ namespace Gang.Tests
             var secondGangMember = new FakeGangMember("secondGangMember", 100);
 
             await Task.WhenAll(
-                handler.HandleAsync((GangParameters)gangParameters, (IGangMember)firstGangMember),
-                handler.HandleAsync((GangParameters)gangParameters, (IGangMember)secondGangMember)
+                handler.HandleAsync(gangParameters, firstGangMember),
+                handler.HandleAsync(gangParameters, secondGangMember)
             );
 
             Assert.Equal(GangMessageTypes.Disconnect, secondGangMember.Sent[1].Item1);
@@ -61,18 +63,16 @@ namespace Gang.Tests
             var secondGangMember = new FakeGangMember("secondGangMember");
             var thirdGangMember = new FakeGangMember("thirdGangMember");
 
-            firstGangMember.OnReceiveAction(async () =>
+            firstGangMember.OnConnect = async (onReceiveAsync) =>
             {
                 await Task.Delay(10);
-                firstGangMember.IsConnected = false;
-
-                return new[] { (byte)1 };
-            });
+                await onReceiveAsync(new[] { (byte)1 });
+            };
 
             await Task.WhenAll(
-                handler.HandleAsync((GangParameters)gangParameters, (IGangMember)firstGangMember),
-                handler.HandleAsync((GangParameters)gangParameters, (IGangMember)secondGangMember),
-                handler.HandleAsync((GangParameters)gangParameters, (IGangMember)thirdGangMember)
+                handler.HandleAsync(gangParameters, firstGangMember),
+                handler.HandleAsync(gangParameters, secondGangMember),
+                handler.HandleAsync(gangParameters, thirdGangMember)
             );
 
             Assert.Equal(GangMessageTypes.State, secondGangMember.Sent[1].Item1);
@@ -87,20 +87,18 @@ namespace Gang.Tests
             var firstGangMember = new FakeGangMember("firstGangMember");
             var secondGangMember = new FakeGangMember("secondGangMember");
 
-            secondGangMember.OnReceiveAction(async () =>
+            secondGangMember.OnConnect = async (onReceiveAsync) =>
             {
                 await Task.Delay(10);
-                secondGangMember.IsConnected = false;
-
-                return new[] { (byte)1 };
-            });
+                await onReceiveAsync(new[] { (byte)1 });
+            };
 
             await Task.WhenAll(
-                handler.HandleAsync((GangParameters)gangParameters, (IGangMember)firstGangMember),
-                handler.HandleAsync((GangParameters)gangParameters, (IGangMember)secondGangMember)
+                handler.HandleAsync(gangParameters, firstGangMember),
+                handler.HandleAsync(gangParameters, secondGangMember)
             );
 
-            Assert.Equal(GangMessageTypes.Command, firstGangMember.Sent[1].Item1);
+            Assert.Equal(GangMessageTypes.Command, firstGangMember.Sent[2].Item1);
         }
 
         [Fact]
@@ -110,17 +108,15 @@ namespace Gang.Tests
 
             var firstGangMember = new FakeGangMember("firstGangMember");
 
-            firstGangMember.OnReceiveAction(async () =>
-            {
-                await Task.Delay(10);
-                var member = handler
-                    .GangById(gangParameters.GangId)
-                    .MemberById(firstGangMember.Id);
+            firstGangMember.OnConnect = async (onReceiveAsync) =>
+             {
+                 await Task.Delay(10);
+                 var member = handler
+                     .GangById(gangParameters.GangId)
+                     .MemberById(firstGangMember.Id);
 
-                await member.DisconnectAsync();
-
-                return default(byte[]);
-            });
+                 await member.DisconnectAsync();
+             };
 
             Assert.True(
                 handler
@@ -130,17 +126,34 @@ namespace Gang.Tests
         }
 
         [Fact]
-        public void event_on_gang_created()
+        public void add_host_member_on_gang_added_event()
         {
+            var handler = GetGangHander();
 
+            var firstGangMember = new FakeGangMember("firstGangMember");
+            var hostMember = new FakeGangMember("host");
+
+            using (handler.Events
+                .OfType<GangAddedEvent>()
+                .Subscribe(async e =>
+
+                 await handler.HandleAsync(new GangParameters(e.GangId), hostMember)
+             ))
+            {
+                handler.HandleAsync(gangParameters, firstGangMember);
+
+                var gang = handler.GangById(gangParameters.GangId);
+                Assert.Equal(2, gang.Members.Count);
+
+                Assert.Equal(hostMember, gang.HostMember);
+            }
         }
 
         IGangHandler GetGangHander(
             GangCollection gangs = null)
         {
             return new GangHandler(
-                new JsonSerializationService(),
-                gangs = new GangCollection());
+                gangs ?? new GangCollection());
         }
     }
 }

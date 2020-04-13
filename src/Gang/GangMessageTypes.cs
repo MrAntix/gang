@@ -6,6 +6,7 @@
         Member = 'M',
         State = 'S',
         Command = 'C',
-        Disconnect = 'D'
+        Connect = '+',
+        Disconnect = '-'
     }
 }

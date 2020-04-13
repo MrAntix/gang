@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 
 namespace Gang
 {
-    public interface IGangAuthorizationHandler
+    public interface IGangAuthenticationHandler
     {
-        Task<bool> AuthorizeAsync(GangParameters parameters);
+        Task<byte[]> AuthenticateAsync(GangParameters parameters);
     }
 }

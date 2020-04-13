@@ -1,29 +1,29 @@
 ﻿using Gang.Contracts;
-using Gang.Serialization;
+using Gang.Events;
+using System;
 using System.Linq;
-using System.Net.WebSockets;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 
 namespace Gang
 {
-
     public class GangHandler :
         IGangHandler
     {
-        static object lockObject = new object();
-        readonly ISerializationService _serializer;
-
-        GangCollection _gangs;
+        readonly GangCollection _gangs;
+        readonly Subject<GangEvent> _events;
 
         public GangHandler(
-            ISerializationService serializer,
-            GangCollection gangs)
+            GangCollection gangs
+            )
         {
-            _serializer = serializer;
             _gangs = gangs;
+            _events = new Subject<GangEvent>();
         }
 
-        Gang IGangHandler.GangById(
+        IObservable<GangEvent> IGangHandler.Events => _events;
+
+        GangMemberCollection IGangHandler.GangById(
             string gangId)
         {
             return _gangs[gangId];
@@ -32,48 +32,61 @@ namespace Gang
         async Task IGangHandler.HandleAsync(
             GangParameters parameters, IGangMember gangMember)
         {
-            _gangs.AddMemberToGang(parameters.GangId, gangMember);
-
             var gang = _gangs[parameters.GangId];
-            await gangMember.SendAsync(
-                gang.HostMember == gangMember ? GangMessageTypes.Host : GangMessageTypes.Member,
-                gangMember.Id);
 
-            try
+            gang = _gangs.AddMemberToGang(
+               parameters.GangId, gangMember,
+               _ => _events.OnNext(new GangAddedEvent(parameters.GangId)));
+
+            if (gang.HostMember == gangMember)
             {
-                while (gangMember.IsConnected)
+                await gangMember.SendAsync(GangMessageTypes.Host, gangMember.Id);
+            }
+            else
+            {
+                await gangMember.SendAsync(GangMessageTypes.Member, gangMember.Id);
+                await gang.HostMember.SendAsync(GangMessageTypes.Connect, gangMember.Id);
+            }
+
+            _events.OnNext(new GangMemberAddedEvent(parameters.GangId, gangMember));
+
+            await gangMember.ConnectAsync(async data =>
                 {
-                    var data = await gangMember.ReceiveAsync();
-                    if (data != null)
-                    {
-                        gang = _gangs[parameters.GangId];
-                        if (gangMember == gang.HostMember)
-                        {
-                            var tasks = gang.OtherMembers
-                                .Select(member => member
-                                    .SendAsync(GangMessageTypes.State, data))
-                                .ToArray();
+                    if (data?.Length == 0) return;
 
-                            await Task.WhenAll(tasks);
-                        }
-                        else
-                        {
-                            await gang.HostMember
-                                .SendAsync(GangMessageTypes.Command, data);
-                        }
+                    var gang = _gangs[parameters.GangId];
+                    if (gangMember == gang.HostMember)
+                    {
+                        var tasks = gang.OtherMembers
+                            .Select(member => member
+                                .SendAsync(GangMessageTypes.State, data))
+                            .ToArray();
+
+                        await Task.WhenAll(tasks);
                     }
-                }
-            }
-            catch (WebSocketException)
-            {
-            }
+                    else
+                    {
+                        await gang.HostMember
+                            .SendAsync(GangMessageTypes.Command, data, gangMember.Id);
+                    }
+
+                    _events.OnNext(new GangMemberDataEvent(parameters.GangId, gangMember, data));
+                });
 
             _gangs.RemoveMemberFromGang(parameters.GangId, gangMember);
+
+            await gangMember.DisconnectAsync();
 
             gang = _gangs[parameters.GangId];
             if (gang != null)
                 await gang.HostMember
                     .SendAsync(GangMessageTypes.Disconnect, gangMember.Id);
+
+            _events.OnNext(new GangMemberRemovedEvent(parameters.GangId, gangMember));
+        }
+
+        void IDisposable.Dispose()
+        {
         }
     }
 }

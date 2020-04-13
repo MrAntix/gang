@@ -1,8 +1,8 @@
 ﻿using Gang.Tasks;
 using System;
 using System.IO;
+using System.Net.Sockets;
 using System.Net.WebSockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,41 +13,54 @@ namespace Gang.WebSockets
         readonly TaskQueue _sendQueue;
         readonly WebSocket _webSocket;
         readonly ArraySegment<byte> _buffer;
-        readonly byte[] _id;
 
         public WebSocketGangMember(
+            byte[] id,
             WebSocket webSocket)
         {
+            Id = id;
             _webSocket = webSocket;
-
             _sendQueue = new TaskQueue();
             _buffer = new ArraySegment<byte>(new byte[1024 * 4]);
-            _id = Encoding.UTF8.GetBytes($"{Guid.NewGuid():N}");
         }
 
-        byte[] IGangMember.Id { get { return _id; } }
-
-        bool IGangMember.IsConnected => _webSocket.State == WebSocketState.Open;
-
-        async Task<byte[]> IGangMember.ReceiveAsync()
+        async Task DisconnectAsync(string reason = "disconnected")
         {
-            var data = new MemoryStream();
-            var result = default(WebSocketReceiveResult);
+            if (_webSocket.State == WebSocketState.Open)
+                await _webSocket.CloseAsync(
+                    WebSocketCloseStatus.NormalClosure, reason, CancellationToken.None);
+        }
+
+        public byte[] Id { get; }
+
+        async Task IGangMember.ConnectAsync(Func<byte[], Task> onReceiveAsync)
+        {
             do
             {
-                result = await _webSocket
-                   .ReceiveAsync(_buffer, CancellationToken.None);
+                using var data = new MemoryStream();
+                WebSocketReceiveResult result;
+                do
+                {
+                    result = await _webSocket
+                       .ReceiveAsync(_buffer, CancellationToken.None);
 
-                if (result.MessageType != WebSocketMessageType.Binary) return null;
+                    if (result.MessageType != WebSocketMessageType.Binary) break;
 
-                await data.WriteAsync(_buffer.Array, 0, result.Count);
+                    await data.WriteAsync(_buffer.Array, 0, result.Count);
 
-            } while (!result.EndOfMessage);
+                } while (!result.EndOfMessage);
 
-            return data.ToArray();
+                await onReceiveAsync(data.ToArray());
+
+            } while (_webSocket.State == WebSocketState.Open);
         }
 
-        async Task IGangMember.SendAsync(GangMessageTypes type, byte[] data)
+        async Task IGangMember.DisconnectAsync(string reason)
+        {
+            await DisconnectAsync(reason);
+        }
+
+        async Task IGangMember.SendAsync(GangMessageTypes type, byte[] data, byte[] memberId)
         {
             await _sendQueue.Enqueue(async () =>
             {
@@ -70,9 +83,10 @@ namespace Gang.WebSockets
             });
         }
 
-        async Task IGangMember.DisconnectAsync(string reason)
+        void IDisposable.Dispose()
         {
-            await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, reason, CancellationToken.None);
+            DisconnectAsync("disposed").GetAwaiter().GetResult();
+            _webSocket.Dispose();
         }
     }
 }
