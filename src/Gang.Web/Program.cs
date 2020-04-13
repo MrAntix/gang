@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Gang.Web
 {
@@ -12,6 +13,10 @@ namespace Gang.Web
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .ConfigureLogging((context, builder) =>
+                {
+                    builder.AddFile();
+                })
                 .UseStartup<Startup>()
                 .Build();
     }

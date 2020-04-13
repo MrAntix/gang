@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Zero.Logging.File" Version="2.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Gang.WebSockets\Gang.WebSockets.csproj" />
   </ItemGroup>
 
