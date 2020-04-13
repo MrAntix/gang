@@ -1,6 +1,6 @@
 :root {
-  --padding-unit: 4px;
-  --callout-size: 5px;
+  --padding-unit: .5em;
+  --callout-size: 1em;
   --callout-border-radius: 15px;
 
   --color: #333;

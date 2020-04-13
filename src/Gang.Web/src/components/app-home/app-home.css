@@ -1,6 +1,5 @@
 :host {
   display: flex;
-  flex-flow: row-reverse;
   flex-wrap: wrap;
   max-width: 50em;
   margin: 0 auto;
@@ -140,14 +139,14 @@ li {
 }
 
 .messages-list .message:not(.current-user) .message-text::after {
-  top: calc(.9em - var(--callout-size));
-  left: calc(-2 * var(--callout-size) + 1px);
+  top:  calc(var(--callout-border-radius) - .75  *var(--callout-size));
+  left: calc(-1.5 * var(--callout-size));
   border-right-color: var(--user-color);
 }
 
 .messages-list .message.current-user .message-text::after {
-  right: calc(.9em - var(--callout-size));
-  bottom: calc(-2 * var(--callout-size));
+  right:  calc(var(--callout-border-radius) - .75  *var(--callout-size));
+  bottom: calc(-1.5 * var(--callout-size));
   border-top-color: var(--current-user-color);
 }
 

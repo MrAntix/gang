@@ -51,8 +51,41 @@ export class AppHome {
 
   render() {
     return <Host>
+      {!!this.currentUser?.name &&
+        <div class="section messages">
+          <ol class="messages-list" ref={el => this.messagesList = el}>
+            {this.messages?.map(message => <li class={{
+              "message": true,
+              "current-user": message.userId === this.currentUser?.id
+            }}>
+              <div class="row detail">
+                <span class="text user-name">{this.userNames[message.userId]}</span>
+                <div class="text message-text">{message.text}</div>
+              </div>
+              <div class="row info">
+                <span class="text message-on">{formatDate(message.on)}</span>
+              </div>
+            </li>)}
+          </ol>
+
+          <form class="row"
+            onSubmit={e => this.addMessage(e, this.newMessageText)}
+          >
+            <textarea class="input message"
+              rows={2} placeholder="(type the message to send here)"
+              value={this.newMessageText}
+              onInput={(e: any) => this.newMessageText = e.target.value}
+              onKeyPress={e => e.key === 'Enter' && !e.shiftKey && this.addMessage(e, this.newMessageText)}
+            />
+            <button class="button"
+              disabled={!this.newMessageText}
+            >Send</button>
+          </form>
+        </div>
+      }
       <div class="section users">
         <ol>
+          <li class="heading">You</li>
           <li>
             <input class="input user-name"
               placeholder="(set your name)"
@@ -68,37 +101,6 @@ export class AppHome {
             }}
             >{user?.name || '(anon)'}</li>)}
         </ol>
-      </div>
-
-      <div class="section messages">
-        <ol class="messages-list" ref={el => this.messagesList = el}>
-          {this.messages?.map(message => <li class={{
-            "message": true,
-            "current-user": message.userId === this.currentUser?.id
-          }}>
-            <div class="row detail">
-              <span class="text user-name">{this.userNames[message.userId]}</span>
-              <div class="text message-text">{message.text}</div>
-            </div>
-            <div class="row info">
-              <span class="text message-on">{formatDate(message.on)}</span>
-            </div>
-          </li>)}
-        </ol>
-
-        <form class="row"
-          onSubmit={e => this.addMessage(e, this.newMessageText)}
-        >
-          <textarea class="input message"
-            rows={2} placeholder="(type the message to send here)"
-            value={this.newMessageText}
-            onInput={(e: any) => this.newMessageText = e.target.value}
-            onKeyPress={e => e.key === 'Enter' && !e.shiftKey && this.addMessage(e, this.newMessageText)}
-          />
-          <button class="button"
-            disabled={!this.newMessageText}
-          >Send</button>
-        </form>
       </div>
     </Host>
   }
