@@ -95,9 +95,17 @@ namespace Gang.Web.Services
 
             _state = state;
 
-            await _sendAsync(Encoding.UTF8.GetBytes(
-                _serialization.Serialize(state)
-            ));
+            await SendAsync(state);
+        }
+
+        async Task SendAsync(object data,
+            GangMessageTypes? type = null, IEnumerable<byte[]> memberIds = null)
+        {
+            await _sendAsync(
+                Encoding.UTF8.GetBytes(_serialization.Serialize(data)),
+                type,
+                memberIds
+                );
         }
 
         async Task UpdateUser(UpdateUserNameCommand command, GangMessageAudit _)
@@ -114,18 +122,37 @@ namespace Gang.Web.Services
         {
             var user = _state.Users.FirstOrDefault(u => u.Id == command.Id);
             if (user == null)
+            {
+                user = new WebGangUser(command.Id, null, command.IsOnline);
                 await SetState(
                     new WebGangHostState(
-                  _state.Users.Add(new WebGangUser(command.Id, null, command.IsOnline)),
-                  _state.Messages
-                ));
+                        _state.Users.Add(user),
+                        _state.Messages
+                    ));
 
+                SendWelcome(Encoding.UTF8.GetBytes(user.Id));
+            }
             else
                 await SetState(
                     new WebGangHostState(
                       _state.Users.Replace(user, user.Update(command)),
                       _state.Messages
                     ));
+        }
+
+        async void SendWelcome(byte[] memberId)
+        {
+            await Task.Delay(5000);
+
+            await SendAsync(new
+            {
+                PrivateMessages = new[] {
+                            new WebGangMessage(
+                                "Welcome", DateTimeOffset.Now, null,
+                                "Hello and welcome")
+                              }
+            },
+            GangMessageTypes.State, new[] { memberId });
         }
 
         async Task AddMessage(AddMessageCommand command, GangMessageAudit audit)

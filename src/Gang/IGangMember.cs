@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Gang
@@ -16,5 +17,5 @@ namespace Gang
     public delegate Task GangMemberSendAsync(
         byte[] data,
         GangMessageTypes? type = null,
-        byte[][] messageIds = null);
+        IEnumerable<byte[]> messageIds = null);
 }

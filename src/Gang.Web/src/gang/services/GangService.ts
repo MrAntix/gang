@@ -135,7 +135,10 @@ export class GangService {
             break;
           case "S":
             var state = JSON.parse(messageData);
-            this.stateSubject.next(state);
+            this.stateSubject.next({
+              ...this.stateSubject.value,
+              ...state
+            });
             break;
         }
       };
@@ -167,11 +170,11 @@ export class GangService {
         this.retrying = 0;
       }
     }).bind(this);
-    
+
     retryConnect();
   }
 
-  disconnect(){
+  disconnect() {
     this.webSocket.close();
   }
 

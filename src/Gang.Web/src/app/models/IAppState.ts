@@ -4,4 +4,5 @@ import { IAppMessage } from './IAppMessage';
 export interface IAppState {
   users: IAppUser[];
   messages: IAppMessage[];
+  privateMessages: IAppMessage[];
 }

@@ -36,7 +36,9 @@ export class AppHome {
     console.log('app-home', { state })
 
     this.users = sortUsers(state.users || []);
-    this.messages = state.messages || [];
+    this.messages = sortMessages(
+      (state.messages || []).concat(state.privateMessages || [])
+    );
 
     this.currentUser = this.users
       .find(u => u.id === this.service.memberId)
@@ -61,7 +63,7 @@ export class AppHome {
               "current-user": message.userId === this.currentUser?.id
             }}>
               <div class="row detail">
-                <span class="text user-name">{this.userNames[message.userId]}</span>
+                <span class="text user-name">{this.userNames[message.userId] || 'Host Bot'}</span>
                 <div class="text message-text">{message.text}</div>
               </div>
               <div class="row info">
@@ -165,11 +167,18 @@ function formatDate(date: string) {
   return messageDateFormatter(new Date(date));
 }
 
-function sortUsers(users: IAppUser[]): IAppUser[] {
-  const sorted = [...users];
+function sortUsers(items: IAppUser[]): IAppUser[] {
+  const sorted = [...items];
 
   sorted.sort((a, b) => a.isOnline && b.isOnline
     ? a.name?.localeCompare(b.name)
     : a.isOnline ? -1 : 1);
+  return sorted;
+}
+
+function sortMessages(items: IAppMessage[]): IAppMessage[] {
+  const sorted = [...items];
+
+  sorted.sort((a, b) => new Date(a.on).getTime() - new Date(b.on).getTime());
   return sorted;
 }
