@@ -1,4 +1,4 @@
-﻿using Gang.Tasks;
+using Gang.Tasks;
 using System;
 using System.IO;
 using System.Net.WebSockets;
@@ -32,7 +32,9 @@ namespace Gang.WebSockets
 
         public byte[] Id { get; }
 
-        async Task IGangMember.ConnectAsync(Func<byte[], Task> onReceiveAsync)
+        async Task IGangMember.ConnectAsync(
+            string gangId,
+            GangMemberSendAsync sendAsync)
         {
             do
             {
@@ -49,7 +51,7 @@ namespace Gang.WebSockets
 
                 } while (!result.EndOfMessage);
 
-                await onReceiveAsync(data.ToArray());
+                await sendAsync(data.ToArray());
 
             } while (_webSocket.State == WebSocketState.Open);
         }
@@ -59,7 +61,7 @@ namespace Gang.WebSockets
             await DisconnectAsync(reason);
         }
 
-        async Task IGangMember.SendAsync(GangMessageTypes type, byte[] data, byte[] memberId)
+        async Task IGangMember.SendAsync(GangMessageTypes type, byte[] data, byte[] _)
         {
             await _sendQueue.Enqueue(async () =>
             {

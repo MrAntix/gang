@@ -1,4 +1,4 @@
-﻿using Gang.Contracts;
+using Gang.Contracts;
 using Gang.Events;
 using System;
 using System.Linq;
@@ -50,22 +50,34 @@ namespace Gang
 
             _events.OnNext(new GangMemberAddedEvent(parameters.GangId, gangMember));
 
-            await gangMember.ConnectAsync(async data =>
+            await gangMember.ConnectAsync(parameters.GangId,
+                async (data, type, memberIds) =>
                 {
                     if (data?.Length == 0) return;
 
                     var gang = _gangs[parameters.GangId];
                     if (gangMember == gang.HostMember)
                     {
-                        var tasks = gang.OtherMembers
+                        var members = memberIds == null
+                            ? gang.OtherMembers
+                            : gang.OtherMembers
+                                .Where(m => memberIds.Any(mId => mId.SequenceEqual(m.Id)));
+
+                        var tasks = members
                             .Select(member => member
-                                .SendAsync(GangMessageTypes.State, data))
+                                .SendAsync(type ?? GangMessageTypes.State, data))
                             .ToArray();
 
                         await Task.WhenAll(tasks);
                     }
                     else
                     {
+                        if (type != null && type != GangMessageTypes.Command)
+                        {
+                            await gangMember.DisconnectAsync("non-command");
+                            return;
+                        }
+
                         await gang.HostMember
                             .SendAsync(GangMessageTypes.Command, data, gangMember.Id);
                     }

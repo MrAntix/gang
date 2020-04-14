@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,7 +21,7 @@ namespace Gang.Tests
 
         public byte[] Id { get; }
 
-        public Action<Func<byte[], Task>> OnConnect { get; set; }
+        public Action<GangMemberSendAsync> OnConnect { get; set; }
 
         void Disconnect()
         {
@@ -29,9 +29,9 @@ namespace Gang.Tests
                 _connected.SetResult(true);
         }
 
-        async Task IGangMember.ConnectAsync(Func<byte[], Task> onReceiveAsync)
+        async Task IGangMember.ConnectAsync(string gangId, GangMemberSendAsync sendAsync)
         {
-            OnConnect?.Invoke(onReceiveAsync);
+            OnConnect?.Invoke(sendAsync);
             await _connected.Task;
         }
 

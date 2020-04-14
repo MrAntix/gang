@@ -29,34 +29,23 @@ export class AppRoot {
 
     if (document.hidden)
       this.service.disconnect();
-    else
+    else if(!this.service.isConnected)
       this.service.connect('ws', 'demo', this.token);
   }
 
   componentWillLoad() {
     this.onResize();
-    this.onVisibilitychange();
 
     this.service.connect('ws', 'demo', this.token);
     mapGangEvents(this.service, this);
   }
 
-  onState(state: IAppState) {
-    console.log('app-root', { state })
-  }
-
-  onCommand(command: any) {
-    console.log('app-root', { command })
-  }
-
-  onMemberConnected(memberId: any) {
-    console.log('app-root', { memberId });
+  onMemberConnected() {
 
     this.isConnected = true;
   }
 
-  onMemberDisconnected(memberId: any) {
-    console.log('app-root', { memberId });
+  onMemberDisconnected() {
 
     this.isConnected = false;
   }

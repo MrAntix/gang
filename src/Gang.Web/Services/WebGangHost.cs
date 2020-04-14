@@ -15,13 +15,16 @@ namespace Gang.Web.Services
     {
         readonly TaskCompletionSource<bool> _connected;
         readonly IGangSerializationService _serialization;
+        readonly IGangHandler _handler;
         readonly IImmutableDictionary<string, Func<JObject, GangMessageAudit, Task>> _handlers;
 
         public WebGangHost(
-            IGangSerializationService serialization)
+            IGangSerializationService serialization,
+            IGangHandler handler)
         {
             _connected = new TaskCompletionSource<bool>();
             _serialization = serialization;
+            _handler = handler;
             _handlers = new Dictionary<string, Func<JObject, GangMessageAudit, Task>>{
                 { "updateUser", (o, a)=> UpdateUser(o.ToObject<UpdateUserNameCommand>(), a) },
                 { "addMessage", (o, a)=> AddMessage(o.ToObject<AddMessageCommand>(), a) }
@@ -30,10 +33,14 @@ namespace Gang.Web.Services
 
         public byte[] Id { get; } = Encoding.UTF8.GetBytes("HOST");
 
-        Func<byte[], Task> _broadcastAsync;
-        async Task IGangMember.ConnectAsync(Func<byte[], Task> broadcastAsync)
+        string _gangId;
+        GangMemberSendAsync _sendAsync;
+        async Task IGangMember.ConnectAsync(
+            string gangId,
+            GangMemberSendAsync sendAsync)
         {
-            _broadcastAsync = broadcastAsync;
+            _gangId = gangId;
+            _sendAsync = sendAsync;
             await _connected.Task;
         }
 
@@ -88,7 +95,7 @@ namespace Gang.Web.Services
 
             _state = state;
 
-            await _broadcastAsync(Encoding.UTF8.GetBytes(
+            await _sendAsync(Encoding.UTF8.GetBytes(
                 _serialization.Serialize(state)
             ));
         }

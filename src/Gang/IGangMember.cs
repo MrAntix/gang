@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 
 namespace Gang
@@ -7,9 +7,14 @@ namespace Gang
     {
         byte[] Id { get; }
 
-        Task ConnectAsync(Func<byte[], Task> onReceive);
+        Task ConnectAsync(string gangId, GangMemberSendAsync sendAsync);
         Task DisconnectAsync(string reason = "disconnected");
 
         Task SendAsync(GangMessageTypes type, byte[] data, byte[] memberId = null);
     }
+
+    public delegate Task GangMemberSendAsync(
+        byte[] data,
+        GangMessageTypes? type = null,
+        byte[][] messageIds = null);
 }

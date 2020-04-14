@@ -38,20 +38,17 @@ export class AppHome {
     this.users = sortUsers(state.users || []);
     this.messages = state.messages || [];
 
-    this.currentUser = this.users.find(
-      u => u.id === this.service.memberId
-    );
+    this.currentUser = this.users
+      .find(u => u.id === this.service.memberId)
+      || {
+      id: this.service.memberId,
+      name: GangStore.get('name'),
+      isOnline: false
+    };
     this.userNames = this.users.reduce((map, user) => {
       map[user.id] = user.name;
       return map;
     }, {});
-  }
-
-  onMemberConnected(id: string) {
-    this.updateUser({
-      id,
-      name: this.currentUser?.name || GangStore.get('name')
-    })
   }
 
   render() {
@@ -148,9 +145,9 @@ export class AppHome {
   }
 
   scrollToLastMessage() {
-    const lastMessage = this.messagesList.querySelector('li:last-child');
-    lastMessage && lastMessage
-      .scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    this.messagesList
+      ?.querySelector('li:last-child')
+      ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 }
 
