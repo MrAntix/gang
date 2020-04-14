@@ -2,7 +2,6 @@ import { Component, h, Listen, State } from '@stencil/core';
 
 import { GangContext } from '../../gang';
 import { mapGangEvents, GangStore, getGangId } from '../../gang/services';
-import { IAppState } from '../../app/models';
 
 @Component({
   tag: 'app-root',
