@@ -1,4 +1,4 @@
-﻿using Gang.Contracts;
+using Gang.Contracts;
 using Gang.Events;
 using System;
 using System.Reactive.Linq;
@@ -153,7 +153,8 @@ namespace Gang.Tests
             GangCollection gangs = null)
         {
             return new GangHandler(
-                gangs ?? new GangCollection());
+                gangs ?? new GangCollection()
+                );
         }
     }
 }

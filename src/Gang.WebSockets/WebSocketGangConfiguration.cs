@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -27,14 +28,38 @@ namespace Gang.WebSockets
             string path
             )
         {
-            app.UseWebSockets();
-            app.Map(path, _ =>
-            {
-                var serializer = app.ApplicationServices.GetRequiredService<IGangSerializationService>();
-                var handler = app.ApplicationServices.GetRequiredService<IGangHandler>();
-                var authenticateAsync = app.ApplicationServices.GetRequiredService<Func<GangParameters, Task<byte[]>>>();
+            var handler = app.ApplicationServices.GetRequiredService<IGangHandler>();
+            var serializer = app.ApplicationServices.GetRequiredService<IGangSerializationService>();
+            var authenticateAsync = app.ApplicationServices.GetRequiredService<Func<GangParameters, Task<byte[]>>>();
+            var eventHandlers = app.ApplicationServices.GetRequiredService<IEnumerable<IGangEventHandler>>();
 
-                app
+            if (eventHandlers?.Any() ?? false)
+            {
+                var eventHandlersByType = eventHandlers.Aggregate(
+                    new Dictionary<Type, List<IGangEventHandler>>(),
+                    (map, handler) =>
+                    {
+                        if (!map.ContainsKey(handler.EventType))
+                            map.Add(handler.EventType, new List<IGangEventHandler>());
+                        map[handler.EventType].Add(handler);
+
+                        return map;
+                    });
+
+                handler.Events.Subscribe(e =>
+                {
+                    var eventType = e.GetType();
+                    if (!eventHandlersByType.ContainsKey(eventType)) return;
+
+                    foreach (var handler in eventHandlersByType[eventType])
+                        handler.HandleAsync(e);
+                });
+            }
+
+            app.UseWebSockets();
+            app.Map(path, subApp =>
+            {
+                subApp
                     .Use(async (context, next) =>
                     {
                         if (!context.WebSockets.IsWebSocketRequest)
@@ -55,7 +80,6 @@ namespace Gang.WebSockets
                             await gangMember.DisconnectAsync("denied");
 
                     });
-
             });
 
             return app;

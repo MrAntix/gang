@@ -17,7 +17,8 @@ namespace Gang.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddWebSocketGangs()
-                .AddTransient<WebGangHost>()
+                .AddGangFactory<WebGangHost>()
+                .AddGangEventHandler<WebGangAddedEventHandler>()
                 .AddGangAuthenticationHandler<WebGangAuthenticationHandler>();
         }
 
@@ -33,20 +34,6 @@ namespace Gang.Web
                 .UseStaticFiles()
                 .UseWebSocketGangs("/ws")
                 .Map("/disconnect", HandleDisconnect);
-
-            var gangHandler = app.ApplicationServices
-                .GetRequiredService<IGangHandler>();
-            gangHandler.Events
-                .OfType<GangAddedEvent>()
-                .Subscribe(async (e) =>
-                {
-                    Console.WriteLine("GangAddedEvent");
-
-                    var host = app.ApplicationServices.GetRequiredService<WebGangHost>();
-                    await gangHandler.HandleAsync(
-                        new GangParameters(e.GangId, null),
-                        host);
-                });
         }
 
         void HandleDisconnect(
