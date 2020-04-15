@@ -32,6 +32,11 @@ namespace Gang
         async Task IGangHandler.HandleAsync(
             GangParameters parameters, IGangMember gangMember)
         {
+            if (parameters is null)            
+                throw new ArgumentNullException(nameof(parameters));       
+            if (gangMember is null)            
+                throw new ArgumentNullException(nameof(gangMember));            
+
             var gang = _gangs[parameters.GangId];
 
             gang = _gangs.AddMemberToGang(
