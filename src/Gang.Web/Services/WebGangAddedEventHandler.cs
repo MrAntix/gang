@@ -1,4 +1,4 @@
-﻿using Gang.Contracts;
+using Gang.Contracts;
 using Gang.Events;
 using System;
 using System.Threading.Tasks;
@@ -18,7 +18,7 @@ namespace Gang.Web.Services
             _getHost = getHost;
         }
 
-        public override async Task HandleAsync(GangAddedEvent e)
+        protected async override Task HandleAsync(GangAddedEvent e)
         {
             var host = _getHost();
 

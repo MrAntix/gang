@@ -1,5 +1,4 @@
-﻿using Gang.Events;
-using System;
+using Gang.Events;
 using System.Threading.Tasks;
 
 namespace Gang
@@ -7,13 +6,11 @@ namespace Gang
     public abstract class GangEventHandlerBase<TEvent> : IGangEventHandler
         where TEvent : GangEvent
     {
-        public Type EventType { get; } = typeof(TEvent);
+        protected abstract Task HandleAsync(TEvent e);
 
         Task IGangEventHandler.HandleAsync(GangEvent e)
         {
             return HandleAsync((TEvent)e);
         }
-
-        public abstract Task HandleAsync(TEvent e);
     }
 }

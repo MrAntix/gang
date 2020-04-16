@@ -2,6 +2,8 @@ using Gang.Contracts;
 using Gang.Events;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,6 +18,19 @@ namespace Gang
             services.AddTransient<GangCollection>();
             services.AddSingleton<Func<GangParameters, Task<byte[]>>>(
                 _ => Task.FromResult(Encoding.UTF8.GetBytes($"{Guid.NewGuid():N}"))
+                );
+            services.AddSingleton(
+                sp => sp.GetServices<Tuple<Type, Func<IGangEventHandler>>>()
+                    .Aggregate(new Dictionary<Type, List<Func<IGangEventHandler>>>(),
+                    (p, t) =>
+                    {
+                        if (!p.ContainsKey(t.Item1))
+                        {
+                            p.Add(t.Item1, new List<Func<IGangEventHandler>>());
+                        }
+                        p[t.Item1].Add(t.Item2);
+                        return p;
+                    })
                 );
 
             return services;
@@ -41,11 +56,14 @@ namespace Gang
             return services;
         }
 
-        public static IServiceCollection AddGangEventHandler<T>(
+        public static IServiceCollection AddGangEventHandler<TEvent, T>(
             this IServiceCollection services)
-            where T : class, IGangEventHandler
+            where TEvent : GangEvent
+            where T : GangEventHandlerBase<TEvent>
         {
-            services.AddTransient<IGangEventHandler, T>();
+            services.AddTransient<T>();
+            services.AddTransient(typeof(Tuple<Type, Func<IGangEventHandler>>),
+                sp => Tuple.Create<Type, Func<IGangEventHandler>>(typeof(TEvent), () => sp.GetRequiredService<T>()));
 
             return services;
         }

@@ -31,28 +31,17 @@ namespace Gang.WebSockets
             var handler = app.ApplicationServices.GetRequiredService<IGangHandler>();
             var serializer = app.ApplicationServices.GetRequiredService<IGangSerializationService>();
             var authenticateAsync = app.ApplicationServices.GetRequiredService<Func<GangParameters, Task<byte[]>>>();
-            var eventHandlers = app.ApplicationServices.GetRequiredService<IEnumerable<IGangEventHandler>>();
+            var eventHandlerFactories = app.ApplicationServices.GetRequiredService<Dictionary<Type, List<Func<IGangEventHandler>>>>();
 
-            if (eventHandlers?.Any() ?? false)
+            if (eventHandlerFactories?.Any() ?? false)
             {
-                var eventHandlersByType = eventHandlers.Aggregate(
-                    new Dictionary<Type, List<IGangEventHandler>>(),
-                    (map, handler) =>
-                    {
-                        if (!map.ContainsKey(handler.EventType))
-                            map.Add(handler.EventType, new List<IGangEventHandler>());
-                        map[handler.EventType].Add(handler);
-
-                        return map;
-                    });
-
                 handler.Events.Subscribe(e =>
                 {
                     var eventType = e.GetType();
-                    if (!eventHandlersByType.ContainsKey(eventType)) return;
+                    if (!eventHandlerFactories.ContainsKey(eventType)) return;
 
-                    foreach (var handler in eventHandlersByType[eventType])
-                        handler.HandleAsync(e);
+                    foreach (var factory in eventHandlerFactories[eventType])
+                        factory().HandleAsync(e);
                 });
             }
 
