@@ -59,7 +59,7 @@ namespace Gang.Web.Services
             switch (type)
             {
                 case GangMessageTypes.Command:
-                    var wrapper = _serialization.Deserialize<CommandWrapper>(message);
+                    var wrapper = _serialization.Deserialize<CommandWrapper>(data);
                     await _handlers[wrapper.Type](wrapper.Command, audit);
 
                     break;
@@ -102,7 +102,7 @@ namespace Gang.Web.Services
             GangMessageTypes? type = null, IEnumerable<byte[]> memberIds = null)
         {
             await _sendAsync(
-                Encoding.UTF8.GetBytes(_serialization.Serialize(data)),
+                _serialization.Serialize(data),
                 type,
                 memberIds
                 );

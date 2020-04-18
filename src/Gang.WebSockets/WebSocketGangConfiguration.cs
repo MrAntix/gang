@@ -29,7 +29,6 @@ namespace Gang.WebSockets
             )
         {
             var handler = app.ApplicationServices.GetRequiredService<IGangHandler>();
-            var serializer = app.ApplicationServices.GetRequiredService<IGangSerializationService>();
             var authenticateAsync = app.ApplicationServices.GetRequiredService<Func<GangParameters, Task<byte[]>>>();
             var eventHandlerFactories = app.ApplicationServices.GetRequiredService<Dictionary<Type, List<Func<IGangEventHandler>>>>();
 

@@ -1,9 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Gang
 {
+
     public interface IGangMember : IDisposable
     {
         byte[] Id { get; }
@@ -13,9 +13,4 @@ namespace Gang
 
         Task SendAsync(GangMessageTypes type, byte[] data, byte[] memberId = null);
     }
-
-    public delegate Task GangMemberSendAsync(
-        byte[] data,
-        GangMessageTypes? type = null,
-        IEnumerable<byte[]> messageIds = null);
 }

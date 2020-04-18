@@ -1,7 +1,8 @@
-﻿using Gang.Serialization;
+using Gang.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
+using System.Text;
 
 namespace Gang.WebSockets.Serialization
 {
@@ -20,15 +21,18 @@ namespace Gang.WebSockets.Serialization
         }
 
         object IGangSerializationService
-            .Deserialize(string value, Type type)
+            .Deserialize(byte[] data, Type type)
         {
+            var value = Encoding.UTF8.GetString(data);
             return JsonConvert.DeserializeObject(value, type, _jsonSerializerSettings);
         }
 
-        string IGangSerializationService
+        byte[] IGangSerializationService
             .Serialize(object value)
         {
-            return JsonConvert.SerializeObject(value, _jsonSerializerSettings);
+            return Encoding.UTF8.GetBytes(
+                JsonConvert.SerializeObject(value, _jsonSerializerSettings)
+                );
         }
     }
 }
