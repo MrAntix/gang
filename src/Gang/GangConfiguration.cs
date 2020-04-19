@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Gang
@@ -17,7 +16,7 @@ namespace Gang
             services.AddSingleton<IGangHandler, GangHandler>();
             services.AddTransient<GangCollection>();
             services.AddSingleton<Func<GangParameters, Task<byte[]>>>(
-                _ => Task.FromResult(Encoding.UTF8.GetBytes($"{Guid.NewGuid():N}"))
+                _ => Task.FromResult($"{Guid.NewGuid():N}".GangToBytes())
                 );
             services.AddSingleton(
                 sp => sp.GetServices<Tuple<Type, Func<IGangEventHandler>>>()

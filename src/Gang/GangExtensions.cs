@@ -11,7 +11,7 @@ namespace Gang
             string id)
         {
             return gang.MemberById(
-                Encoding.UTF8.GetBytes(id)
+                GangToBytes(id)
                 );
         }
 
@@ -22,5 +22,18 @@ namespace Gang
         {
             return list.FirstOrDefault(item => item.Id.SequenceEqual(id));
         }
+
+        public static string GangToString(
+            this byte[] value)
+        {
+            return Encoding.UTF8.GetString(value);
+        }
+
+        public static byte[] GangToBytes(
+            this string value)
+        {
+            return Encoding.UTF8.GetBytes(value);
+        }
+
     }
 }

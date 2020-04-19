@@ -30,9 +30,9 @@ namespace Gang.WebSockets.Serialization
         byte[] IGangSerializationService
             .Serialize(object value)
         {
-            return Encoding.UTF8.GetBytes(
+            return 
                 JsonConvert.SerializeObject(value, _jsonSerializerSettings)
-                );
+                .GangToBytes();
         }
     }
 }
