@@ -1,6 +1,8 @@
 using Gang.Contracts;
 using Gang.Events;
+using Gang.Serialization;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -11,13 +13,16 @@ namespace Gang
         IGangHandler
     {
         readonly GangCollection _gangs;
+        readonly IGangSerializationService _serializer;
         readonly Subject<GangEvent> _events;
 
         public GangHandler(
-            GangCollection gangs
+            GangCollection gangs,
+            IGangSerializationService serializer
             )
         {
             _gangs = gangs;
+            _serializer = serializer;
             _events = new Subject<GangEvent>();
         }
 
@@ -55,7 +60,8 @@ namespace Gang
 
             _events.OnNext(new GangMemberAddedEvent(parameters.GangId, gangMember));
 
-            await gangMember.ConnectAsync(parameters.GangId,
+            var controller = new GangController(
+                parameters.GangId, this,
                 async (data, type, memberIds) =>
                 {
                     if (data?.Length == 0) return;
@@ -77,18 +83,16 @@ namespace Gang
                     }
                     else
                     {
-                        if (type != null && type != GangMessageTypes.Command)
-                        {
-                            await gangMember.DisconnectAsync("non-command");
-                            return;
-                        }
-
                         await gang.HostMember
                             .SendAsync(GangMessageTypes.Command, data, gangMember.Id);
                     }
 
                     _events.OnNext(new GangMemberDataEvent(parameters.GangId, gangMember, data));
-                });
+                },
+                _serializer
+                );
+
+            await gangMember.ConnectAndBlockAsync(controller);
 
             _gangs.RemoveMemberFromGang(parameters.GangId, gangMember);
 
@@ -104,6 +108,21 @@ namespace Gang
 
         void IDisposable.Dispose()
         {
+        }
+
+        public Task SendStateAsync<T>(T state, IEnumerable<byte[]> memberIds = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SendCommandAsync<T>(T state, IEnumerable<byte[]> memberIds = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DisconnectAsync<T>(byte[] memberId, string reason)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -12,10 +12,15 @@ import { IAppState, IAppUser, IAppMessage } from '../../app/models';
 export class AppHome {
 
   service = GangContext.service;
-  @State() messages: IAppMessage[] = [];
+
+  @State() state: IAppState = {
+    users: [],
+    messages: [],
+    privateMessages: []
+  }
+
   @State() newMessageText: string;
 
-  @State() users: IAppUser[] = [];
   @State() currentUser: IAppUser;
   @State() userNames: { [id: string]: string } = {};
 
@@ -35,19 +40,26 @@ export class AppHome {
   onState(state: IAppState) {
     console.log('app-home', { state })
 
-    this.users = sortUsers(state.users || []);
-    this.messages = sortMessages(
-      (state.messages || []).concat(state.privateMessages || [])
-    );
+    state = {
+      ...this.state,
+      ...state
+    }
 
-    this.currentUser = this.users
+    this.state = {
+      users: sortUsers(state.users || []),
+      messages : sortMessages(
+        (state.messages || []).concat(state.privateMessages || [])
+      )
+    }
+
+    this.currentUser = this.state.users
       .find(u => u.id === this.service.memberId)
       || {
       id: this.service.memberId,
       name: GangStore.get('name'),
       isOnline: false
     };
-    this.userNames = this.users.reduce((map, user) => {
+    this.userNames = this.state.users.reduce((map, user) => {
       map[user.id] = user.name;
       return map;
     }, {});
@@ -58,7 +70,7 @@ export class AppHome {
       {!!this.currentUser?.name &&
         <div class="section messages">
           <ol class="messages-list" ref={el => this.messagesList = el}>
-            {this.messages?.map(message => <li class={{
+            {this.state.messages?.map(message => <li class={{
               "message": true,
               "current-user": message.userId === this.currentUser?.id
             }}>
@@ -98,7 +110,7 @@ export class AppHome {
             />
           </li>
           <li class="heading">Other Users</li>
-          {this.users?.filter(u => u !== this.currentUser)
+          {this.state.users?.filter(u => u !== this.currentUser)
             .map(user => <li class={{
               "user-name other text": true,
               "is-online": user.isOnline
@@ -110,8 +122,8 @@ export class AppHome {
   }
 
   componentDidRender() {
-    if (this.messagesCount !== this.messages.length) {
-      this.messagesCount = this.messages.length;
+    if (this.messagesCount !== this.state.messages.length) {
+      this.messagesCount = this.state.messages.length;
       this.scrollToLastMessage();
     }
   }

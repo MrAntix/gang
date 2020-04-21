@@ -29,9 +29,9 @@ namespace Gang.Tests
                 _connected.SetResult(true);
         }
 
-        async Task IGangMember.ConnectAsync(string gangId, GangMemberSendAsync sendAsync)
+        async Task IGangMember.ConnectAndBlockAsync(IGangController controller)
         {
-            OnConnect?.Invoke(sendAsync);
+            OnConnect?.Invoke(controller.SendAsync);
             await _connected.Task;
         }
 

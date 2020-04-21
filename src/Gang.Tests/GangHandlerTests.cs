@@ -1,5 +1,6 @@
 using Gang.Contracts;
 using Gang.Events;
+using Gang.WebSockets.Serialization;
 using System;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -153,7 +154,8 @@ namespace Gang.Tests
             GangCollection gangs = null)
         {
             return new GangHandler(
-                gangs ?? new GangCollection()
+                gangs ?? new GangCollection(),
+                new WebSocketGangJsonSerializationService()
                 );
         }
     }

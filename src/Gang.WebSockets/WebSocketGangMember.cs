@@ -32,9 +32,8 @@ namespace Gang.WebSockets
 
         public byte[] Id { get; }
 
-        async Task IGangMember.ConnectAsync(
-            string gangId,
-            GangMemberSendAsync sendAsync)
+        async Task IGangMember.ConnectAndBlockAsync(
+            IGangController controller)
         {
             do
             {
@@ -51,7 +50,7 @@ namespace Gang.WebSockets
 
                 } while (!result.EndOfMessage);
 
-                await sendAsync(data.ToArray());
+                await controller.SendAsync(data.ToArray());
 
             } while (_webSocket.State == WebSocketState.Open);
         }

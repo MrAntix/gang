@@ -14,33 +14,28 @@ namespace Gang.Web.Services
     public class WebGangHost : IGangMember
     {
         readonly TaskCompletionSource<bool> _connected;
-        readonly IGangSerializationService _serialization;
-        readonly IGangHandler _handler;
         readonly IImmutableDictionary<string, Func<JObject, GangMessageAudit, Task>> _handlers;
+        readonly IGangSerializationService _serializer;
 
         public WebGangHost(
-            IGangSerializationService serialization,
-            IGangHandler handler)
+            IGangSerializationService serializer
+            )
         {
             _connected = new TaskCompletionSource<bool>();
-            _serialization = serialization;
-            _handler = handler;
             _handlers = new Dictionary<string, Func<JObject, GangMessageAudit, Task>>{
                 { "updateUser", (o, a)=> UpdateUser(o.ToObject<UpdateUserNameCommand>(), a) },
                 { "addMessage", (o, a)=> AddMessage(o.ToObject<AddMessageCommand>(), a) }
             }.ToImmutableDictionary();
+            _serializer = serializer;
         }
 
         public byte[] Id { get; } = Encoding.UTF8.GetBytes("HOST");
 
-        string _gangId;
-        GangMemberSendAsync _sendAsync;
-        async Task IGangMember.ConnectAsync(
-            string gangId,
-            GangMemberSendAsync sendAsync)
+        IGangController _controller;
+        async Task IGangMember.ConnectAndBlockAsync(
+            IGangController controller)
         {
-            _gangId = gangId;
-            _sendAsync = sendAsync;
+            _controller = controller;
             await _connected.Task;
         }
 
@@ -59,7 +54,7 @@ namespace Gang.Web.Services
             switch (type)
             {
                 case GangMessageTypes.Command:
-                    var wrapper = _serialization.Deserialize<CommandWrapper>(data);
+                    var wrapper = _serializer.Deserialize<CommandWrapper>(data);
                     await _handlers[wrapper.Type](wrapper.Command, audit);
 
                     break;
@@ -95,17 +90,7 @@ namespace Gang.Web.Services
 
             _state = state;
 
-            await SendAsync(state);
-        }
-
-        async Task SendAsync(object data,
-            GangMessageTypes? type = null, IEnumerable<byte[]> memberIds = null)
-        {
-            await _sendAsync(
-                _serialization.Serialize(data),
-                type,
-                memberIds
-                );
+            await _controller.SendStateAsync(state);
         }
 
         async Task UpdateUser(UpdateUserNameCommand command, GangMessageAudit _)
@@ -144,7 +129,7 @@ namespace Gang.Web.Services
         {
             await Task.Delay(5000);
 
-            await SendAsync(new
+            await _controller.SendStateAsync(new
             {
                 PrivateMessages = new[] {
                             new WebGangMessage(
@@ -152,7 +137,7 @@ namespace Gang.Web.Services
                                 "Hello and welcome")
                               }
             },
-            GangMessageTypes.State, new[] { memberId });
+            new[] { memberId });
         }
 
         async Task AddMessage(AddMessageCommand command, GangMessageAudit audit)

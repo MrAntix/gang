@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Gang
 {
@@ -35,5 +36,22 @@ namespace Gang
             return Encoding.UTF8.GetBytes(value);
         }
 
+        public static Task SendCommandAsync<T>(
+            this IGangController controller,
+            string type, T command,
+            IEnumerable<byte[]> memberIds = null)
+        {
+            return controller.SendCommandAsync<T>(
+                new GangCommandWrapper(type, command),
+                memberIds);
+        }
+
+        public static Task DisconnectAsync(
+            this IGangController controller,
+            string memberId,
+            string reason = null)
+        {
+            return controller.DisconnectAsync(memberId.GangToBytes(), reason);
+        }
     }
 }

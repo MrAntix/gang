@@ -1,4 +1,3 @@
-using Gang.Contracts;
 using Gang.Events;
 using Gang.Web.Services;
 using Gang.WebSockets;
@@ -6,7 +5,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
 using System.Linq;
 using System.Reactive.Linq;
 
