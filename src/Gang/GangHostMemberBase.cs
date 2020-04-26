@@ -16,6 +16,7 @@ namespace Gang
         }
 
         protected IGangController Controller { get; private set; }
+        protected virtual Task OnConnectAsync() => Task.CompletedTask;
         protected virtual Task OnMemberConnectAsync(byte[] memberId) => Task.CompletedTask;
         protected virtual Task OnMemberDisconnectAsync(byte[] memberId) => Task.CompletedTask;
         protected virtual Task OnCommandAsync(byte[] data, GangMessageAudit audit) => Task.CompletedTask;
@@ -25,6 +26,9 @@ namespace Gang
             IGangController controller)
         {
             Controller = controller;
+
+            await OnConnectAsync();
+
             await _connected.Task;
         }
 
