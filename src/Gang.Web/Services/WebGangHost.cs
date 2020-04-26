@@ -11,9 +11,8 @@ using System.Threading.Tasks;
 
 namespace Gang.Web.Services
 {
-    public class WebGangHost : IGangMember
+    public class WebGangHost : GangHostMemberBase
     {
-        readonly TaskCompletionSource<bool> _connected;
         readonly IImmutableDictionary<string, Func<JObject, GangMessageAudit, Task>> _handlers;
         readonly IGangSerializationService _serializer;
 
@@ -21,59 +20,35 @@ namespace Gang.Web.Services
             IGangSerializationService serializer
             )
         {
-            _connected = new TaskCompletionSource<bool>();
             _handlers = new Dictionary<string, Func<JObject, GangMessageAudit, Task>>{
-                { "updateUser", (o, a)=> UpdateUser(o.ToObject<UpdateUserNameCommand>(), a) },
+                { "updateUser", (o, _)=> UpdateUser(o.ToObject<UpdateUserNameCommand>()) },
                 { "addMessage", (o, a)=> AddMessage(o.ToObject<AddMessageCommand>(), a) }
             }.ToImmutableDictionary();
             _serializer = serializer;
         }
 
-        public byte[] Id { get; } = Encoding.UTF8.GetBytes("HOST");
-
-        IGangController _controller;
-        async Task IGangMember.ConnectAndBlockAsync(
-            IGangController controller)
+        protected override async Task OnMemberConnectAsync(byte[] memberId)
         {
-            _controller = controller;
-            await _connected.Task;
+            var userId = Encoding.UTF8.GetString(memberId);
+
+            await UpdateUser(new UpdateUserIsOnlineCommand(
+                userId, true
+                ));
         }
 
-        Task IGangMember.DisconnectAsync(string reason)
+        protected override async Task OnMemberDisconnectAsync(byte[] memberId)
         {
-            Disconnect();
-            return Task.CompletedTask;
+            var userId = Encoding.UTF8.GetString(memberId);
+
+            await UpdateUser(new UpdateUserIsOnlineCommand(
+                userId, false
+                ));
         }
 
-        async Task IGangMember.SendAsync(
-            GangMessageTypes type,
-            byte[] data, byte[] memberId)
+        protected override async Task OnCommandAsync(byte[] data, GangMessageAudit audit)
         {
-            var message = Encoding.UTF8.GetString(data);
-            var audit = new GangMessageAudit(memberId ?? Id);
-            switch (type)
-            {
-                case GangMessageTypes.Command:
-                    var wrapper = _serializer.Deserialize<CommandWrapper>(data);
-                    await _handlers[wrapper.Type](wrapper.Command, audit);
-
-                    break;
-                case GangMessageTypes.Member:
-
-                    break;
-                case GangMessageTypes.Connect:
-                    await UpdateUser(new UpdateUserIsOnlineCommand(
-                        message, true
-                        ), audit);
-
-                    break;
-                case GangMessageTypes.Disconnect:
-                    await UpdateUser(new UpdateUserIsOnlineCommand(
-                        message, false
-                        ), audit);
-
-                    break;
-            }
+            var wrapper = _serializer.Deserialize<CommandWrapper>(data);
+            await _handlers[wrapper.Type](wrapper.Command, audit);
         }
 
         WebGangHostState _state = new WebGangHostState(
@@ -84,26 +59,16 @@ namespace Gang.Web.Services
         {
             if (!state.Users.Any())
             {
-                Disconnect();
+                await DisconnectAsync("no-users");
                 return;
             }
 
             _state = state;
 
-            await _controller.SendStateAsync(state);
+            await Controller.SendStateAsync(state);
         }
 
-        async Task UpdateUser(UpdateUserNameCommand command, GangMessageAudit _)
-        {
-            var user = _state.Users.First(u => u.Id == command.Id);
-            await SetState(
-                new WebGangHostState(
-                  _state.Users.Replace(user, user.Update(command)),
-                  _state.Messages
-                ));
-        }
-
-        async Task UpdateUser(UpdateUserIsOnlineCommand command, GangMessageAudit _)
+        async Task UpdateUser(UpdateUserIsOnlineCommand command)
         {
             var user = _state.Users.FirstOrDefault(u => u.Id == command.Id);
             if (user == null)
@@ -125,11 +90,21 @@ namespace Gang.Web.Services
                     ));
         }
 
+        async Task UpdateUser(UpdateUserNameCommand command)
+        {
+            var user = _state.Users.First(u => u.Id == command.Id);
+            await SetState(
+                new WebGangHostState(
+                  _state.Users.Replace(user, user.Update(command)),
+                  _state.Messages
+                ));
+        }
+
         async void SendWelcome(byte[] memberId)
         {
             await Task.Delay(5000);
 
-            await _controller.SendStateAsync(new
+            await Controller.SendStateAsync(new
             {
                 PrivateMessages = new[] {
                             new WebGangMessage(
@@ -152,17 +127,6 @@ namespace Gang.Web.Services
                       command.Text)
                     ).TakeLast(10)
                 ));
-        }
-
-        void Disconnect()
-        {
-            if (!_connected.Task.IsCompleted)
-                _connected.SetResult(true);
-        }
-
-        void IDisposable.Dispose()
-        {
-            Disconnect();
         }
     }
 }
