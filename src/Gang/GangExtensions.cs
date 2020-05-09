@@ -49,7 +49,7 @@ namespace Gang
             string type, T command,
             IEnumerable<byte[]> memberIds = null)
         {
-            return controller.SendCommandAsync<T>(
+            return controller.SendCommandAsync(
                 new GangCommandWrapper(type, command),
                 memberIds);
         }

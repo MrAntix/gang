@@ -46,7 +46,7 @@ namespace Gang
             await _sendAsync(data, type, memberIds);
         }
 
-        async Task IGangController.SendCommandAsync<T>(
+        async Task IGangController.SendCommandAsync(
             IGangCommandWrapper wrapper, IEnumerable<byte[]> memberIds)
         {
             await _sendAsync(

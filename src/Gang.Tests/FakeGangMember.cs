@@ -8,26 +8,23 @@ namespace Gang.Tests
     public class FakeGangMember : IGangMember
     {
         public FakeGangMember(
-            string id, int delay = 50)
+            string id)
         {
             Id = Encoding.UTF8.GetBytes(id);
-            Sent = new List<Tuple<GangMessageTypes, byte[]>>();
-
-            Task.Delay(delay)
-                .ContinueWith((_) => DisconnectAsync("delay").GetAwaiter().GetResult());
+            MessagesReceived = new List<Tuple<GangMessageTypes, byte[]>>();
         }
 
         public byte[] Id { get; }
 
+        public IGangController Controller { get; private set; }
         public Func<Task> OnDisconnectAsync { get; private set; }
-        public Action<GangMemberSendAsync> OnConnect { get; set; }
 
 
         Task IGangMember.ConnectAsync(
             IGangController controller, Func<Task> onDisconnectAsync)
         {
+            Controller = controller;
             OnDisconnectAsync = onDisconnectAsync;
-            OnConnect?.Invoke(controller.SendAsync);
             return Task.CompletedTask;
         }
 
@@ -42,11 +39,11 @@ namespace Gang.Tests
 
         Task IGangMember.SendAsync(GangMessageTypes type, byte[] data, byte[] memberId)
         {
-            Sent.Add(Tuple.Create(type, data));
+            MessagesReceived.Add(Tuple.Create(type, data));
             return Task.CompletedTask;
         }
 
-        public IList<Tuple<GangMessageTypes, byte[]>> Sent { get; }
+        public IList<Tuple<GangMessageTypes, byte[]>> MessagesReceived { get; }
 
         void IDisposable.Dispose()
         {
