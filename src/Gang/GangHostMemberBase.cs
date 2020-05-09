@@ -8,13 +8,6 @@ namespace Gang
     {
         public byte[] Id { get; } = Encoding.UTF8.GetBytes("HOST");
 
-        readonly TaskCompletionSource<bool> _connected;
-
-        public GangHostMemberBase()
-        {
-            _connected = new TaskCompletionSource<bool>();
-        }
-
         protected IGangController Controller { get; private set; }
         protected virtual Task OnConnectAsync() => Task.CompletedTask;
         protected virtual Task OnMemberConnectAsync(byte[] memberId) => Task.CompletedTask;
@@ -22,14 +15,14 @@ namespace Gang
         protected virtual Task OnCommandAsync(byte[] data, GangMessageAudit audit) => Task.CompletedTask;
         protected virtual Task OnDisconnectAsync() => Task.CompletedTask;
 
-        async Task IGangMember.ConnectAndBlockAsync(
-            IGangController controller)
+        Func<Task> _onDisconnectAsync;
+        async Task IGangMember.ConnectAsync(
+            IGangController controller, Func<Task> onDisconnectAsync)
         {
+            _onDisconnectAsync = onDisconnectAsync;
             Controller = controller;
 
             await OnConnectAsync();
-
-            await _connected.Task;
         }
 
         async Task IGangMember.SendAsync(
@@ -55,16 +48,17 @@ namespace Gang
 
         public async Task DisconnectAsync(string reason = null)
         {
-            await OnDisconnectAsync();
+            if (_onDisconnectAsync == null) return;
 
-            if (!_connected.Task.IsCompleted)
-                _connected.SetResult(true);
+            await OnDisconnectAsync();
+            await _onDisconnectAsync();
+            _onDisconnectAsync = null;
         }
 
         void IDisposable.Dispose()
         {
-            if (!_connected.Task.IsCompleted)
-                DisconnectAsync("disposed").GetAwaiter().GetResult();
+            DisconnectAsync("disposed")
+                .GetAwaiter().GetResult();
         }
     }
 }

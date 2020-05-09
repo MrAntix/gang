@@ -62,7 +62,7 @@ namespace Gang.WebSockets
                         using var gangMember = await GetGangMemberAsync(gangMemberId, context);
 
                         if (gangMember.Id != null)
-                            await handler.HandleAsync(parameters, gangMember);
+                            await handler.HandleAsync(parameters, gangMember).BlockAsync();
 
                         else
                             await gangMember.DisconnectAsync("denied");

@@ -7,38 +7,37 @@ namespace Gang.Tests
 {
     public class FakeGangMember : IGangMember
     {
-        readonly TaskCompletionSource<bool> _connected;
-
         public FakeGangMember(
             string id, int delay = 50)
         {
             Id = Encoding.UTF8.GetBytes(id);
             Sent = new List<Tuple<GangMessageTypes, byte[]>>();
-            _connected = new TaskCompletionSource<bool>(delay);
 
-            Task.Delay(delay).ContinueWith((_) => Disconnect());
+            Task.Delay(delay)
+                .ContinueWith((_) => DisconnectAsync("delay").GetAwaiter().GetResult());
         }
 
         public byte[] Id { get; }
 
+        public Func<Task> OnDisconnectAsync { get; private set; }
         public Action<GangMemberSendAsync> OnConnect { get; set; }
 
-        void Disconnect()
-        {
-            if (!_connected.Task.IsCompleted)
-                _connected.SetResult(true);
-        }
 
-        async Task IGangMember.ConnectAndBlockAsync(IGangController controller)
+        Task IGangMember.ConnectAsync(
+            IGangController controller, Func<Task> onDisconnectAsync)
         {
+            OnDisconnectAsync = onDisconnectAsync;
             OnConnect?.Invoke(controller.SendAsync);
-            await _connected.Task;
+            return Task.CompletedTask;
         }
 
-        Task IGangMember.DisconnectAsync(string reason)
+        public async Task DisconnectAsync(string reason = null)
         {
-            Disconnect();
-            return Task.CompletedTask;
+            if (OnDisconnectAsync != null)
+            {
+                await OnDisconnectAsync();
+                OnDisconnectAsync = null;
+            }
         }
 
         Task IGangMember.SendAsync(GangMessageTypes type, byte[] data, byte[] memberId)
@@ -51,7 +50,7 @@ namespace Gang.Tests
 
         void IDisposable.Dispose()
         {
-            Disconnect();
+            DisconnectAsync("disposed").GetAwaiter().GetResult();
         }
     }
 }

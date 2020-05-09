@@ -7,6 +7,14 @@ namespace Gang
 {
     public static class GangExtensions
     {
+        public async static Task BlockAsync(
+            this Task<GangMemberConnectionState> task)
+        {
+            var state = await task;
+
+            await state.BlockingTask;
+        }
+
         public static IGangMember MemberById(
             this GangMemberCollection gang,
             string id)

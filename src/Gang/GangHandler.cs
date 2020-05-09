@@ -2,7 +2,6 @@ using Gang.Contracts;
 using Gang.Events;
 using Gang.Serialization;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -34,7 +33,7 @@ namespace Gang
             return _gangs[gangId];
         }
 
-        async Task IGangHandler.HandleAsync(
+        async Task<GangMemberConnectionState> IGangHandler.HandleAsync(
             GangParameters parameters, IGangMember gangMember)
         {
             if (parameters is null)
@@ -92,37 +91,26 @@ namespace Gang
                 _serializer
                 );
 
-            await gangMember.ConnectAndBlockAsync(controller);
+            var state = new GangMemberConnectionState();
+            await gangMember.ConnectAsync(controller, async () =>
+            {
+                _gangs.RemoveMemberFromGang(parameters.GangId, gangMember);
 
-            _gangs.RemoveMemberFromGang(parameters.GangId, gangMember);
+                gang = _gangs[parameters.GangId];
+                if (gang != null)
+                    await gang.HostMember
+                        .SendAsync(GangMessageTypes.Disconnect, gangMember.Id);
 
-            await gangMember.DisconnectAsync();
+                _events.OnNext(new GangMemberRemovedEvent(parameters.GangId, gangMember));
 
-            gang = _gangs[parameters.GangId];
-            if (gang != null)
-                await gang.HostMember
-                    .SendAsync(GangMessageTypes.Disconnect, gangMember.Id);
+                state.Disconnected();
+            });
 
-            _events.OnNext(new GangMemberRemovedEvent(parameters.GangId, gangMember));
+            return state;
         }
 
         void IDisposable.Dispose()
         {
-        }
-
-        public Task SendStateAsync<T>(T state, IEnumerable<byte[]> memberIds = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task SendCommandAsync<T>(T state, IEnumerable<byte[]> memberIds = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task DisconnectAsync<T>(byte[] memberId, string reason)
-        {
-            throw new NotImplementedException();
         }
     }
 }

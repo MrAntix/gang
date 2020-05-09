@@ -23,41 +23,42 @@ namespace Gang.WebSockets
             _buffer = new ArraySegment<byte>(new byte[1024 * 4]);
         }
 
-        async Task DisconnectAsync(string reason = "disconnected")
+        public byte[] Id { get; }
+
+        Task IGangMember.ConnectAsync(
+            IGangController controller, Func<Task> _onDisconnectAsync)
+        {
+            return Task.Run(async () =>
+            {
+                do
+                {
+                    using var data = new MemoryStream();
+                    WebSocketReceiveResult result;
+                    do
+                    {
+                        result = await _webSocket
+                           .ReceiveAsync(_buffer, CancellationToken.None);
+
+                        if (result.MessageType != WebSocketMessageType.Binary) break;
+
+                        await data.WriteAsync(_buffer.Array, 0, result.Count);
+
+                    } while (!result.EndOfMessage);
+
+                    await controller.SendAsync(data.ToArray());
+
+                } while (_webSocket.State == WebSocketState.Open);
+
+                if (_onDisconnectAsync != null)
+                    await _onDisconnectAsync();
+            });
+        }
+
+        public async Task DisconnectAsync(string reason)
         {
             if (_webSocket.State == WebSocketState.Open)
                 await _webSocket.CloseAsync(
                     WebSocketCloseStatus.NormalClosure, reason, CancellationToken.None);
-        }
-
-        public byte[] Id { get; }
-
-        async Task IGangMember.ConnectAndBlockAsync(
-            IGangController controller)
-        {
-            do
-            {
-                using var data = new MemoryStream();
-                WebSocketReceiveResult result;
-                do
-                {
-                    result = await _webSocket
-                       .ReceiveAsync(_buffer, CancellationToken.None);
-
-                    if (result.MessageType != WebSocketMessageType.Binary) break;
-
-                    await data.WriteAsync(_buffer.Array, 0, result.Count);
-
-                } while (!result.EndOfMessage);
-
-                await controller.SendAsync(data.ToArray());
-
-            } while (_webSocket.State == WebSocketState.Open);
-        }
-
-        async Task IGangMember.DisconnectAsync(string reason)
-        {
-            await DisconnectAsync(reason);
         }
 
         async Task IGangMember.SendAsync(GangMessageTypes type, byte[] data, byte[] _)
