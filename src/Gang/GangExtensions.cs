@@ -51,7 +51,7 @@ namespace Gang
             IEnumerable<byte[]> memberIds = null)
         {
             return controller.SendCommandAsync(
-                 typeof(T).GetCommandType(), command,
+                GetCommandType(command), command,
                 memberIds);
         }
 
@@ -64,9 +64,11 @@ namespace Gang
         }
 
         public static string GetCommandType(
-            this Type type)
+            object command)
         {
-            var name = type.Name;
+            if (command is IGangCommand c) return c.CommandType;
+
+            var name = command.GetType().Name;
             return name.EndsWith("Command")
                 ? name.Substring(0, name.Length - 7)
                 : name;
