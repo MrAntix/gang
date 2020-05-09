@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -46,11 +47,11 @@ namespace Gang
 
         public static Task SendCommandAsync<T>(
             this IGangController controller,
-            string type, T command,
+            T command,
             IEnumerable<byte[]> memberIds = null)
         {
             return controller.SendCommandAsync(
-                new GangCommandWrapper(type, command),
+                 typeof(T).GetCommandType(), command,
                 memberIds);
         }
 
@@ -60,6 +61,15 @@ namespace Gang
             string reason = null)
         {
             return controller.DisconnectAsync(memberId.GangToBytes(), reason);
+        }
+
+        public static string GetCommandType(
+            this Type type)
+        {
+            var name = type.Name;
+            return name.EndsWith("Command")
+                ? name.Substring(0, name.Length - 7)
+                : name;
         }
     }
 }

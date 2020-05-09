@@ -1,6 +1,6 @@
 namespace Gang
 {
-    public sealed class GangCommandWrapper : IGangCommandWrapper
+    public sealed class GangCommandWrapper
     {
         public GangCommandWrapper(
             string type,
