@@ -66,8 +66,6 @@ namespace Gang
         public static string GetCommandType(
             object command)
         {
-            if (command is IGangCommand c) return c.CommandType;
-
             var name = command.GetType().Name;
             return name.EndsWith("Command")
                 ? name.Substring(0, name.Length - 7)
