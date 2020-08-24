@@ -97,3 +97,32 @@ System.Net.WebSockets.WebSocketException (0x80004005): The remote party closed t
    at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware.Invoke(HttpContext context)
    at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware.Invoke(HttpContext context)
    at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol.ProcessRequests[TContext](IHttpApplication`1 application)
+2020-08-24 23:06:11.013 +01:00 [Error] Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware: An unhandled exception has occurred while executing the request.
+System.Net.WebSockets.WebSocketException (0x80004005): The remote party closed the WebSocket connection without completing the close handshake.
+   at System.Net.WebSockets.ManagedWebSocket.ThrowIfEOFUnexpected(Boolean throwOnPrematureClosure)
+   at System.Net.WebSockets.ManagedWebSocket.EnsureBufferContainsAsync(Int32 minimumRequiredBytes, CancellationToken cancellationToken, Boolean throwOnPrematureClosure)
+   at System.Net.WebSockets.ManagedWebSocket.ReceiveAsyncPrivate[TWebSocketReceiveResultGetter,TWebSocketReceiveResult](Memory`1 payloadBuffer, CancellationToken cancellationToken, TWebSocketReceiveResultGetter resultGetter)
+   at Gang.WebSockets.WebSocketGangMember.<>c__DisplayClass7_0.<<Gang-IGangMember-ConnectAsync>b__0>d.MoveNext() in C:\Users\ant.ANTIX\Source\Repos\gang\src\Gang.WebSockets\WebSocketGangMember.cs:line 39
+--- End of stack trace from previous location ---
+   at Gang.GangHandler.Gang.IGangHandler.HandleAsync(GangParameters parameters, IGangMember gangMember) in C:\Users\ant.ANTIX\Source\Repos\gang\src\Gang\GangHandler.cs:line 95
+   at Gang.GangExtensions.BlockAsync(Task`1 task) in C:\Users\ant.ANTIX\Source\Repos\gang\src\Gang\GangExtensions.cs:line 14
+   at Gang.WebSockets.WebSocketGangConfiguration.<>c__DisplayClass1_0.<<UseWebSocketGangs>b__2>d.MoveNext() in C:\Users\ant.ANTIX\Source\Repos\gang\src\Gang.WebSockets\WebSocketGangConfiguration.cs:line 65
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Builder.Extensions.MapMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware.Invoke(HttpContext context)
+2020-08-24 23:06:11.026 +01:00 [Warning] Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware: The response has already started, the error page middleware will not be executed.
+2020-08-24 23:06:11.047 +01:00 [Error] Microsoft.AspNetCore.Server.Kestrel: Connection id "0HM28F7736F5E", Request id "0HM28F7736F5E:00000002": An unhandled exception was thrown by the application.
+System.Net.WebSockets.WebSocketException (0x80004005): The remote party closed the WebSocket connection without completing the close handshake.
+   at System.Net.WebSockets.ManagedWebSocket.ThrowIfEOFUnexpected(Boolean throwOnPrematureClosure)
+   at System.Net.WebSockets.ManagedWebSocket.EnsureBufferContainsAsync(Int32 minimumRequiredBytes, CancellationToken cancellationToken, Boolean throwOnPrematureClosure)
+   at System.Net.WebSockets.ManagedWebSocket.ReceiveAsyncPrivate[TWebSocketReceiveResultGetter,TWebSocketReceiveResult](Memory`1 payloadBuffer, CancellationToken cancellationToken, TWebSocketReceiveResultGetter resultGetter)
+   at Gang.WebSockets.WebSocketGangMember.<>c__DisplayClass7_0.<<Gang-IGangMember-ConnectAsync>b__0>d.MoveNext() in C:\Users\ant.ANTIX\Source\Repos\gang\src\Gang.WebSockets\WebSocketGangMember.cs:line 39
+--- End of stack trace from previous location ---
+   at Gang.GangHandler.Gang.IGangHandler.HandleAsync(GangParameters parameters, IGangMember gangMember) in C:\Users\ant.ANTIX\Source\Repos\gang\src\Gang\GangHandler.cs:line 95
+   at Gang.GangExtensions.BlockAsync(Task`1 task) in C:\Users\ant.ANTIX\Source\Repos\gang\src\Gang\GangExtensions.cs:line 14
+   at Gang.WebSockets.WebSocketGangConfiguration.<>c__DisplayClass1_0.<<UseWebSocketGangs>b__2>d.MoveNext() in C:\Users\ant.ANTIX\Source\Repos\gang\src\Gang.WebSockets\WebSocketGangConfiguration.cs:line 65
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Builder.Extensions.MapMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol.ProcessRequest[TContext](IHttpApplication`1 application)

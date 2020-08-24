@@ -1,16 +1,16 @@
 namespace Gang.Web.Services.Commands
 {
-  public class AddMessageCommand
-  {
-    public AddMessageCommand(
-      string id,
-      string text)
+    public class AddMessageCommand : IWebGangCommand
     {
-      Id = id;
-      Text = text;
-    }
+        public AddMessageCommand(
+          string id,
+          string text)
+        {
+            Id = id;
+            Text = text;
+        }
 
-    public string Id { get; }
-    public string Text { get; }
-  }
+        public string Id { get; }
+        public string Text { get; }
+    }
 }

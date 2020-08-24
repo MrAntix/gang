@@ -30,6 +30,15 @@ namespace Gang
                 ));
         }
 
+        public GangCommandExecutor Register<TCommand>(
+            string type, Func<TCommand, Task> handler)
+        {            
+            return new GangCommandExecutor(
+                _handlers.Add(type,
+                    (j, _) => handler(j.ToObject<TCommand>())
+                ));
+        }
+
         public Task ExecuteAsync(
             string type, JToken command, GangMessageAudit audit)
         {

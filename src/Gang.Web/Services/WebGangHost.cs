@@ -13,17 +13,17 @@ namespace Gang.Web.Services
 {
     public class WebGangHost : GangHostMemberBase
     {
-        readonly IImmutableDictionary<string, Func<JObject, GangMessageAudit, Task>> _handlers;
+        readonly GangCommandExecutor _executor;
         readonly IGangSerializationService _serializer;
 
         public WebGangHost(
             IGangSerializationService serializer
             )
         {
-            _handlers = new Dictionary<string, Func<JObject, GangMessageAudit, Task>>{
-                { "updateUser", (o, _)=> UpdateUser(o.ToObject<UpdateUserNameCommand>()) },
-                { "addMessage", (o, a)=> AddMessage(o.ToObject<AddMessageCommand>(), a) }
-            }.ToImmutableDictionary();
+            _executor = GangCommandExecutor.Create()
+                .Register<UpdateUserNameCommand>("updateUser", UpdateUser)
+                .Register<AddMessageCommand>("addMessage", AddMessage);
+
             _serializer = serializer;
         }
 
@@ -48,7 +48,7 @@ namespace Gang.Web.Services
         protected override async Task OnCommandAsync(byte[] data, GangMessageAudit audit)
         {
             var wrapper = _serializer.Deserialize<CommandWrapper>(data);
-            await _handlers[wrapper.Type](wrapper.Command, audit);
+            await _executor.ExecuteAsync(wrapper.Type, wrapper.Command, audit);
         }
 
         WebGangHostState _state = new WebGangHostState(
