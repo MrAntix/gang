@@ -1,4 +1,4 @@
-namespace Gang
+namespace Gang.Commands
 {
     public sealed class GangCommandWrapper
     {

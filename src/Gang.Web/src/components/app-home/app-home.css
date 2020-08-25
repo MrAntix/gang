@@ -42,19 +42,27 @@ li {
 .heading,
 .text,
 .input {
-  padding: var(--padding-unit);
+  padding: calc(.667 * var(--padding-unit)) var(--padding-unit);
+  line-height: var(--text-line-height);
 }
 
 .input {
   font: inherit;
-  border: none;
+  border: solid 2px rgba(0, 0, 0, .2);
 }
 
 .button {
   background-color: var(--current-user-color);
   color: var(--current-user-color-alt);
+  border: solid 2px rgba(0, 0, 0, .2);
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
+}
+
+.input:focus,
+.button:focus {
+  border-color: var(--outline-color);
+  outline: none;
 }
 
 .row {
@@ -136,19 +144,20 @@ li {
   display: inline-block;
   width: 0;
   height: 0;
-  opacity: .99;
 }
 
 .messages-list .message:not(.current-user) .message-text::after {
-  top:  calc(var(--callout-border-radius) - .8  * var(--callout-size));
-  left: calc(-1.5 * var(--callout-size));
+  top: calc(.5 * (1em * var(--text-line-height) + 2 * var(--padding-unit) - 2 * var(--callout-size)));
+  left: calc(-2 * var(--callout-size) + 1px);
   border-right-color: var(--user-color);
+  border-top-width: calc(.667 * var(--callout-size));
 }
 
 .messages-list .message.current-user .message-text::after {
-  right:  calc(var(--callout-border-radius) - .75  * var(--callout-size));
-  bottom: calc(-1.5 * var(--callout-size));
+  right: var(--callout-border-radius);
+  bottom: calc(-2 * var(--callout-size) + 1px);
   border-top-color: var(--current-user-color);
+  border-right-width: calc(.667 * var(--callout-size));
 }
 
 .messages-list .message:not(:last-child) {

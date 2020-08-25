@@ -1,3 +1,4 @@
+using Gang.Commands;
 using Gang.Contracts;
 using Gang.Serialization;
 using Gang.WebSockets.Serialization;
@@ -18,6 +19,7 @@ namespace Gang.WebSockets
             this IServiceCollection services)
         {
             services.AddGangs();
+            services.AddSingleton<IGangCommandExecutor, GangCommandExecutor>();
             services.AddSingleton<IGangSerializationService, WebSocketGangJsonSerializationService>();
 
             return services;

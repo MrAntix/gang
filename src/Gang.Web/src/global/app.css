@@ -1,14 +1,17 @@
 :root {
   --padding-unit: .5em;
   --border-radius: 5px;
-  --callout-size: 1em;
-  --callout-border-radius: 15px;
+  --callout-size: .4em;
+  --callout-border-radius: 1em;
+  --text-line-height: 1.1;
 
   --color: #333;
   --color-alt: #ddd;
 
   --primary-color: #369;
   --primary-color-alt: #fff;
+
+  --outline-color: #69c;
 
   --user-color: var(--color-alt);
   --user-color-alt: var(--color);
@@ -28,3 +31,4 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: var(--padding-unit) 0;
 }
+

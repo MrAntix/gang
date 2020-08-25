@@ -1,5 +1,6 @@
 using Gang.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Text;
@@ -20,6 +21,11 @@ namespace Gang.WebSockets.Serialization
             };
         }
 
+        public TObject Map<TObject>(object json)
+        {
+            return ((JToken)json).ToObject<TObject>();
+        }
+
         object IGangSerializationService
             .Deserialize(byte[] data, Type type)
         {
@@ -30,7 +36,7 @@ namespace Gang.WebSockets.Serialization
         byte[] IGangSerializationService
             .Serialize(object value)
         {
-            return 
+            return
                 JsonConvert.SerializeObject(value, _jsonSerializerSettings)
                 .GangToBytes();
         }

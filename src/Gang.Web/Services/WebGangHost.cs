@@ -1,7 +1,6 @@
-using Gang.Serialization;
+using Gang.Commands;
 using Gang.Web.Services.Commands;
 using Gang.Web.Services.State;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -13,18 +12,15 @@ namespace Gang.Web.Services
 {
     public class WebGangHost : GangHostMemberBase
     {
-        readonly GangCommandExecutor _executor;
-        readonly IGangSerializationService _serializer;
+        readonly IGangCommandExecutor _executor;
 
         public WebGangHost(
-            IGangSerializationService serializer
+            IGangCommandExecutor executor
             )
         {
-            _executor = GangCommandExecutor.Create()
+            _executor = executor
                 .Register<UpdateUserNameCommand>("updateUser", UpdateUser)
                 .Register<AddMessageCommand>("addMessage", AddMessage);
-
-            _serializer = serializer;
         }
 
         protected override async Task OnMemberConnectAsync(byte[] memberId)
@@ -47,8 +43,7 @@ namespace Gang.Web.Services
 
         protected override async Task OnCommandAsync(byte[] data, GangMessageAudit audit)
         {
-            var wrapper = _serializer.Deserialize<CommandWrapper>(data);
-            await _executor.ExecuteAsync(wrapper.Type, wrapper.Command, audit);
+            await _executor.ExecuteAsync(data, audit);
         }
 
         WebGangHostState _state = new WebGangHostState(
@@ -68,7 +63,8 @@ namespace Gang.Web.Services
             await Controller.SendStateAsync(state);
         }
 
-        async Task UpdateUser(UpdateUserIsOnlineCommand command)
+        async Task UpdateUser(
+            UpdateUserIsOnlineCommand command)
         {
             var user = _state.Users.FirstOrDefault(u => u.Id == command.Id);
             if (user == null)
@@ -79,8 +75,6 @@ namespace Gang.Web.Services
                         _state.Users.Add(user),
                         _state.Messages
                     ));
-
-                SendWelcome(Encoding.UTF8.GetBytes(user.Id));
             }
             else
                 await SetState(
@@ -90,32 +84,24 @@ namespace Gang.Web.Services
                     ));
         }
 
-        async Task UpdateUser(UpdateUserNameCommand command)
+        async Task UpdateUser(
+            UpdateUserNameCommand command)
         {
             var user = _state.Users.First(u => u.Id == command.Id);
+            var joined = user.Name == null;
+
             await SetState(
                 new WebGangHostState(
                   _state.Users.Replace(user, user.Update(command)),
                   _state.Messages
                 ));
+
+            if(joined) SendWelcome(Encoding.UTF8.GetBytes(user.Id));
         }
 
-        async void SendWelcome(byte[] memberId)
-        {
-            await Task.Delay(5000);
-
-            await Controller.SendStateAsync(new
-            {
-                PrivateMessages = new[] {
-                            new WebGangMessage(
-                                "Welcome", DateTimeOffset.Now, null,
-                                "Hello and welcome")
-                              }
-            },
-            new[] { memberId });
-        }
-
-        async Task AddMessage(AddMessageCommand command, GangMessageAudit audit)
+        async Task AddMessage(
+            AddMessageCommand command,
+            GangMessageAudit audit = null)
         {
             await SetState(
                 new WebGangHostState(
@@ -123,10 +109,40 @@ namespace Gang.Web.Services
                   _state.Messages.Add(
                     new WebGangMessage(
                       command.Id, DateTimeOffset.UtcNow,
-                      Encoding.UTF8.GetString(audit.MemberId),
+                      audit?.MemberId.GangToString(),
                       command.Text)
                     ).TakeLast(10)
                 ));
+        }
+
+        async Task AddMessage(
+            string message,
+            GangMessageAudit audit = null)
+        {
+            await AddMessage(
+                new AddMessageCommand(Guid.NewGuid().ToString("N"), message),
+                audit);
+        }
+
+        async void SendWelcome(byte[] memberId)
+        {
+            var user = _state.Users.TryGetByIdString(memberId);
+
+            await AddMessage(
+                $"{user.Name} Joined"
+                );
+
+            await Task.Delay(3000);
+
+            await Controller.SendStateAsync(new
+            {
+                PrivateMessages = new[] {
+                            new WebGangMessage(
+                                "Welcome", DateTimeOffset.Now, null,
+                                $"Hello {user.Name}, welcome to the gang")
+                              }
+            },
+            new[] { memberId });
         }
     }
 }

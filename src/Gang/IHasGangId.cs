@@ -1,4 +1,4 @@
-﻿namespace Gang
+namespace Gang
 {
     public interface IHasGangId
     {

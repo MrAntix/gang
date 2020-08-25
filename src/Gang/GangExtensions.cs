@@ -33,6 +33,15 @@ namespace Gang
             return list.FirstOrDefault(item => item.Id.SequenceEqual(id));
         }
 
+        public static T TryGetByIdString<T>(
+            this IEnumerable<T> list,
+            byte[] id)
+            where T : IHasGangIdString
+        {
+            var idString = id.GangToString();
+            return list.FirstOrDefault(item => item.Id == idString);
+        }
+
         public static string GangToString(
             this byte[] value)
         {

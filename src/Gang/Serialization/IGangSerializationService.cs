@@ -6,5 +6,6 @@ namespace Gang.Serialization
     {
         byte[] Serialize(object value);
         object Deserialize(byte[] value, Type type);
+        TObject Map<TObject>(object json);
     }
 }

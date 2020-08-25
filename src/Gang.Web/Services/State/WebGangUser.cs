@@ -1,6 +1,6 @@
 namespace Gang.Web.Services.State
 {
-    public class WebGangUser
+    public class WebGangUser : IHasGangIdString
     {
         public WebGangUser(
             string id,
