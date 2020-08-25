@@ -11,3 +11,7 @@ input,
 textarea {
   border-radius: var(--border-radius);
 }
+
+a{
+  color: white;
+}

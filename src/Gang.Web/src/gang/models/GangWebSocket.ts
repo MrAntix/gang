@@ -4,7 +4,7 @@ export class GangWebSocket {
   constructor(
     private subject: Subject<MessageEvent>,
     public send: (data: Object) => void,
-    public close: () => void) { }
+    public close: (reason: string) => void) { }
 
   subscribe(
     onMessage: (e: MessageEvent) => void,

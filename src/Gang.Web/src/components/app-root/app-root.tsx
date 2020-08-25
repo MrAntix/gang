@@ -11,7 +11,7 @@ import { mapGangEvents, GangStore, getGangId } from '../../gang/services';
 export class AppRoot {
 
   service = GangContext.service;
-  token = GangStore.get('token', () => getGangId());
+  @State() token = GangStore.get('token', () => getGangId());
 
   @State() isConnected: boolean = false
 
@@ -24,15 +24,16 @@ export class AppRoot {
 
   @Listen('visibilitychange', { target: 'document' })
   onVisibilitychange() {
-    console.log('visibilitychange');
+    console.log('visibilitychange', { token: this.token });
 
     if (document.hidden)
       this.service.disconnect();
-    else if(!this.service.isConnected)
+    else if (!this.service.isConnected)
       this.service.connect('ws', 'demo', this.token);
   }
 
   componentWillLoad() {
+    console.log('componentWillLoad', { token: this.token });
     this.onResize();
 
     this.service.connect('ws', 'demo', this.token);
@@ -61,7 +62,13 @@ export class AppRoot {
           }
         </header>
 
+        <div>
+          <p>Demo app built on a state sharing algorithm using websockets, written in c# on net5.0 and JS client</p>
+          <p><a href="https://github.com/MrAntix/gang">github.com/MrAntix/gang</a></p>
+        </div>
+
         <main>
+
           {this.isConnected
             && <stencil-router>
               <stencil-route-switch scrollTopOffset={0}>

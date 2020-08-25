@@ -2,11 +2,15 @@
 
 header {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
   align-items: center;
 }
 
-h1 {
+header button{
+  margin-left: auto;
+}
+
+h1, p {
   margin: 0;
   padding: 0 var(--padding-unit);
 }

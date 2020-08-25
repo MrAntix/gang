@@ -16,17 +16,18 @@ export function createGangWebSocket(
       webSocket.onopen = onOpen;
       webSocket.onmessage = o.next.bind(o);
       webSocket.onerror = (e: Event) => {
-        if (onError)
-          onError(e);
-        o.error.bind(o);
+        if (onError) onError(e);
+        o.error(e);
       };
       webSocket.onclose = (e: CloseEvent) => {
-        if (onClose)
-          onClose(e);
-        o.complete.bind(o);
-      };
+        if (onClose) onClose(e);
+        o.complete();
 
-      return webSocket.close.bind(webSocket);
+        webSocket.onopen = null;
+        webSocket.onmessage = null;
+        webSocket.onerror = null;
+        webSocket.onclose = null;
+      };
     });
 
   const observer = {
@@ -35,5 +36,8 @@ export function createGangWebSocket(
 
   const subject = Subject.create(observer, observable);
 
-  return new GangWebSocket(subject, observer.next, () => webSocket.close());
+  return new GangWebSocket(
+    subject,
+    observer.next,
+    (reason: string) => webSocket.close(1000, reason));
 }

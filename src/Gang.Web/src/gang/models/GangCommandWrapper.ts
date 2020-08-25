@@ -4,7 +4,7 @@ export class GangCommandWrapper {
 
   constructor(
     public readonly type: string,
-    public readonly command: string) {
+    public readonly command: any) {
 
     this.id = getGangId();
     this.on = new Date();
