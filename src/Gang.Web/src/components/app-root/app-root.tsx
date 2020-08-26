@@ -1,7 +1,6 @@
 import { Component, h, Listen, State } from '@stencil/core';
 
-import { GangContext } from '../../gang';
-import { mapGangEvents, GangStore, getGangId } from '../../gang/services';
+import { GangContext, mapGangEvents, GangStore, getGangId } from '@gang-js/core';
 
 @Component({
   tag: 'app-root',
@@ -17,14 +16,12 @@ export class AppRoot {
 
   @Listen('resize', { target: 'window' })
   onResize() {
-    console.log('resize');
     document.documentElement
       .style.setProperty('--vh', `${window.innerHeight / 100}px`);
   }
 
   @Listen('visibilitychange', { target: 'document' })
   onVisibilitychange() {
-    console.log('visibilitychange', { token: this.token });
 
     if (document.hidden)
       this.service.disconnect();
@@ -33,7 +30,6 @@ export class AppRoot {
   }
 
   componentWillLoad() {
-    console.log('componentWillLoad', { token: this.token });
     this.onResize();
 
     this.service.connect('ws', 'demo', this.token);

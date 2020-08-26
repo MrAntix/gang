@@ -1,0 +1,17 @@
+import { Subject, Subscription } from 'rxjs';
+
+export class GangWebSocket {
+  constructor(
+    private subject: Subject<MessageEvent>,
+    public send: (data: unknown) => void,
+    public close?: (reason?: string) => void
+  ) {}
+
+  subscribe(
+    onMessage: (e: MessageEvent) => void,
+    onError?: (e: Event) => void,
+    onComplete?: () => void
+  ): Subscription {
+    return this.subject.subscribe(onMessage, onError, onComplete);
+  }
+}

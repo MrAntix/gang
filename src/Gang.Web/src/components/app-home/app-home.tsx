@@ -1,7 +1,6 @@
 import { Component, h, Host, State, Listen } from '@stencil/core';
+import { GangContext, mapGangEvents, getGangId, GangStore } from '@gang-js/core';
 
-import { GangContext } from '../../gang';
-import { mapGangEvents, getGangId, GangStore } from '../../gang/services';
 import { IAppState, IAppUser, IAppMessage } from '../../app/models';
 
 @Component({
@@ -38,7 +37,6 @@ export class AppHome {
   }
 
   onState(state: IAppState) {
-    console.log('app-home', { state })
 
     state = {
       ...this.state,
@@ -47,7 +45,7 @@ export class AppHome {
 
     this.state = {
       users: sortUsers(state.users || []),
-      messages : sortMessages(
+      messages: sortMessages(
         (state.messages || []).concat(state.privateMessages || [])
       )
     }

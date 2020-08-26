@@ -2,7 +2,7 @@
   "name": "gang-web",
   "private": true,
   "version": "0.0.1",
-  "description": "Stencil App Starter",
+  "description": "Gang Demo Chat App",
   "scripts": {
     "dev": "stencil build --dev --watch",
     "build": "npm run icons && stencil build",
@@ -24,10 +24,12 @@
     "jest": "24.9.0",
     "jest-cli": "24.9.0",
     "puppeteer": "2.1.1",
-    "to-ico": "^1.1.5"
+    "to-ico": "^1.1.5",
+    "typescript": "^4.0.2"
   },
   "license": "MIT",
   "dependencies": {
+    "@gang-js/core": "^2.0.0-0",
     "rxjs": "^6.5.5"
   }
 }

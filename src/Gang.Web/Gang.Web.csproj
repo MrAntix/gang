@@ -15,10 +15,6 @@
     <ProjectReference Include="..\Gang.WebSockets\Gang.WebSockets.csproj" />
   </ItemGroup>
 
-  <Target Name="CustomActionsBeforePublish" BeforeTargets="BeforeBuild" Condition=" '$(Configuration)' == 'Release' ">
-    <Exec Command="ng build --prod" />
-  </Target>
-
   <ItemGroup>
     <Content Update="client\**" CopyToPublishDirectory="Never" />
     <Content Update="**.pdb" CopyToPublishDirectory="Never" />

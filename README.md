@@ -23,7 +23,7 @@ Gangs are controlled by a single relay server, but the work is done by the curre
 | :---------------- | :-----------------------------| :------------------------------------------------ |
 | Gang              | Core library for relay server | https://www.nuget.org/packages/Gang               |
 | Gang.WebSockets   | Gang for Web Sockets          | https://www.nuget.org/packages/Gang.WebSockets    |
-| @ntix/gang        | JS client service             | https://www.npmjs.com/package/@ntix/gang          |
+| @gang-js/core     | JS client service             | https://www.npmjs.com/package/@gang-js/core       |
 
 ## Demo
 
