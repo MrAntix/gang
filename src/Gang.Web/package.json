@@ -3,14 +3,21 @@
   "private": true,
   "version": "0.0.1",
   "description": "Gang Demo Chat App",
+  "license": "MIT",
   "scripts": {
     "dev": "stencil build --dev --watch",
-    "build": "npm run icons && stencil build",
-    "icons": "node package-icons.js",
+    "build": "npm run build.icons && stencil build",
+    "build.icons": "node build.icons.js",
     "start": "stencil build --dev --watch --serve",
     "test": "stencil test --spec --e2e",
     "test.watch": "stencil test --spec --e2e --watchAll",
-    "generate": "stencil generate"
+    "generate": "stencil generate",
+    "local": "npm i file:../GangJs/Core",
+    "remote": "npm un @gang-js/core && npm i @gang-js/core && npm audit fix"
+  },
+  "dependencies": {
+    "@gang-js/core": "^2.0.0-beta.2",
+    "rxjs": "^6.5.5"
   },
   "devDependencies": {
     "@stencil/core": "^2.0.0-0",
@@ -25,11 +32,7 @@
     "jest-cli": "24.9.0",
     "puppeteer": "2.1.1",
     "to-ico": "^1.1.5",
-    "typescript": "^4.0.2"
-  },
-  "license": "MIT",
-  "dependencies": {
-    "@gang-js/core": "^2.0.0-0",
-    "rxjs": "^6.5.5"
+    "typescript": "^4.0.2",
+    "workbox-build": "4.3.1"
   }
 }

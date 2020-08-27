@@ -10,8 +10,7 @@ export const config: Config = {
     {
       type: 'www',
       dir: 'wwwroot',
-      serviceWorker: null,
-      baseUrl: 'https://myapp.local/'
+      serviceWorker: null
     }
   ],
   testing: {

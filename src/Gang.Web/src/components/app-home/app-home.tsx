@@ -51,12 +51,14 @@ export class AppHome {
     }
 
     this.currentUser = this.state.users
-      .find(u => u.id === this.service.memberId)
-      || {
-      id: this.service.memberId,
-      name: GangStore.get('name'),
-      isOnline: false
-    };
+      .find(u => u.id === this.service.memberId);
+
+    if (this.currentUser
+      && !this.currentUser.name
+      && GangStore.get('name')) {
+      this.updateUserName(GangStore.get('name'));
+    }
+
     this.userNames = this.state.users.reduce((map, user) => {
       map[user.id] = user.name;
       return map;
@@ -108,7 +110,7 @@ export class AppHome {
             />
           </li>
           <li class="heading">Other Users</li>
-          {this.state.users?.filter(u => u !== this.currentUser)
+          {this.state.users?.filter(u => u.id !== this.currentUser.id)
             .map(user => <li class={{
               "user-name other text": true,
               "is-online": user.isOnline

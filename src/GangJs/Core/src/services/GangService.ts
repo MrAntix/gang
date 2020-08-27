@@ -42,8 +42,7 @@ export class GangService {
   onCommand: Observable<unknown>;
   onState: Observable<unknown>;
 
-  constructor(
-    private webSocketFactory: GangWebSocketFactory) {
+  constructor(private webSocketFactory: GangWebSocketFactory) {
     if (!location) throw new Error('required location object not found');
 
     const protocol = location.protocol.replace('http', 'ws');

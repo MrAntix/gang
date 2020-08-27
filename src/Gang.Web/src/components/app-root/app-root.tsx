@@ -1,6 +1,6 @@
 import { Component, h, Listen, State } from '@stencil/core';
 
-import { GangContext, mapGangEvents, GangStore, getGangId } from '@gang-js/core';
+import { GangContext, mapGangEvents, GangStore, getGangId, GangConnectionState } from '@gang-js/core';
 
 @Component({
   tag: 'app-root',
@@ -32,18 +32,13 @@ export class AppRoot {
   componentWillLoad() {
     this.onResize();
 
-    this.service.connect('ws', 'demo', this.token);
     mapGangEvents(this.service, this);
+    this.service.connect('ws', 'demo', this.token);
   }
 
-  onMemberConnected() {
+  onConnection(connectionState: GangConnectionState) {
 
-    this.isConnected = true;
-  }
-
-  onMemberDisconnected() {
-
-    this.isConnected = false;
+    this.isConnected = connectionState === GangConnectionState.connected;
   }
 
   render() {
@@ -65,13 +60,11 @@ export class AppRoot {
 
         <main>
 
-          {this.isConnected
-            && <stencil-router>
-              <stencil-route-switch scrollTopOffset={0}>
-                <stencil-route url='/' component='app-home' exact={true} />
-              </stencil-route-switch>
-            </stencil-router>
-          }
+          <stencil-router>
+            <stencil-route-switch scrollTopOffset={0}>
+              <stencil-route url='/' component='app-home' exact={true} />
+            </stencil-route-switch>
+          </stencil-router>
         </main>
       </div>
     );

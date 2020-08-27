@@ -101,7 +101,6 @@ describe('GangService', () => {
       expect(state).toEqual(currentState);
       done();
     });
-
   });
 
   it('onState new state ', (done) => {
