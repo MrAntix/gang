@@ -21,7 +21,7 @@ export class GangService {
   private webSocket: GangWebSocket;
   private connectionSubject: BehaviorSubject<GangConnectionState>;
 
-  get state(): GangConnectionState {
+  get connectionState(): GangConnectionState {
     return this.connectionSubject.value;
   }
   get isConnected(): boolean {
@@ -33,22 +33,24 @@ export class GangService {
   private memberConnectedSubject: Subject<string>;
   private memberDisconnectedSubject: Subject<string>;
   private commandSubject: Subject<unknown>;
-  private stateSubject: Subject<unknown>;
+  private stateSubject: BehaviorSubject<unknown>;
   private unsentCommands: GangCommandWrapper[] = [];
 
+  onConnection: Observable<GangConnectionState>;
   onMemberConnected: Observable<string>;
   onMemberDisconnected: Observable<string>;
   onCommand: Observable<unknown>;
   onState: Observable<unknown>;
 
-  constructor(private webSocketFactory: GangWebSocketFactory) {
+  constructor(
+    private webSocketFactory: GangWebSocketFactory) {
     if (!location) throw new Error('required location object not found');
 
     const protocol = location.protocol.replace('http', 'ws');
     const host = location.host;
     this.rootUrl = `${protocol}//${host}/`;
 
-    this.connectionSubject = new BehaviorSubject(
+    this.onConnection = this.connectionSubject = new BehaviorSubject(
       GangConnectionState.disconnected
     );
 
@@ -59,7 +61,7 @@ export class GangService {
       string
     >();
     this.onCommand = this.commandSubject = new Subject<unknown>();
-    this.onState = this.stateSubject = new Subject<unknown>();
+    this.onState = this.stateSubject = new BehaviorSubject<unknown>(undefined);
   }
 
   async connect(url: string, gangId: string, token?: string): Promise<void> {
@@ -152,7 +154,7 @@ export class GangService {
         if (
           this.retry === NO_RETRY ||
           this.retrying ||
-          this.state === GangConnectionState.connected
+          this.connectionState === GangConnectionState.connected
         )
           return;
 

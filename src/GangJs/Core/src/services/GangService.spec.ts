@@ -46,7 +46,23 @@ describe('GangService', () => {
     receiveOpen();
   });
 
-  it('on Host message, host is true and memberId set', (done) => {
+  it('onConnection message', (done) => {
+    gangService.onConnection.subscribe(() => {
+      expect(gangService.isConnected).toBe(true);
+      done();
+    });
+  });
+
+  it('onConnection message close', (done) => {
+    receiveClose();
+
+    gangService.onConnection.subscribe(() => {
+      expect(gangService.isConnected).toBe(false);
+      done();
+    });
+  });
+
+  it('onMemberConnected host message, host is true and memberId set', (done) => {
     gangService.onMemberConnected.subscribe(() => {
       expect(gangService.memberId).toBe('MemberId');
       expect(gangService.isHost).toBe(true);
@@ -56,7 +72,7 @@ describe('GangService', () => {
     recieveMessage('HMemberId');
   });
 
-  it('on Member message, host is false', (done) => {
+  it('onMemberConnected member message, host is false', (done) => {
     gangService.onMemberConnected.subscribe(() => {
       expect(gangService.memberId).toBe('MemberId');
       expect(gangService.isHost).toBe(false);
@@ -66,7 +82,7 @@ describe('GangService', () => {
     recieveMessage('MMemberId');
   });
 
-  it('on Command message', (done) => {
+  it('onCommand message', (done) => {
     gangService.onCommand.subscribe((command) => {
       expect(command).not.toBeNull();
       done();
@@ -75,13 +91,30 @@ describe('GangService', () => {
     recieveMessage('C{}');
   });
 
-  it('on State message', (done) => {
+  it('onState current state on subscribe', (done) => {
+    const currentState = { current: true };
+    recieveMessage(`S${JSON.stringify(currentState)}`);
+
     gangService.onState.subscribe((state) => {
-      expect(state).not.toBeNull();
+      if (state === undefined) return;
+
+      expect(state).toEqual(currentState);
       done();
     });
 
-    recieveMessage('S{}');
+  });
+
+  it('onState new state ', (done) => {
+    const newState = { new: true };
+
+    gangService.onState.subscribe((state) => {
+      if (state === undefined) return;
+
+      expect(state).toEqual(newState);
+      done();
+    });
+
+    recieveMessage(`S${JSON.stringify(newState)}`);
   });
 
   it('cannot send state if not host', (done) => {
