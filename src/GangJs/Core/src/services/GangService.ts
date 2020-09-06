@@ -244,4 +244,29 @@ export class GangService {
       data,
     });
   }
+
+  waitForState<T>(predicate: (s: T) => boolean, options?: {
+    timeout?: number
+  }):
+    Promise<void> {
+
+    return new Promise((resolve, reject) => {
+
+      const sub = this.onState.subscribe(s => {
+
+        if (predicate(s as T)) {
+          sub.unsubscribe();
+          resolve();
+        }
+      })
+
+      setTimeout(() => {
+
+        sub.unsubscribe();
+        reject();
+      }, options?.timeout || 10000);
+
+    });
+  }
+
 }

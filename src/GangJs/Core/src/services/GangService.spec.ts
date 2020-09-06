@@ -116,6 +116,26 @@ describe('GangService', () => {
     recieveMessage(`S${JSON.stringify(newState)}`);
   });
 
+  it('waitForState', () => {
+    const newState = { new: true };
+
+    recieveMessage(`S${JSON.stringify(newState)}`);
+
+    expect(async () =>
+      await gangService.waitForState<typeof newState>(s => s?.new)
+    ).resolves
+  });
+
+  it('waitForState timeout', () => {
+    const newState = { new: false };
+
+    recieveMessage(`S${JSON.stringify(newState)}`);
+
+    expect(async () =>
+      await gangService.waitForState<typeof newState>(s => s?.new, { timeout: 10 })
+    ).rejects;
+  });
+
   it('cannot send state if not host', (done) => {
     gangService.onMemberConnected.subscribe(() => {
       expect(() => gangService.sendState({})).toThrow();
