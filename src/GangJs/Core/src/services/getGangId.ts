@@ -1,8 +1,8 @@
 export const getGangId = (function () {
 
-  var map = [];
+  const map = [];
 
-  for (var i = 0; i < 256; i++) {
+  for (let i = 0; i < 256; i++) {
     map[i] = (i < 16 ? '0' : '') + i.toString(16);
   }
 
