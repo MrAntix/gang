@@ -121,9 +121,9 @@ describe('GangService', () => {
 
     recieveMessage(`S${JSON.stringify(newState)}`);
 
-    expect(async () =>
-      await gangService.waitForState<typeof newState>(s => s?.new)
-    ).resolves
+    expect(
+      async () => await gangService.waitForState<typeof newState>((s) => s?.new)
+    ).resolves;
   });
 
   it('waitForState timeout', () => {
@@ -131,8 +131,11 @@ describe('GangService', () => {
 
     recieveMessage(`S${JSON.stringify(newState)}`);
 
-    expect(async () =>
-      await gangService.waitForState<typeof newState>(s => s?.new, { timeout: 10 })
+    expect(
+      async () =>
+        await gangService.waitForState<typeof newState>((s) => s?.new, {
+          timeout: 10,
+        })
     ).rejects;
   });
 
