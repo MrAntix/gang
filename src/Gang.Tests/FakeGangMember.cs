@@ -11,7 +11,7 @@ namespace Gang.Tests
             string id)
         {
             Id = Encoding.UTF8.GetBytes(id);
-            MessagesReceived = new List<Tuple<GangMessageTypes, byte[]>>();
+            MessagesReceived = new List<Message>();
         }
 
         public byte[] Id { get; }
@@ -39,15 +39,28 @@ namespace Gang.Tests
 
         Task IGangMember.SendAsync(GangMessageTypes type, byte[] data, byte[] memberId)
         {
-            MessagesReceived.Add(Tuple.Create(type, data));
+            MessagesReceived.Add(new Message(type, data));
             return Task.CompletedTask;
         }
 
-        public IList<Tuple<GangMessageTypes, byte[]>> MessagesReceived { get; }
+        public IList<Message> MessagesReceived { get; }
 
         void IDisposable.Dispose()
         {
             DisconnectAsync("disposed").GetAwaiter().GetResult();
+        }
+
+        public class Message
+        {
+            public Message(
+                GangMessageTypes type, byte[] data)
+            {
+                Type = type;
+                Data = data;
+            }
+
+            public GangMessageTypes Type { get; }
+            public byte[] Data { get; }
         }
     }
 }

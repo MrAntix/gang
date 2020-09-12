@@ -21,7 +21,7 @@ namespace Gang.Tests
 
             await handler.HandleAsync(gangParameters, firstGangMember);
 
-            Assert.Equal(GangMessageTypes.Host, firstGangMember.MessagesReceived[0].Item1);
+            Assert.Equal(GangMessageTypes.Host, firstGangMember.MessagesReceived[0].Type);
         }
 
         [Fact]
@@ -35,7 +35,7 @@ namespace Gang.Tests
             await handler.HandleAsync(gangParameters, firstGangMember);
             await handler.HandleAsync(gangParameters, secondGangMember);
 
-            Assert.Equal(GangMessageTypes.Member, secondGangMember.MessagesReceived[0].Item1);
+            Assert.Equal(GangMessageTypes.Member, secondGangMember.MessagesReceived[0].Type);
         }
 
         [Fact]
@@ -51,7 +51,7 @@ namespace Gang.Tests
 
             await firstGangMember.DisconnectAsync();
 
-            Assert.Equal(GangMessageTypes.Disconnect, secondGangMember.MessagesReceived[1].Item1);
+            Assert.Equal(GangMessageTypes.Disconnect, secondGangMember.MessagesReceived[1].Type);
         }
 
         [Fact]
@@ -69,8 +69,8 @@ namespace Gang.Tests
 
             await firstGangMember.Controller.SendAsync(new[] { (byte)1 });
 
-            Assert.Equal(GangMessageTypes.State, secondGangMember.MessagesReceived[1].Item1);
-            Assert.Equal(GangMessageTypes.State, thirdGangMember.MessagesReceived[1].Item1);
+            Assert.Equal(GangMessageTypes.State, secondGangMember.MessagesReceived[1].Type);
+            Assert.Equal(GangMessageTypes.State, thirdGangMember.MessagesReceived[1].Type);
         }
 
         [Fact]
@@ -86,7 +86,7 @@ namespace Gang.Tests
 
             await otherMember.Controller.SendAsync(new[] { (byte)1 });
 
-            Assert.Equal(GangMessageTypes.Command, hostMember.MessagesReceived[2].Item1);
+            Assert.Equal(GangMessageTypes.Command, hostMember.MessagesReceived[2].Type);
         }
 
         [Fact]
