@@ -19,6 +19,7 @@ namespace Gang.Web.Services
             )
         {
             _executor = executor
+                .RegisterErrorHandler(OnErrorAsync)
                 .Register<UpdateUserNameCommand>("updateUser", UpdateUser)
                 .Register<AddMessageCommand>("addMessage", AddMessage);
         }
@@ -44,6 +45,19 @@ namespace Gang.Web.Services
         protected override async Task OnCommandAsync(byte[] data, GangMessageAudit audit)
         {
             await _executor.ExecuteAsync(data, audit);
+        }
+
+        async Task OnErrorAsync(object command, GangMessageAudit audit, Exception ex)
+        {
+            await Controller.SendStateAsync(new
+            {
+                PrivateMessages = new[] {
+                            new WebGangMessage(
+                                "Error", DateTimeOffset.Now, null,
+                                ex.Message)
+                              }
+            },
+            new[] { audit.MemberId });
         }
 
         WebGangHostState _state = new WebGangHostState(
@@ -96,7 +110,7 @@ namespace Gang.Web.Services
                   _state.Messages
                 ));
 
-            if(joined) SendWelcome(Encoding.UTF8.GetBytes(user.Id));
+            if (joined) SendWelcome(Encoding.UTF8.GetBytes(user.Id));
         }
 
         async Task AddMessage(

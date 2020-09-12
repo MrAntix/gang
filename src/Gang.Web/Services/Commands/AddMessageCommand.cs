@@ -1,3 +1,5 @@
+using System;
+
 namespace Gang.Web.Services.Commands
 {
     public class AddMessageCommand
@@ -7,7 +9,7 @@ namespace Gang.Web.Services.Commands
           string text)
         {
             Id = id;
-            Text = text;
+            Text = text ?? throw new ArgumentNullException(nameof(text));
         }
 
         public string Id { get; }

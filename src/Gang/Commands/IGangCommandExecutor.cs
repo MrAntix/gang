@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 
 namespace Gang.Commands
@@ -10,5 +10,8 @@ namespace Gang.Commands
 
         Task ExecuteAsync(
             byte[] data, GangMessageAudit audit);
+
+        IGangCommandExecutor RegisterErrorHandler(
+            Func<byte[], GangMessageAudit, Exception, Task> handler);
     }
 }
