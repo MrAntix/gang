@@ -1,11 +1,6 @@
-import { getGangId } from '../services/getGangId';
-
 export class GangCommandWrapper {
-  constructor(public readonly type: string, public readonly command: unknown) {
-    this.id = getGangId();
-    this.on = new Date();
+  constructor(
+    public readonly type: string,
+    public readonly command: unknown) {
   }
-
-  readonly id: string;
-  readonly on: Date;
 }
