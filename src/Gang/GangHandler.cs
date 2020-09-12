@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Gang
 {
-    public class GangHandler :
+    public sealed class GangHandler :
         IGangHandler
     {
         readonly GangCollection _gangs;
