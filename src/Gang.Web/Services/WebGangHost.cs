@@ -128,13 +128,13 @@ namespace Gang.Web.Services
 
             if (audit == null) return;
 
-            //await NotifyAsync(
-            //    new NotifyCommand(
-            //        "success", null                    
-            //    ),
-            //    new[] { audit.MemberId },
-            //    audit.SequenceNumber
-            //);
+            await NotifyAsync(
+                new NotifyCommand(
+                    "success", null                    
+                ),
+                new[] { audit.MemberId },
+                audit.SequenceNumber
+            );
         }
 
         async Task AddMessage(
