@@ -175,13 +175,12 @@ describe('GangService', () => {
 
       const reader = new FileReader();
       reader.onload = async () => {
-
-        const d = new DataView(reader.result as any, 0);
+        const d = new DataView(reader.result as ArrayBuffer, 0);
         expect(d.getUint16(0, true)).toBe(2);
         done();
       };
 
-      reader.readAsArrayBuffer(sentMessages[3] as any);
+      reader.readAsArrayBuffer(sentMessages[3]);
     });
 
     recieveMessage('MMemberId');

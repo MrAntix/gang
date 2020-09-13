@@ -59,7 +59,9 @@ export class GangService {
     this.onMemberDisconnected = this.memberDisconnectedSubject = new Subject<
       string
     >();
-    this.onCommand = this.commandSubject = new Subject<GangCommandWrapper<unknown>>();
+    this.onCommand = this.commandSubject = new Subject<
+      GangCommandWrapper<unknown>
+    >();
     this.onState = this.stateSubject = new BehaviorSubject<unknown>(undefined);
   }
 
@@ -238,11 +240,8 @@ export class GangService {
 
   private sn = new Uint16Array(1);
   private sendCommandWrapper<T>(wrapper: GangCommandWrapper<T>): Promise<void> {
-
-    const sn = this.sn[0] += 1;
-    this.send(
-      [this.sn, JSON.stringify(wrapper)]
-    );
+    const sn = (this.sn[0] += 1);
+    this.send([this.sn, JSON.stringify(wrapper)]);
 
     GangContext.logger('GangService.sendCommandWrapper', wrapper, sn);
 
@@ -284,11 +283,11 @@ export class GangService {
       timeout?: number;
     }
   ): Promise<void> {
-
-    const test: (c: GangCommandWrapper<unknown>) => boolean = c => {
-      return (!type || type === c.type)
-        && (!predicate || predicate(c.command as T))
-    }
+    const test: (c: GangCommandWrapper<unknown>) => boolean = (c) => {
+      return (
+        (!type || type === c.type) && (!predicate || predicate(c.command as T))
+      );
+    };
 
     return new Promise((resolve, reject) => {
       const sub = this.onCommand.subscribe((c) => {
