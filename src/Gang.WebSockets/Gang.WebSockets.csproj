@@ -10,7 +10,7 @@
     <RepositoryUrl>https://github.com/MrAntix/gang</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>websocket gang relay</PackageTags>
-    <Version>2.0.0-beta.3</Version>
+    <Version>2.0.0-beta.4</Version>
     <OutputType>Library</OutputType>
     <IsPackable>true</IsPackable>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
