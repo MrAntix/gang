@@ -32,14 +32,14 @@ export class GangService {
 
   private memberConnectedSubject: Subject<string>;
   private memberDisconnectedSubject: Subject<string>;
-  private commandSubject: Subject<unknown>;
+  private commandSubject: Subject<GangCommandWrapper<unknown>>;
   private stateSubject: BehaviorSubject<unknown>;
-  private unsentCommands: GangCommandWrapper[] = [];
+  private unsentCommands: GangCommandWrapper<unknown>[] = [];
 
   onConnection: Observable<GangConnectionState>;
   onMemberConnected: Observable<string>;
   onMemberDisconnected: Observable<string>;
-  onCommand: Observable<unknown>;
+  onCommand: Observable<GangCommandWrapper<unknown>>;
   onState: Observable<unknown>;
 
   constructor(private webSocketFactory: GangWebSocketFactory) {
@@ -59,7 +59,7 @@ export class GangService {
     this.onMemberDisconnected = this.memberDisconnectedSubject = new Subject<
       string
     >();
-    this.onCommand = this.commandSubject = new Subject<unknown>();
+    this.onCommand = this.commandSubject = new Subject<GangCommandWrapper<unknown>>();
     this.onState = this.stateSubject = new BehaviorSubject<unknown>(undefined);
   }
 
@@ -84,8 +84,9 @@ export class GangService {
           this.retryingIn = undefined;
           resolve();
 
-          let wrapper: GangCommandWrapper;
-          while ((wrapper = this.unsentCommands.shift())) this.send(wrapper);
+          let wrapper: GangCommandWrapper<unknown>;
+          while ((wrapper = this.unsentCommands.shift()))
+            this.sendCommandWrapper(wrapper);
 
           clearRetryConnect();
         },
@@ -203,7 +204,18 @@ export class GangService {
     });
   }
 
-  sendCommand(type: string, command: unknown): void {
+  /**
+   * Sends a command to the host member
+   * await this if you expect a reply command from the host
+   *
+   * @param type Command type name
+   * @param command Command
+   *
+   * @returns a promise which resolves if a reply command is
+   * received from the host having the same sequence number
+   * or after 10s (promise is not rejected)
+   */
+  async sendCommand<T>(type: string, command: T): Promise<void> {
     const wrapper = new GangCommandWrapper(type, command);
     GangContext.logger('GangService.sendCommand', {
       wrapper,
@@ -216,32 +228,80 @@ export class GangService {
       return;
     }
 
-    this.sendCommandWrapper(wrapper);
-  }
-
-  private sendCommandWrapper(wrapper: GangCommandWrapper) {
     if (this.isHost) {
       this.commandSubject.next(wrapper);
       return;
     }
-    this.send(wrapper);
+
+    await this.sendCommandWrapper(wrapper);
+  }
+
+  private sn = new Uint16Array(1);
+  private sendCommandWrapper<T>(wrapper: GangCommandWrapper<T>): Promise<void> {
+
+    const sn = this.sn[0] += 1;
+    this.send(
+      [this.sn, JSON.stringify(wrapper)]
+    );
+
+    GangContext.logger('GangService.sendCommandWrapper', wrapper, sn);
+
+    return new Promise((resolve) => {
+      const sub = this.onCommand.subscribe((c) => {
+        if (c.sn == sn) {
+          sub.unsubscribe();
+          resolve();
+        }
+      });
+
+      setTimeout(() => {
+        sub.unsubscribe();
+        resolve();
+      }, 10000);
+    });
   }
 
   sendState(state: unknown): void {
     if (!this.isHost) throw new Error('only host can send state');
 
     this.stateSubject.next(state);
-    this.send(state);
+    this.send([JSON.stringify(state)]);
+
+    GangContext.logger('GangService.sendState', state);
   }
 
-  private send(data: unknown): void {
-    const blob = new Blob([JSON.stringify(data)], {
+  private send(parts: BlobPart[]): void {
+    const blob = new Blob(parts, {
       type: 'text/plain',
     });
     this.webSocket.send(blob);
+  }
 
-    GangContext.logger('GangService.send', {
-      data,
+  waitForCommand<T>(
+    type: string,
+    predicate: (c: T) => boolean,
+    options?: {
+      timeout?: number;
+    }
+  ): Promise<void> {
+
+    const test: (c: GangCommandWrapper<unknown>) => boolean = c => {
+      return (!type || type === c.type)
+        && (!predicate || predicate(c.command as T))
+    }
+
+    return new Promise((resolve, reject) => {
+      const sub = this.onCommand.subscribe((c) => {
+        if (test(c)) {
+          sub.unsubscribe();
+          resolve();
+        }
+      });
+
+      setTimeout(() => {
+        sub.unsubscribe();
+        reject();
+      }, options?.timeout || 10000);
     });
   }
 

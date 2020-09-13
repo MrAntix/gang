@@ -10,6 +10,6 @@ namespace Gang
         Task ConnectAsync(IGangController controller, Func<Task> onDisconnectAsync);
         Task DisconnectAsync(string reason = "disconnected");
 
-        Task SendAsync(GangMessageTypes type, byte[] data, byte[] memberId = null);
+        Task SendAsync(GangMessageTypes type, byte[] data, byte[] memberId = null, short? sequenceNumber = null);
     }
 }

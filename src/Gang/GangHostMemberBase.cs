@@ -27,7 +27,7 @@ namespace Gang
 
         async Task IGangMember.SendAsync(
             GangMessageTypes type,
-            byte[] data, byte[] memberId)
+            byte[] data, byte[] memberId, short? sequenceNumber)
         {
             switch (type)
             {
@@ -40,7 +40,8 @@ namespace Gang
 
                     break;
                 case GangMessageTypes.Command:
-                    await OnCommandAsync(data, new GangMessageAudit(memberId ?? Id));
+                    await OnCommandAsync(data,
+                        new GangMessageAudit(memberId ?? Id, sequenceNumber));
 
                     break;
             }

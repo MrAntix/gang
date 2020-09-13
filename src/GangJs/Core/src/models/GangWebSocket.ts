@@ -3,7 +3,7 @@ import { Subject, Subscription } from 'rxjs';
 export class GangWebSocket {
   constructor(
     private subject: Subject<MessageEvent>,
-    public send: (data: unknown) => void,
+    public send: (data: Blob) => void,
     public close?: (reason?: string) => void
   ) {}
 

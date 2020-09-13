@@ -49,15 +49,13 @@ namespace Gang.Web.Services
 
         async Task OnErrorAsync(object command, GangMessageAudit audit, Exception ex)
         {
-            await Controller.SendStateAsync(new
-            {
-                PrivateMessages = new[] {
-                            new WebGangMessage(
-                                "Error", DateTimeOffset.Now, null,
-                                ex.Message)
-                              }
-            },
-            new[] { audit.MemberId });
+            await NotifyAsync(
+                new NotifyCommand(
+                    "error", ex.Message
+                ),
+                new[] { audit.MemberId },
+                audit.SequenceNumber
+            );
         }
 
         WebGangHostState _state = new WebGangHostState(
@@ -127,6 +125,16 @@ namespace Gang.Web.Services
                       command.Text)
                     ).TakeLast(10)
                 ));
+
+            if (audit == null) return;
+
+            //await NotifyAsync(
+            //    new NotifyCommand(
+            //        "success", null                    
+            //    ),
+            //    new[] { audit.MemberId },
+            //    audit.SequenceNumber
+            //);
         }
 
         async Task AddMessage(
@@ -157,6 +165,20 @@ namespace Gang.Web.Services
                               }
             },
             new[] { memberId });
+        }
+
+        async Task NotifyAsync(
+            NotifyCommand command,
+            byte[][] memberIds,
+            short? sn
+            )
+        {
+            await Controller.SendCommandAsync(
+                NotifyCommand.TYPE_NAME,
+                command,
+                memberIds,
+                sn
+                );
         }
     }
 }

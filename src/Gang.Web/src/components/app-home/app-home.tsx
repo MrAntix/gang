@@ -143,13 +143,13 @@ export class AppHome {
     this.updateUser({ name });
   }
 
-  addMessage(e: Event, text: string) {
+  async addMessage(e: Event, text: string) {
     e.preventDefault();
 
     console.debug('addMessage', { text })
     if (!text) return;
 
-    this.service
+    await this.service
       .sendCommand('addMessage', {
         id: getGangId(),
         text

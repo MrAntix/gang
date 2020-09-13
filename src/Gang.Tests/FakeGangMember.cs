@@ -37,9 +37,10 @@ namespace Gang.Tests
             }
         }
 
-        Task IGangMember.SendAsync(GangMessageTypes type, byte[] data, byte[] memberId)
+        Task IGangMember.SendAsync(GangMessageTypes type,
+            byte[] data, byte[] memberId, short? sequenceNumber)
         {
-            MessagesReceived.Add(new Message(type, data));
+            MessagesReceived.Add(new Message(type, data, sequenceNumber));
             return Task.CompletedTask;
         }
 
@@ -53,14 +54,16 @@ namespace Gang.Tests
         public class Message
         {
             public Message(
-                GangMessageTypes type, byte[] data)
+                GangMessageTypes type, byte[] data, short? sequenceNumber)
             {
                 Type = type;
                 Data = data;
+                SequenceNumber = sequenceNumber;
             }
 
             public GangMessageTypes Type { get; }
             public byte[] Data { get; }
+            public short? SequenceNumber { get; }
         }
     }
 }

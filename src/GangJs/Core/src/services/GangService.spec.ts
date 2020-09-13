@@ -9,7 +9,7 @@ describe('GangService', () => {
   let receiveOpen: () => void;
   let receiveClose: () => void;
 
-  const sentMessages: unknown[] = [];
+  const sentMessages: Blob[] = [];
 
   beforeEach(() => {
     function webSocketFactoryMock(
@@ -162,6 +162,26 @@ describe('GangService', () => {
       gangService.sendCommand('do-it', {});
       expect(sentMessages.length).not.toBe(1);
       done();
+    });
+
+    recieveMessage('MMemberId');
+  });
+
+  it('sends with sequence number', (done) => {
+    gangService.onMemberConnected.subscribe(async () => {
+      gangService.sendCommand('do-it', {});
+      gangService.sendCommand('do-it-again', {});
+      expect(sentMessages.length).not.toBe(1);
+
+      const reader = new FileReader();
+      reader.onload = async () => {
+
+        const d = new DataView(reader.result as any, 0);
+        expect(d.getUint16(0, true)).toBe(2);
+        done();
+      };
+
+      reader.readAsArrayBuffer(sentMessages[3] as any);
     });
 
     recieveMessage('MMemberId');

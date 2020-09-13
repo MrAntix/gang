@@ -3,7 +3,6 @@ import { getGangId } from './getGangId';
 describe('getGangId', () => {
   it('not null', () => {
     const id = getGangId();
-    console.log(id);
 
     expect(id).not.toBeNull();
   });

@@ -1,4 +1,4 @@
-﻿namespace Gang
+namespace Gang
 {
     public enum GangMessageTypes
     {
