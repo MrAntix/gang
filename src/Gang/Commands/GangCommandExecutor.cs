@@ -28,7 +28,7 @@ namespace Gang.Commands
             return new GangCommandExecutor(
                 _serializer,
                 _handlers.Add(type,
-                    async (c, a) => handler(_serializer.Map<TCommand>(c), a)
+                     (c, a) => handler(_serializer.Map<TCommand>(c), a)
                 ),
                 _errorHandler);
         }
