@@ -33,7 +33,7 @@ export class GangService {
   private memberConnectedSubject: Subject<string>;
   private memberDisconnectedSubject: Subject<string>;
   private commandSubject: Subject<GangCommandWrapper<unknown>>;
-  private stateSubject: BehaviorSubject<unknown>;
+  private stateSubject: BehaviorSubject<object>;
   private unsentCommands: GangCommandWrapper<unknown>[] = [];
 
   onConnection: Observable<GangConnectionState>;
@@ -62,7 +62,7 @@ export class GangService {
     this.onCommand = this.commandSubject = new Subject<
       GangCommandWrapper<unknown>
     >();
-    this.onState = this.stateSubject = new BehaviorSubject<unknown>(undefined);
+    this.onState = this.stateSubject = new BehaviorSubject<object>(undefined);
   }
 
   async connect(url: string, gangId: string, token?: string): Promise<void> {
@@ -145,7 +145,10 @@ export class GangService {
               this.commandSubject.next(JSON.parse(messageData));
               break;
             case 'S':
-              this.stateSubject.next(JSON.parse(messageData));
+              this.stateSubject.next({
+                ...this.stateSubject.value,
+                ...JSON.parse(messageData)
+              });
               break;
           }
         };
@@ -207,6 +210,72 @@ export class GangService {
   }
 
   /**
+   * Map gang events to the component
+   *
+   * @param component the component to map to
+   */
+  mapEvents<TState>(
+    component: {
+      disconnectedCallback?: () => void;
+      onConnection?: (connectionState: GangConnectionState) => void;
+      onState?: (state: TState) => void;
+      onCommand?: (command: unknown) => void;
+      onMemberConnected?: (memberId: string) => void;
+      onMemberDisconnected?: (memberId: string) => void;
+    }
+  ): void {
+    const subs: { unsubscribe: () => undefined }[] = [];
+    [
+      'onConnection',
+      'onState',
+      'onCommand',
+      'onMemberConnected',
+      'onMemberDisconnected',
+    ].forEach((key) => {
+      if (component[key])
+        subs.push(this[key].subscribe((e: unknown) => component[key](e)));
+    });
+
+    const disconnectedCallback = component.disconnectedCallback;
+    component.disconnectedCallback = () => {
+      if (disconnectedCallback) disconnectedCallback();
+      subs.forEach((sub) => sub.unsubscribe());
+    };
+  }
+
+  /**
+   * Map the executors to a component
+   *
+   * @param component the component to map to
+   * @param executors a map of the executors e.g. { execOne, execTwo }
+   */
+  mapExecutors<C extends { [K in keyof P]: any }, P>(
+    component: C,
+    executors: P
+  ) {
+
+    Object.keys(executors).forEach(key => {
+      component[key] = executors[key](this);
+    });
+  }
+
+  /**
+   * Executes a command locally no data is sent to the host
+   *
+   * @param type Command type name
+   * @param command Command
+   */
+  executeCommand<T>(type: string, command: T): void {
+    const wrapper = new GangCommandWrapper(type, command);
+    GangContext.logger('GangService.executeCommand', {
+      wrapper,
+      isConnected: this.isConnected,
+    });
+
+    this.commandSubject.next(wrapper);
+  }
+
+  /**
    * Sends a command to the host member
    * await this if you expect a reply command from the host
    *
@@ -260,7 +329,7 @@ export class GangService {
     });
   }
 
-  sendState(state: unknown): void {
+  sendState(state: object): void {
     if (!this.isHost) throw new Error('only host can send state');
 
     this.stateSubject.next(state);

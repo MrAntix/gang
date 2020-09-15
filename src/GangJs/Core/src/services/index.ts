@@ -6,4 +6,3 @@ export * from './createGangWebSocket';
 export * from './GangService';
 export * from './GangStore';
 export * from './getGangId';
-export * from './mapGangEvents';

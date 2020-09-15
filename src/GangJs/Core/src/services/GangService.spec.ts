@@ -91,6 +91,19 @@ describe('GangService', () => {
     recieveMessage('C{}');
   });
 
+  it('onCommand after execute', (done) => {
+    const type = 'TYPE';
+    const command = {};
+
+    gangService.onCommand.subscribe((c) => {
+      expect(c.type).toEqual(type);
+      expect(c.command).toEqual(command);
+      done();
+    });
+
+    gangService.executeCommand(type, command);
+  });
+
   it('onState current state on subscribe', (done) => {
     const currentState = { current: true };
     recieveMessage(`S${JSON.stringify(currentState)}`);
@@ -114,6 +127,27 @@ describe('GangService', () => {
     });
 
     recieveMessage(`S${JSON.stringify(newState)}`);
+  });
+
+  it('onState merges', (done) => {
+    type IState = { three: boolean }
+    const firstState = { one: true, two: true };
+    const secondState = { two: false, three: true };
+
+    gangService.onState.subscribe((state: IState) => {
+
+      if (state?.three) {
+        expect(state).toEqual({
+          one: true,
+          two: false,
+          three: true
+        });
+        done();
+      }
+    });
+
+    recieveMessage(`S${JSON.stringify(firstState)}`);
+    recieveMessage(`S${JSON.stringify(secondState)}`);
   });
 
   it('waitForState', () => {
