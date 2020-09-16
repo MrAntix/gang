@@ -244,18 +244,18 @@ export class GangService {
   }
 
   /**
-   * Map the executors to a component
+   * Map the actions to a component, injecting this service
    *
    * @param component the component to map to
-   * @param executors a map of the executors e.g. { execOne, execTwo }
+   * @param actions a map of the executors e.g. { actionOne, actionTwo }
    */
-  mapExecutors<C extends { [K in keyof P]: any }, P>(
+  mapActions<C extends { [K in keyof A]: any }, A>(
     component: C,
-    executors: P
+    actions: A
   ) {
 
-    Object.keys(executors).forEach(key => {
-      component[key] = executors[key](this);
+    Object.keys(actions).forEach(key => {
+      component[key] = actions[key](this);
     });
   }
 
