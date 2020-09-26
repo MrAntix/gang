@@ -1,9 +1,6 @@
-using Gang.Web.Services.State;
-
 namespace Gang.Web.Services.Commands
 {
-    public class UpdateUserIsOnlineCommand :
-        IWebGangUserChangeIsOnline
+    public class UpdateUserIsOnlineCommand
     {
         public UpdateUserIsOnlineCommand(
             string id,

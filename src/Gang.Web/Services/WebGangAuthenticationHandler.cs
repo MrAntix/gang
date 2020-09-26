@@ -21,7 +21,7 @@ namespace Gang.Web.Services
         {
             var gang = _handler.GangById(parameters.GangId);
             if (parameters.GangId == "demo"
-                && parameters.Token?.Length == 32
+                && parameters.Token?.Length == 36
                 && (gang?.Members.Count ?? 0) < MAX_USERS)
             {
                 return Task.FromResult(

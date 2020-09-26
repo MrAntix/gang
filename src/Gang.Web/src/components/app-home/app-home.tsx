@@ -1,5 +1,5 @@
 import { Component, h, Host, State, Listen } from '@stencil/core';
-import { GangContext, mapGangEvents, getGangId, GangStore } from '@gang-js/core';
+import { GangContext, getGangId, GangStore } from '@gang-js/core';
 
 import { IAppState, IAppUser, IAppMessage } from '../../app/models';
 
@@ -33,7 +33,7 @@ export class AppHome {
 
   componentWillLoad() {
 
-    mapGangEvents(this.service, this);
+    this.service.mapEvents(this);
   }
 
   onState(state: IAppState) {

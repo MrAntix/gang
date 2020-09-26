@@ -16,7 +16,7 @@
     "remote": "npm un @gang-js/core && npm i @gang-js/core && npm audit fix"
   },
   "dependencies": {
-    "@gang-js/core": "^2.0.0-beta.5",
+    "@gang-js/core": "file:../GangJs/Core",
     "rxjs": "^6.6.3"
   },
   "devDependencies": {
@@ -32,7 +32,7 @@
     "jest-cli": "24.9.0",
     "puppeteer": "2.1.1",
     "to-ico": "^1.1.5",
-    "typescript": "^4.0.2",
+    "typescript": "^4.0.3",
     "workbox-build": "4.3.1"
   }
 }

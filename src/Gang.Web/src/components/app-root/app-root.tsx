@@ -1,6 +1,6 @@
 import { Component, h, Listen, State } from '@stencil/core';
 
-import { GangContext, mapGangEvents, GangStore, getGangId, GangConnectionState } from '@gang-js/core';
+import { GangContext, GangStore, getGangId, GangConnectionState } from '@gang-js/core';
 
 @Component({
   tag: 'app-root',
@@ -32,7 +32,7 @@ export class AppRoot {
   componentWillLoad() {
     this.onResize();
 
-    mapGangEvents(this.service, this);
+    this.service.mapEvents(this);
     this.service.connect('ws', 'demo', this.token);
   }
 
