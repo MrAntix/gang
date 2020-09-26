@@ -33,7 +33,7 @@ export class GangService {
   private memberConnectedSubject: Subject<string>;
   private memberDisconnectedSubject: Subject<string>;
   private commandSubject: Subject<GangCommandWrapper<unknown>>;
-  private stateSubject: BehaviorSubject<object>;
+  private stateSubject: BehaviorSubject<Record<string, unknown>>;
   private unsentCommands: GangCommandWrapper<unknown>[] = [];
 
   onConnection: Observable<GangConnectionState>;
@@ -62,7 +62,7 @@ export class GangService {
     this.onCommand = this.commandSubject = new Subject<
       GangCommandWrapper<unknown>
     >();
-    this.onState = this.stateSubject = new BehaviorSubject<object>(undefined);
+    this.onState = this.stateSubject = new BehaviorSubject<Record<string, unknown>>(undefined);
   }
 
   async connect(url: string, gangId: string, token?: string): Promise<void> {
@@ -249,10 +249,10 @@ export class GangService {
    * @param component the component to map to
    * @param actions a map of the executors e.g. { actionOne, actionTwo }
    */
-  mapActions<C extends { [K in keyof A]: any }, A>(
+  mapActions<C extends { [K in keyof A]: unknown }, A>(
     component: C,
     actions: A
-  ) {
+  ): void {
 
     Object.keys(actions).forEach(key => {
       component[key] = actions[key](this);
@@ -329,7 +329,7 @@ export class GangService {
     });
   }
 
-  sendState(state: object): void {
+  sendState(state: Record<string, unknown>): void {
     if (!this.isHost) throw new Error('only host can send state');
 
     this.stateSubject.next(state);
