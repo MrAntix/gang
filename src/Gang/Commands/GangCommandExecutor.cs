@@ -48,7 +48,7 @@ namespace Gang.Commands
         {
             try
             {
-                var wrapper = _serializer.Deserialize<GangCommandWrapper>(data);
+                var wrapper = _serializer.Deserialize<GangMessageWrapper>(data);
 
                 await _handlers[wrapper.Type](wrapper.Command, audit);
             }

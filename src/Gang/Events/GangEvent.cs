@@ -1,4 +1,4 @@
-﻿namespace Gang.Events
+namespace Gang.Events
 {
     public abstract class GangEvent
     {

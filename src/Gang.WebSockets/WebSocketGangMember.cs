@@ -41,7 +41,7 @@ namespace Gang.WebSockets
 
                         if (result.MessageType != WebSocketMessageType.Binary) break;
 
-                        await data.WriteAsync(_buffer.Array, 0, result.Count);
+                        await data.WriteAsync(_buffer, CancellationToken.None);
 
                     } while (!result.EndOfMessage);
 
