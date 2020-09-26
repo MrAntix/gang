@@ -130,17 +130,16 @@ describe('GangService', () => {
   });
 
   it('onState merges', (done) => {
-    type IState = { three: boolean }
+    type IState = { three: boolean };
     const firstState = { one: true, two: true };
     const secondState = { two: false, three: true };
 
     gangService.onState.subscribe((state: IState) => {
-
       if (state?.three) {
         expect(state).toEqual({
           one: true,
           two: false,
-          three: true
+          three: true,
         });
         done();
       }

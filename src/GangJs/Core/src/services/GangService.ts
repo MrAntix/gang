@@ -62,7 +62,9 @@ export class GangService {
     this.onCommand = this.commandSubject = new Subject<
       GangCommandWrapper<unknown>
     >();
-    this.onState = this.stateSubject = new BehaviorSubject<Record<string, unknown>>(undefined);
+    this.onState = this.stateSubject = new BehaviorSubject<
+      Record<string, unknown>
+    >(undefined);
   }
 
   async connect(url: string, gangId: string, token?: string): Promise<void> {
@@ -147,7 +149,7 @@ export class GangService {
             case 'S':
               this.stateSubject.next({
                 ...this.stateSubject.value,
-                ...JSON.parse(messageData)
+                ...JSON.parse(messageData),
               });
               break;
           }
@@ -214,16 +216,14 @@ export class GangService {
    *
    * @param component the component to map to
    */
-  mapEvents<TState>(
-    component: {
-      disconnectedCallback?: () => void;
-      onConnection?: (connectionState: GangConnectionState) => void;
-      onState?: (state: TState) => void;
-      onCommand?: (command: unknown) => void;
-      onMemberConnected?: (memberId: string) => void;
-      onMemberDisconnected?: (memberId: string) => void;
-    }
-  ): void {
+  mapEvents<TState>(component: {
+    disconnectedCallback?: () => void;
+    onConnection?: (connectionState: GangConnectionState) => void;
+    onState?: (state: TState) => void;
+    onCommand?: (command: unknown) => void;
+    onMemberConnected?: (memberId: string) => void;
+    onMemberDisconnected?: (memberId: string) => void;
+  }): void {
     const subs: { unsubscribe: () => undefined }[] = [];
     [
       'onConnection',
@@ -253,8 +253,7 @@ export class GangService {
     component: C,
     actions: A
   ): void {
-
-    Object.keys(actions).forEach(key => {
+    Object.keys(actions).forEach((key) => {
       component[key] = actions[key](this);
     });
   }
