@@ -3,12 +3,12 @@ using Gang.Web.Services.State;
 namespace Gang.Web.Services.Events
 {
     public class WebGangUserIsOnlineUpdatedEvent :
-        WebGangStateEvent, IWebGangUserChangeIsOnline
+        IWebGangUserChangeIsOnline
     {
         public WebGangUserIsOnlineUpdatedEvent(
             string userId,
-            bool isOnline,
-            GangMessageAudit audit) : base(audit)
+            bool isOnline
+            )
         {
             UserId = userId;
             IsOnline = isOnline;

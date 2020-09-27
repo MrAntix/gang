@@ -1,4 +1,4 @@
-﻿using Xunit;
+using Xunit;
 
 namespace Gang.Tests
 {
@@ -54,6 +54,5 @@ namespace Gang.Tests
 
             Assert.Null(gangs[GANG_ID]);
         }
-
     }
 }

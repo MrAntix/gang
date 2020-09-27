@@ -54,18 +54,20 @@ export class AppRoot {
         </header>
 
         <div>
-          <p>Demo app built on a state sharing algorithm using websockets, written in c# on net5.0 and JS client</p>
           <p><a href="https://github.com/MrAntix/gang">github.com/MrAntix/gang</a></p>
         </div>
 
         <main>
-
           <stencil-router>
             <stencil-route-switch scrollTopOffset={0}>
               <stencil-route url='/' component='app-home' exact={true} />
             </stencil-route-switch>
           </stencil-router>
         </main>
+
+        <div>
+          <p>Demo app built on a state sharing algorithm using websockets, written in c# on net5.0 and JS client</p>
+        </div>
       </div>
     );
   }

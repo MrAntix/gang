@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Gang
 {
-    public abstract class GangHostMemberBase : IGangMember
+    public abstract class GangHostBase : IGangMember
     {
         public byte[] Id { get; } = Encoding.UTF8.GetBytes("HOST");
 
@@ -27,7 +27,7 @@ namespace Gang
 
         async Task IGangMember.SendAsync(
             GangMessageTypes type,
-            byte[] data, byte[] memberId, short? sequenceNumber)
+            byte[] data, byte[] memberId, uint? sequenceNumber)
         {
             switch (type)
             {
@@ -60,6 +60,8 @@ namespace Gang
         {
             DisconnectAsync("disposed")
                 .GetAwaiter().GetResult();
+
+            GC.SuppressFinalize(this);
         }
     }
 }

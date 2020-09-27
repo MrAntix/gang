@@ -11,7 +11,7 @@ namespace Gang.Tests
 {
     public class GangHandlerTests
     {
-        readonly GangParameters gangParameters = new GangParameters("gangId", null);
+        readonly GangParameters _gangParameters = new GangParameters("gangId", null);
 
         [Fact]
         public async Task first_connection_sent_host_message()
@@ -19,7 +19,7 @@ namespace Gang.Tests
             var handler = GetGangHander();
             var firstGangMember = new FakeGangMember("firstGangMember");
 
-            await handler.HandleAsync(gangParameters, firstGangMember);
+            await handler.HandleAsync(_gangParameters, firstGangMember);
 
             Assert.Equal(GangMessageTypes.Host, firstGangMember.MessagesReceived[0].Type);
         }
@@ -32,8 +32,8 @@ namespace Gang.Tests
             var firstGangMember = new FakeGangMember("firstGangMember");
             var secondGangMember = new FakeGangMember("secondGangMember");
 
-            await handler.HandleAsync(gangParameters, firstGangMember);
-            await handler.HandleAsync(gangParameters, secondGangMember);
+            await handler.HandleAsync(_gangParameters, firstGangMember);
+            await handler.HandleAsync(_gangParameters, secondGangMember);
 
             Assert.Equal(GangMessageTypes.Member, secondGangMember.MessagesReceived[0].Type);
         }
@@ -46,8 +46,8 @@ namespace Gang.Tests
             var firstGangMember = new FakeGangMember("firstGangMember");
             var secondGangMember = new FakeGangMember("secondGangMember");
 
-            await handler.HandleAsync(gangParameters, firstGangMember);
-            await handler.HandleAsync(gangParameters, secondGangMember);
+            await handler.HandleAsync(_gangParameters, firstGangMember);
+            await handler.HandleAsync(_gangParameters, secondGangMember);
 
             await firstGangMember.DisconnectAsync();
 
@@ -63,9 +63,9 @@ namespace Gang.Tests
             var secondGangMember = new FakeGangMember("secondGangMember");
             var thirdGangMember = new FakeGangMember("thirdGangMember");
 
-            await handler.HandleAsync(gangParameters, firstGangMember);
-            await handler.HandleAsync(gangParameters, secondGangMember);
-            await handler.HandleAsync(gangParameters, thirdGangMember);
+            await handler.HandleAsync(_gangParameters, firstGangMember);
+            await handler.HandleAsync(_gangParameters, secondGangMember);
+            await handler.HandleAsync(_gangParameters, thirdGangMember);
 
             await firstGangMember.Controller.SendAsync(new[] { (byte)1 });
 
@@ -81,14 +81,14 @@ namespace Gang.Tests
             using var hostMember = new FakeGangMember("hostMember");
             using var otherMember = new FakeGangMember("otherMember");
 
-            await handler.HandleAsync(gangParameters, hostMember);
-            await handler.HandleAsync(gangParameters, otherMember);
+            await handler.HandleAsync(_gangParameters, hostMember);
+            await handler.HandleAsync(_gangParameters, otherMember);
 
 
             await otherMember.Controller.SendAsync(new byte[] { 10, 1, 1 });
 
             Assert.Equal(GangMessageTypes.Command, hostMember.MessagesReceived[2].Type);
-            Assert.Equal(266, hostMember.MessagesReceived[2].SequenceNumber.Value);
+            Assert.Equal((uint)266, hostMember.MessagesReceived[2].SequenceNumber.Value);
         }
 
         [Fact]
@@ -100,7 +100,7 @@ namespace Gang.Tests
 
             var hostMember = new FakeGangMember("hostMember");
 
-            await handler.HandleAsync(gangParameters, hostMember);
+            await handler.HandleAsync(_gangParameters, hostMember);
 
             await hostMember.DisconnectAsync();
 
@@ -122,12 +122,12 @@ namespace Gang.Tests
                 .OfType<GangAddedEvent>()
                 .Subscribe(async e =>
 
-                 await handler.HandleAsync(gangParameters, hostMember).BlockAsync()
+                 await handler.HandleAsync(_gangParameters, hostMember).BlockAsync()
              ))
             {
-                await handler.HandleAsync(gangParameters, firstGangMember);
+                await handler.HandleAsync(_gangParameters, firstGangMember);
 
-                var gang = handler.GangById(gangParameters.GangId);
+                var gang = handler.GangById(_gangParameters.GangId);
                 Assert.Equal(2, gang.Members.Count);
 
                 Assert.Equal(hostMember, gang.HostMember);

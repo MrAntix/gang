@@ -82,7 +82,7 @@ namespace Gang
                     }
                     else
                     {
-                        var sequenceNumber = BitConverter.ToInt16(data.AsSpan()[0..2]);
+                        var sequenceNumber = (uint)BitConverter.ToUInt16(data.AsSpan()[0..2]);
 
                         await gang.HostMember
                             .SendAsync(GangMessageTypes.Command, data[2..], gangMember.Id, sequenceNumber);

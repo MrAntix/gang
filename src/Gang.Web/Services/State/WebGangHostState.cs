@@ -1,3 +1,4 @@
+using Gang.Events;
 using Gang.Web.Services.Events;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -18,7 +19,7 @@ namespace Gang.Web.Services.State
         public IImmutableList<WebGangUser> Users { get; }
         public IImmutableList<WebGangMessage> Messages { get; }
 
-        public WebGangHostState Update(WebGangUserCreatedEvent e)
+        public WebGangHostState Apply(WebGangUserCreatedEvent e)
         {
             var user = new WebGangUser(e.UserId, null, e.IsOnline);
 
@@ -28,7 +29,7 @@ namespace Gang.Web.Services.State
                                 );
         }
 
-        public WebGangHostState Update(WebGangUserNameUpdatedEvent e)
+        public WebGangHostState Apply(WebGangUserNameUpdatedEvent e)
         {
             var user = Users.First(u => u.Id == e.UserId);
 
@@ -38,7 +39,7 @@ namespace Gang.Web.Services.State
                 );
         }
 
-        public WebGangHostState Update(WebGangUserIsOnlineUpdatedEvent e)
+        public WebGangHostState Apply(WebGangUserIsOnlineUpdatedEvent e)
         {
             var user = Users.First(u => u.Id == e.UserId);
 
@@ -48,11 +49,11 @@ namespace Gang.Web.Services.State
                 );
         }
 
-        public WebGangHostState Update(WebGangMessageAddedEvent e)
+        public WebGangHostState Apply(WebGangMessageAddedEvent e, GangStateEventAudit a)
         {
             var message = new WebGangMessage(
                 e.MessageId,
-                e.Audit.On, e.Audit.MemberId.GangToString(),
+                a.On, a.MemberId.GangToString(),
                 e.Text);
 
             return new WebGangHostState(

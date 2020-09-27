@@ -1,12 +1,13 @@
-﻿namespace Gang.Web.Services.Events
+using Gang.Events;
+
+namespace Gang.Web.Services.Events
 {
-    public class WebGangMessageAddedEvent :
-        WebGangStateEvent
+    public class WebGangMessageAddedEvent
     {
         public WebGangMessageAddedEvent(
             string messageId,
-            string text,
-            GangMessageAudit audit) : base(audit)
+            string text
+            )
         {
             MessageId = messageId;
             Text = text;

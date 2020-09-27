@@ -6,7 +6,7 @@ namespace Gang
     {
         public GangMessageAudit(
             byte[] memberId,
-            short? sequenceNumber = null,
+            uint? sequenceNumber = null,
             DateTimeOffset? on = null)
         {
             MemberId = memberId;
@@ -15,7 +15,7 @@ namespace Gang
         }
 
         public byte[] MemberId { get; }
-        public short? SequenceNumber { get; }
+        public uint? SequenceNumber { get; }
         public DateTimeOffset On { get; }
     }
 }

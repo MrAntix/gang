@@ -47,14 +47,14 @@ namespace Gang
         }
 
         async Task IGangController.SendCommandAsync(
-            string type, object command, IEnumerable<byte[]> memberIds, short? sn)
+            string type, object command, IEnumerable<byte[]> memberIds, uint? sequenceNumber)
         {
             await _sendAsync(
                  _serializer.Serialize(new
                  {
                      type,
                      command,
-                     sn
+                     sequenceNumber
                  }),
                  GangMessageTypes.Command,
                  memberIds);

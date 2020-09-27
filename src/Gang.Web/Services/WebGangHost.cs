@@ -1,4 +1,5 @@
 using Gang.Commands;
+using Gang.Events;
 using Gang.Web.Services.Commands;
 using Gang.Web.Services.Events;
 using Gang.Web.Services.State;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Gang.Web.Services
 {
-    public class WebGangHost : GangHostMemberBase
+    public class WebGangHost : GangStatefulHostBase<WebGangHostState>
     {
         readonly IGangCommandExecutor _executor;
 
@@ -23,6 +24,24 @@ namespace Gang.Web.Services
                 .RegisterErrorHandler(OnErrorAsync)
                 .Register<UpdateUserNameCommand>("updateUser", UpdateUser)
                 .Register<AddMessageCommand>("addMessage", AddMessage);
+        }
+
+        protected override Task OnConnectAsync()
+        {
+            SetState(new WebGangHostState(
+              new List<WebGangUser>(),
+              new List<WebGangMessage>())
+            );
+
+            ApplyStateEvents(
+                new[]{
+                    new GangStateEventWrapper(
+                        new WebGangMessageAddedEvent("Welcome", "Gang Chat Started"),
+                        new GangStateEventAudit(Id, 1, DateTimeOffset.Now)
+                        )
+                });
+
+            return base.OnConnectAsync();
         }
 
         protected override async Task OnMemberConnectAsync(byte[] memberId)
@@ -61,75 +80,53 @@ namespace Gang.Web.Services
             );
         }
 
-        WebGangHostState _state = new WebGangHostState(
-          new List<WebGangUser>(),
-          new List<WebGangMessage>());
-
-        async Task RaiseStateEvent<TEvent>(
-            TEvent e,
-            Func<TEvent, WebGangHostState> stateChange)
+        protected override async Task OnStateEventAsync(
+            object e, GangStateEventAudit a)
         {
-            Console.WriteLine($"EVENT: {e.GetType().Name}\n{JsonConvert.SerializeObject(e)}");
+            Console.WriteLine(
+                $"EVENT: {e.GetType().Name}" +
+                $"\n{JsonConvert.SerializeObject(e)}" +
+                $"\n{JsonConvert.SerializeObject(a)}");
 
-            _state = stateChange(e);
-
-            if (!_state.Users.Any())
-            {
-                await DisconnectAsync("no-users");
-                return;
-            }
-
-            await Controller.SendStateAsync(_state);
+            await Controller.SendStateAsync(State);
         }
 
         async Task UpdateUser(
             UpdateUserIsOnlineCommand command,
             GangMessageAudit audit)
         {
-            if (_state.Users.Any(u => u.Id == command.Id))
+            if (State.Users.Any(u => u.Id == command.Id))
             {
                 var e = new WebGangUserIsOnlineUpdatedEvent(
                     command.Id,
-                    command.IsOnline,
-                    audit
+                    command.IsOnline
                 );
 
-                await RaiseStateEvent(
-                    e,
-                    _state.Update
-                    );
+                await RaiseStateEventAsync(e, audit.MemberId, State.Apply);
             }
             else
             {
                 var e = new WebGangUserCreatedEvent(
                     command.Id,
-                    command.IsOnline,
-                    audit
+                    command.IsOnline
                 );
 
-                await RaiseStateEvent(
-                    e,
-                    _state.Update
-                    );
+                await RaiseStateEventAsync(e, audit.MemberId, State.Apply);
             }
         }
 
         async Task UpdateUser(
             UpdateUserNameCommand command, GangMessageAudit audit)
         {
-            var user = _state.Users.First(u => u.Id == command.Id);
+            var user = State.Users.First(u => u.Id == command.Id);
             var joined = user.Name == null;
 
             var e = new WebGangUserNameUpdatedEvent(
                 user.Id,
-                command.Name,
-                audit
+                command.Name
             );
 
-            await RaiseStateEvent(
-                e,
-                _state.Update
-                );
+            await RaiseStateEventAsync(e, audit.MemberId, State.Apply);
 
             if (joined) SendWelcome(Encoding.UTF8.GetBytes(user.Id));
         }
@@ -140,14 +137,10 @@ namespace Gang.Web.Services
         {
             var e = new WebGangMessageAddedEvent(
                 command.Id,
-                command.Text,
-                audit
+                command.Text
             );
 
-            await RaiseStateEvent(
-                e,
-                _state.Update
-                );
+            await RaiseStateEventAsync(e, audit.MemberId, State.Apply);
 
             await NotifyAsync(
                 new NotifyCommand(
@@ -163,19 +156,15 @@ namespace Gang.Web.Services
         {
             var e = new WebGangMessageAddedEvent(
                 Guid.NewGuid().ToString("N"),
-                message,
-                new GangMessageAudit(this.Id)
+                message
             );
 
-            await RaiseStateEvent(
-                e,
-                _state.Update
-                );
+            await RaiseStateEventAsync(e, Id, State.Apply);
         }
 
         async void SendWelcome(byte[] memberId)
         {
-            var user = _state.Users.TryGetByIdString(memberId);
+            var user = State.Users.TryGetByIdString(memberId);
 
             await AddMessage(
                 $"{user.Name} Joined"
@@ -197,7 +186,7 @@ namespace Gang.Web.Services
         async Task NotifyAsync(
             NotifyCommand command,
             byte[][] memberIds,
-            short? inReplyToSequenceNumber
+            uint? inReplyToSequenceNumber
             )
         {
             await Controller.SendCommandAsync(

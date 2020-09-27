@@ -37,7 +37,7 @@ namespace Gang.WebSockets
                     do
                     {
                         result = await _webSocket
-                           .ReceiveAsync(_buffer, CancellationToken.None);
+                            .ReceiveAsync(_buffer, CancellationToken.None);
 
                         if (result.MessageType != WebSocketMessageType.Binary) break;
 
@@ -61,7 +61,7 @@ namespace Gang.WebSockets
                     WebSocketCloseStatus.NormalClosure, reason, CancellationToken.None);
         }
 
-        async Task IGangMember.SendAsync(GangMessageTypes type, byte[] data, byte[] _, short? sequenceNumber)
+        async Task IGangMember.SendAsync(GangMessageTypes type, byte[] data, byte[] _, uint? sequenceNumber)
         {
             await _sendQueue.Enqueue(async () =>
             {
@@ -95,6 +95,8 @@ namespace Gang.WebSockets
         {
             DisconnectAsync("disposed").GetAwaiter().GetResult();
             _webSocket.Dispose();
+
+            GC.SuppressFinalize(this);
         }
     }
 }

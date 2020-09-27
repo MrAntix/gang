@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Gang.WebSockets\Gang.WebSockets.csproj" />
+    <ProjectReference Include="..\Gang\Gang.csproj" />
   </ItemGroup>
 
 </Project>

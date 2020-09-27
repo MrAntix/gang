@@ -1,12 +1,11 @@
 namespace Gang.Web.Services.Events
 {
-    public class WebGangUserCreatedEvent :
-        WebGangStateEvent
+    public class WebGangUserCreatedEvent 
     {
         public WebGangUserCreatedEvent(
             string userId,
-            bool isOnline,
-            GangMessageAudit audit) : base(audit)
+            bool isOnline
+            )
         {
             UserId = userId;
             IsOnline = isOnline;

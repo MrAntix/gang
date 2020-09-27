@@ -3,12 +3,11 @@ using Gang.Web.Services.State;
 namespace Gang.Web.Services.Events
 {
     public class WebGangUserNameUpdatedEvent :
-        WebGangStateEvent, IWebGangUserChangeName
+        IWebGangUserChangeName
     {
         public WebGangUserNameUpdatedEvent(
             string userId,
-            string name,
-            GangMessageAudit audit) : base(audit)
+            string name)
         {
             UserId = userId;
             Name = name;
