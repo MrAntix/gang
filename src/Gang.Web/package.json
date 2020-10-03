@@ -16,7 +16,7 @@
     "remote": "npm un @gang-js/core && npm i @gang-js/core && npm audit fix"
   },
   "dependencies": {
-    "@gang-js/core": "^2.0.0-beta.6",
+    "@gang-js/core": "^2.0.0-beta.7",
     "rxjs": "^6.6.3"
   },
   "devDependencies": {

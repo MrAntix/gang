@@ -84,11 +84,11 @@ namespace Gang.Tests
             await handler.HandleAsync(_gangParameters, hostMember);
             await handler.HandleAsync(_gangParameters, otherMember);
 
-
-            await otherMember.Controller.SendAsync(new byte[] { 10, 1, 1 });
+            uint sequenceNumber = 266;
+            await otherMember.Controller.SendAsync(BitConverter.GetBytes(sequenceNumber));
 
             Assert.Equal(GangMessageTypes.Command, hostMember.MessagesReceived[2].Type);
-            Assert.Equal((uint)266, hostMember.MessagesReceived[2].SequenceNumber.Value);
+            Assert.Equal(sequenceNumber, hostMember.MessagesReceived[2].SequenceNumber.Value);
         }
 
         [Fact]

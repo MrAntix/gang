@@ -60,7 +60,7 @@ export class GangService {
       string
     >();
     this.onCommand = this.commandSubject = new Subject<
-      GangCommandWrapper<unknown>
+      GangCommandWrapper<Record<string, unknown>>
     >();
     this.onState = this.stateSubject = new BehaviorSubject<
       Record<string, unknown>
@@ -111,50 +111,50 @@ export class GangService {
       );
 
       this.webSocket.subscribe((e: MessageEvent) => {
-        const reader = new FileReader();
+        const data = e.data as ArrayBuffer;
+        const messageType = readString(data, 0, 1);
 
-        reader.onload = () => {
-          const messageType = reader.result[0];
-          const messageData = reader.result.slice(1) as string;
+        GangContext.logger('GangService.onmessage:', readString(data));
 
-          GangContext.logger(
-            'GangService.onmessage type:',
-            messageType,
-            'data:',
-            messageData
-          );
-
-          switch (messageType) {
-            default:
-              throw new Error(`unknown message type: ${messageType}`);
-            case 'H':
-              this.isHost = true;
-              this.memberId = messageData;
-              this.memberConnectedSubject.next(messageData);
-              break;
-            case 'M':
-              this.isHost = false;
-              this.memberId = messageData;
-              this.memberConnectedSubject.next(messageData);
-              break;
-            case '+':
-              this.memberConnectedSubject.next(messageData);
-              break;
-            case '-':
-              this.memberDisconnectedSubject.next(messageData);
-              break;
-            case 'C':
-              this.commandSubject.next(JSON.parse(messageData));
-              break;
-            case 'S':
-              this.stateSubject.next({
-                ...this.stateSubject.value,
-                ...JSON.parse(messageData),
-              });
-              break;
+        switch (messageType) {
+          default:
+            throw new Error(`unknown message type: ${messageType}`);
+          case 'H':
+            this.isHost = true;
+            this.memberId = readString(data, 1);
+            this.memberConnectedSubject.next(this.memberId);
+            break;
+          case 'M':
+            this.isHost = false;
+            this.memberId = readString(data, 1);
+            this.memberConnectedSubject.next(this.memberId);
+            break;
+          case '+': {
+            const memberId = readString(data, 1);
+            this.memberConnectedSubject.next(memberId);
+            break;
           }
-        };
-        reader.readAsText(e.data);
+          case '-': {
+            const memberId = readString(data, 1);
+            this.memberDisconnectedSubject.next(memberId);
+            break;
+          }
+          case 'C': {
+            const commandWrapper =
+              data.byteLength > 9 ? JSON.parse(readString(data, 9)) : {};
+            commandWrapper.sn = readUint32(data, 1);
+            this.commandSubject.next(commandWrapper);
+            break;
+          }
+          case 'S': {
+            const state = JSON.parse(readString(data, 1));
+            this.stateSubject.next({
+              ...this.stateSubject.value,
+              ...state,
+            });
+            break;
+          }
+        }
       });
 
       const retryConnect = (() => {
@@ -306,16 +306,20 @@ export class GangService {
     await this.sendCommandWrapper(wrapper);
   }
 
-  private sn = new Uint16Array(1);
+  private sn = 0;
   private sendCommandWrapper<T>(wrapper: GangCommandWrapper<T>): Promise<void> {
-    const sn = (this.sn[0] += 1);
-    this.send([this.sn, JSON.stringify(wrapper)]);
+    const sn = ++this.sn;
+    this.send(JSON.stringify(wrapper), sn);
 
-    GangContext.logger('GangService.sendCommandWrapper', wrapper, sn);
+    GangContext.logger('GangService.sendCommandWrapper', {
+      type: wrapper.type,
+      command: wrapper.command,
+      sn,
+    });
 
     return new Promise((resolve) => {
       const sub = this.onCommand.subscribe((c) => {
-        if (c.sn == sn) {
+        if (c.rsn == sn) {
           sub.unsubscribe();
           resolve();
         }
@@ -332,16 +336,19 @@ export class GangService {
     if (!this.isHost) throw new Error('only host can send state');
 
     this.stateSubject.next(state);
-    this.send([JSON.stringify(state)]);
+    this.send(JSON.stringify(state));
 
     GangContext.logger('GangService.sendState', state);
   }
 
-  private send(parts: BlobPart[]): void {
-    const blob = new Blob(parts, {
-      type: 'text/plain',
-    });
-    this.webSocket.send(blob);
+  private send(data: string, sn?: number) {
+    let a = Uint8Array.from(data, (x) => x.charCodeAt(0));
+    if (sn) {
+      const sna = Uint32Array.from([sn]);
+      a = new Uint8Array([...new Uint8Array(sna.buffer), ...a]);
+    }
+
+    this.webSocket.send(a.buffer);
   }
 
   waitForCommand<T>(
@@ -392,4 +399,17 @@ export class GangService {
       }, options?.timeout || 10000);
     });
   }
+}
+
+function readString(buffer: ArrayBuffer, start = 0, length?: number): string {
+  return String.fromCharCode.apply(
+    null,
+    new Uint8Array(
+      length ? buffer.slice(start, start + length) : buffer.slice(start)
+    )
+  );
+}
+
+function readUint32(buffer: ArrayBuffer, start = 0): number {
+  return new Uint32Array(buffer.slice(start, start + 4))[0];
 }

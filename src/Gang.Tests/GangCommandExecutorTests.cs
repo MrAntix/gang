@@ -64,11 +64,13 @@ namespace Gang.Tests
             arg = default(string)
         });
 
-        IGangCommandExecutor GetExecutor()
+        GangCommandExecutor<FakeGangStatefulHost> GetExecutor()
         {
-            return new GangCommandExecutor(
+            return new GangCommandExecutor<FakeGangStatefulHost>(
+                new FakeGangStatefulHost(),
                 _serializer
-                );
+                )
+                .Register<FakeGangStatefulHost.SetCommandHandler>();
         }
     }
 }

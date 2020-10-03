@@ -7,5 +7,11 @@ namespace Gang.Serialization
         {
             return (T)service.Deserialize(value, typeof(T));
         }
+
+        public static TObject Map<TObject>(
+            this IGangSerializationService service, object value)
+        {
+            return (TObject)service.Map(value, typeof(TObject));
+        }
     }
 }

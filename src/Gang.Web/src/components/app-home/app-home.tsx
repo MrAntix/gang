@@ -128,19 +128,15 @@ export class AppHome {
     }
   }
 
-  updateUser(change: Partial<IAppUser>) {
-
-    this.service
-      .sendCommand('updateUser', {
-        ...this.currentUser,
-        ...change
-      });
-  }
-
   updateUserName(name: string) {
 
     GangStore.set('name', name);
-    this.updateUser({ name });
+
+    this.service
+      .sendCommand('updateUserName', {
+        id: this.currentUser.id,
+        name
+      });
   }
 
   async addMessage(e: Event, text: string) {
@@ -155,6 +151,7 @@ export class AppHome {
         text
       });
 
+    console.debug('addMessage.done', { text })
     this.newMessageText = '';
   }
 

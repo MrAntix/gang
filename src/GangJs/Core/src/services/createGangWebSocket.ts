@@ -11,6 +11,7 @@ export function createGangWebSocket(
   GangContext.logger('GangWebSocketFactory.create', url);
 
   const webSocket = new WebSocket(url);
+  webSocket.binaryType = 'arraybuffer';
 
   const observable = Observable.create((o: Observer<MessageEvent>) => {
     webSocket.onopen = onOpen;

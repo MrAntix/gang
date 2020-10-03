@@ -1,5 +1,7 @@
 using Gang.Serialization;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Gang
@@ -10,6 +12,7 @@ namespace Gang
         readonly IGangHandler _handler;
         readonly GangMemberSendAsync _sendAsync;
         readonly IGangSerializationService _serializer;
+        uint _commandSequenceNumber = uint.MaxValue-10;
 
         public GangController(
             string gangId,
@@ -47,17 +50,18 @@ namespace Gang
         }
 
         async Task IGangController.SendCommandAsync(
-            string type, object command, IEnumerable<byte[]> memberIds, uint? sequenceNumber)
+            string type, object command, IEnumerable<byte[]> memberIds, uint? inReplyToSequenceNumber)
         {
-            await _sendAsync(
-                 _serializer.Serialize(new
-                 {
-                     type,
-                     command,
-                     sequenceNumber
-                 }),
-                 GangMessageTypes.Command,
-                 memberIds);
+            var data = BitConverter.GetBytes(++_commandSequenceNumber)
+                    .Concat(_serializer.Serialize(new
+                    {
+                        type,
+                        command,
+                        rsn = inReplyToSequenceNumber
+                    }))
+                    .ToArray();
+
+            await _sendAsync(data, GangMessageTypes.Command, memberIds);
         }
 
         async Task IGangController.SendStateAsync<T>(

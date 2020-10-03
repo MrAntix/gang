@@ -5,15 +5,15 @@ import { GangService } from './GangService';
 
 describe('GangService', () => {
   let gangService: GangService;
-  let recieveMessage: (message: string) => void;
+  let recieveMessage: (type: string, message: string, sn?: number) => void;
   let receiveOpen: () => void;
   let receiveClose: () => void;
 
-  const sentMessages: Blob[] = [];
+  const sentMessages: ArrayBuffer[] = [];
 
   beforeEach(() => {
     function webSocketFactoryMock(
-      _url,
+      _url: string,
       onOpen: (e: Event) => void,
       _onError: (e: Event) => void,
       onClose: (e: CloseEvent) => void
@@ -22,23 +22,34 @@ describe('GangService', () => {
 
       messageSubject.subscribe(() => undefined);
 
-      recieveMessage = (message) => {
+      recieveMessage = (type, message, sn) => {
         if (typeof message !== 'string') message = JSON.stringify(message);
 
-        const blob = new Blob([message], {
-          type: 'text/plain',
-        });
+        const parts: BlobPart[] = [type];
+        if (sn != null) {
+          const snPart = new Uint32Array(2);
+          snPart[0] = sn;
+          parts.push(snPart);
+        }
+        parts.push(message);
 
-        messageSubject.next(new MessageEvent('message', { data: blob }));
+        const reader = new FileReader();
+        reader.onload = () =>
+          messageSubject.next(
+            new MessageEvent('message', { data: reader.result })
+          );
+
+        const blob = new Blob(parts);
+        reader.readAsArrayBuffer(blob);
       };
 
       receiveOpen = () => onOpen(null);
       receiveClose = () =>
         onClose(new CloseEvent('close', { reason: 'disconnected' }));
 
-      return new GangWebSocket(messageSubject, (data) => {
-        sentMessages.push(data);
-      });
+      return new GangWebSocket(messageSubject, (data) =>
+        sentMessages.push(data)
+      );
     }
 
     gangService = new GangService(webSocketFactoryMock);
@@ -69,7 +80,7 @@ describe('GangService', () => {
       done();
     });
 
-    recieveMessage('HMemberId');
+    recieveMessage('H', 'MemberId');
   });
 
   it('onMemberConnected member message, host is false', (done) => {
@@ -79,7 +90,7 @@ describe('GangService', () => {
       done();
     });
 
-    recieveMessage('MMemberId');
+    recieveMessage('M', 'MemberId');
   });
 
   it('onCommand message', (done) => {
@@ -88,7 +99,7 @@ describe('GangService', () => {
       done();
     });
 
-    recieveMessage('C{}');
+    recieveMessage('C', '{}', 1);
   });
 
   it('onCommand after execute', (done) => {
@@ -106,7 +117,7 @@ describe('GangService', () => {
 
   it('onState current state on subscribe', (done) => {
     const currentState = { current: true };
-    recieveMessage(`S${JSON.stringify(currentState)}`);
+    recieveMessage('S', JSON.stringify(currentState));
 
     gangService.onState.subscribe((state) => {
       if (state === undefined) return;
@@ -126,7 +137,7 @@ describe('GangService', () => {
       done();
     });
 
-    recieveMessage(`S${JSON.stringify(newState)}`);
+    recieveMessage('S', JSON.stringify(newState));
   });
 
   it('onState merges', (done) => {
@@ -145,14 +156,14 @@ describe('GangService', () => {
       }
     });
 
-    recieveMessage(`S${JSON.stringify(firstState)}`);
-    recieveMessage(`S${JSON.stringify(secondState)}`);
+    recieveMessage('S', JSON.stringify(firstState));
+    recieveMessage('S', JSON.stringify(secondState));
   });
 
   it('waitForState', () => {
     const newState = { new: true };
 
-    recieveMessage(`S${JSON.stringify(newState)}`);
+    recieveMessage('S', JSON.stringify(newState));
 
     expect(
       async () => await gangService.waitForState<typeof newState>((s) => s?.new)
@@ -162,7 +173,7 @@ describe('GangService', () => {
   it('waitForState timeout', () => {
     const newState = { new: false };
 
-    recieveMessage(`S${JSON.stringify(newState)}`);
+    recieveMessage('S', JSON.stringify(newState));
 
     expect(
       async () =>
@@ -178,7 +189,7 @@ describe('GangService', () => {
       done();
     });
 
-    recieveMessage('MMemberId');
+    recieveMessage('M', 'MemberId');
   });
 
   it('can send state if host', (done) => {
@@ -187,7 +198,7 @@ describe('GangService', () => {
       done();
     });
 
-    recieveMessage('HMemberId');
+    recieveMessage('H', 'MemberId');
   });
 
   it('sends command if not host', (done) => {
@@ -197,26 +208,30 @@ describe('GangService', () => {
       done();
     });
 
-    recieveMessage('MMemberId');
+    recieveMessage('M', 'MemberId');
   });
 
-  it('sends with sequence number', (done) => {
+  it('sends commands with sequence number', (done) => {
     gangService.onMemberConnected.subscribe(async () => {
       gangService.sendCommand('do-it', {});
       gangService.sendCommand('do-it-again', {});
-      expect(sentMessages.length).not.toBe(1);
 
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const d = new DataView(reader.result as ArrayBuffer, 0);
-        expect(d.getUint16(0, true)).toBe(2);
-        done();
-      };
-
-      reader.readAsArrayBuffer(sentMessages[3]);
+      const d = new DataView(sentMessages[3], 0);
+      expect(d.getUint32(0, true)).toBe(2);
+      done();
     });
 
-    recieveMessage('MMemberId');
+    recieveMessage('M', 'MemberId');
+  });
+
+  it('send and wait for returning sequence number', (done) => {
+    gangService.onMemberConnected.subscribe(() => {
+      gangService.sendCommand('do-it', {}).then(done);
+
+      recieveMessage('C', '{"rsn":1}', 1);
+    });
+
+    recieveMessage('M', 'MemberId');
   });
 
   it('executes command if host', (done) => {
@@ -229,7 +244,7 @@ describe('GangService', () => {
       done();
     });
 
-    recieveMessage('HMemberId');
+    recieveMessage('H', 'MemberId');
   });
 
   it('close triggers local onMemberDisconnect to allow cleanup', (done) => {
@@ -242,6 +257,6 @@ describe('GangService', () => {
       done();
     });
 
-    recieveMessage('MMemberId');
+    recieveMessage('M', 'MemberId');
   });
 });

@@ -21,9 +21,10 @@ namespace Gang.WebSockets.Serialization
             };
         }
 
-        public TObject Map<TObject>(object json)
+        object IGangSerializationService
+            .Map(object json, Type type)
         {
-            return ((JToken)json).ToObject<TObject>();
+            return ((JToken)json).ToObject(type);
         }
 
         object IGangSerializationService

@@ -1,5 +1,6 @@
 using Gang.Commands;
 using Gang.Events;
+using Gang.Serialization;
 using Gang.Web.Services.Commands;
 using Gang.Web.Services.Events;
 using Gang.Web.Services.State;
@@ -14,16 +15,18 @@ namespace Gang.Web.Services
 {
     public class WebGangHost : GangStatefulHostBase<WebGangHostState>
     {
-        readonly IGangCommandExecutor _executor;
+        readonly GangCommandExecutor<WebGangHost> _commands;
 
         public WebGangHost(
-            IGangCommandExecutor executor
+            IGangSerializationService serializer
+            //,            IEnumerable<IGangCommandHandler<WebGangHost>> commandHandlers
             )
         {
-            _executor = executor
+            _commands = this.CreateCommandExecutor(serializer)
                 .RegisterErrorHandler(OnErrorAsync)
-                .Register<UpdateUserNameCommand>("updateUser", UpdateUser)
+                .Register<UpdateUserNameCommand>("updateUserName", UpdateUserName)
                 .Register<AddMessageCommand>("addMessage", AddMessage);
+
         }
 
         protected override Task OnConnectAsync()
@@ -66,7 +69,7 @@ namespace Gang.Web.Services
 
         protected override async Task OnCommandAsync(byte[] data, GangMessageAudit audit)
         {
-            await _executor.ExecuteAsync(data, audit);
+            await _commands.ExecuteAsync(data, audit);
         }
 
         async Task OnErrorAsync(object command, GangMessageAudit audit, Exception ex)
@@ -115,7 +118,7 @@ namespace Gang.Web.Services
             }
         }
 
-        async Task UpdateUser(
+        async Task UpdateUserName(
             UpdateUserNameCommand command, GangMessageAudit audit)
         {
             var user = State.Users.First(u => u.Id == command.Id);
@@ -128,7 +131,7 @@ namespace Gang.Web.Services
 
             await RaiseStateEventAsync(e, audit.MemberId, State.Apply);
 
-            if (joined) SendWelcome(Encoding.UTF8.GetBytes(user.Id));
+            if (joined) await SendWelcome(Encoding.UTF8.GetBytes(user.Id));
         }
 
         async Task AddMessage(
@@ -162,7 +165,7 @@ namespace Gang.Web.Services
             await RaiseStateEventAsync(e, Id, State.Apply);
         }
 
-        async void SendWelcome(byte[] memberId)
+        public async Task SendWelcome(byte[] memberId)
         {
             var user = State.Users.TryGetByIdString(memberId);
 
@@ -183,7 +186,7 @@ namespace Gang.Web.Services
             new[] { memberId });
         }
 
-        async Task NotifyAsync(
+        public async Task NotifyAsync(
             NotifyCommand command,
             byte[][] memberIds,
             uint? inReplyToSequenceNumber

@@ -60,7 +60,7 @@ namespace Gang
                 });
         }
 
-        protected async Task RaiseStateEventAsync<TEvent>(
+        public async Task RaiseStateEventAsync<TEvent>(
             TEvent e, byte[] memberId,
             Func<TEvent, GangStateEventAudit, TState> apply)
         {
@@ -75,7 +75,7 @@ namespace Gang
             await OnStateEventAsync(e, a);
         }
 
-        protected async Task RaiseStateEventAsync<TEvent>(
+        public async Task RaiseStateEventAsync<TEvent>(
             TEvent e, byte[] memberId,
             Func<TEvent, TState> apply)
         {

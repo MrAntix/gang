@@ -1,5 +1,6 @@
 using Gang.Tasks;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.WebSockets;
 using System.Threading;
@@ -41,7 +42,7 @@ namespace Gang.WebSockets
 
                         if (result.MessageType != WebSocketMessageType.Binary) break;
 
-                        await data.WriteAsync(_buffer, CancellationToken.None);
+                        await data.WriteAsync(_buffer.AsMemory(0, result.Count));
 
                     } while (!result.EndOfMessage);
 
@@ -68,25 +69,22 @@ namespace Gang.WebSockets
                 try
                 {
                     await _webSocket.SendAsync(
-                        new ArraySegment<byte>(new[] { (byte)type }),
+                        new[] { (byte)type },
                         WebSocketMessageType.Binary, data == null, CancellationToken.None);
 
                     if (sequenceNumber != null)
-                    {
                         await _webSocket.SendAsync(
                             BitConverter.GetBytes(sequenceNumber.Value),
                             WebSocketMessageType.Binary, data == null, CancellationToken.None);
-                    }
 
                     if (data != null)
-                    {
                         await _webSocket.SendAsync(
-                            new ArraySegment<byte>(data),
+                            data,
                             WebSocketMessageType.Binary, true, CancellationToken.None);
-                    }
                 }
                 catch (WebSocketException)
                 {
+                    // ignore this
                 }
             });
         }

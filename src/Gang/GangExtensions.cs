@@ -59,8 +59,8 @@ namespace Gang
             T command,
             IEnumerable<byte[]> memberIds = null)
         {
-            return controller.SendCommandAsync(
-                GetCommandType(command), command,
+            return controller.SendCommandAsync(                
+                GetCommandType(command), command, 
                 memberIds);
         }
 

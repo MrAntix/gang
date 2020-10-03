@@ -58,6 +58,7 @@ namespace Gang
             }
 
             _events.OnNext(new GangMemberAddedEvent(parameters.GangId, gangMember));
+            uint? commandSequenceNumber = 0;
 
             var controller = new GangController(
                 parameters.GangId, this,
@@ -73,19 +74,23 @@ namespace Gang
                             : gang.OtherMembers
                                 .Where(m => memberIds.Any(mId => mId.SequenceEqual(m.Id)));
 
+                        var sequenceNumber = type == GangMessageTypes.Command
+                            ? ++commandSequenceNumber
+                            : null;
+
                         var tasks = members
                             .Select(member => member
-                                .SendAsync(type ?? GangMessageTypes.State, data))
+                                .SendAsync(type ?? GangMessageTypes.State, data, null, sequenceNumber))
                             .ToArray();
 
                         await Task.WhenAll(tasks);
                     }
                     else
                     {
-                        var sequenceNumber = (uint)BitConverter.ToUInt16(data.AsSpan()[0..2]);
+                        var sequenceNumber = BitConverter.ToUInt32(data.AsSpan()[0..4]);
 
                         await gang.HostMember
-                            .SendAsync(GangMessageTypes.Command, data[2..], gangMember.Id, sequenceNumber);
+                            .SendAsync(GangMessageTypes.Command, data[4..], gangMember.Id, sequenceNumber);
                     }
 
                     _events.OnNext(new GangMemberDataEvent(parameters.GangId, gangMember, data));
