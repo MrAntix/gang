@@ -18,14 +18,13 @@ namespace Gang.Web.Services
         readonly GangCommandExecutor<WebGangHost> _commands;
 
         public WebGangHost(
-            IGangSerializationService serializer
-            //,            IEnumerable<IGangCommandHandler<WebGangHost>> commandHandlers
+            IGangSerializationService serializer,
+            IEnumerable<Func<IGangCommandHandler<WebGangHost>>> commandHandlerProviders
             )
         {
             _commands = this.CreateCommandExecutor(serializer)
                 .RegisterErrorHandler(OnErrorAsync)
-                .Register<UpdateUserNameCommand>("updateUserName", UpdateUserName)
-                .Register<AddMessageCommand>("addMessage", AddMessage);
+                .Register(commandHandlerProviders);
 
         }
 
@@ -116,42 +115,6 @@ namespace Gang.Web.Services
 
                 await RaiseStateEventAsync(e, audit.MemberId, State.Apply);
             }
-        }
-
-        async Task UpdateUserName(
-            UpdateUserNameCommand command, GangMessageAudit audit)
-        {
-            var user = State.Users.First(u => u.Id == command.Id);
-            var joined = user.Name == null;
-
-            var e = new WebGangUserNameUpdatedEvent(
-                user.Id,
-                command.Name
-            );
-
-            await RaiseStateEventAsync(e, audit.MemberId, State.Apply);
-
-            if (joined) await SendWelcome(Encoding.UTF8.GetBytes(user.Id));
-        }
-
-        async Task AddMessage(
-            AddMessageCommand command,
-            GangMessageAudit audit)
-        {
-            var e = new WebGangMessageAddedEvent(
-                command.Id,
-                command.Text
-            );
-
-            await RaiseStateEventAsync(e, audit.MemberId, State.Apply);
-
-            await NotifyAsync(
-                new NotifyCommand(
-                    "success", null
-                ),
-                new[] { audit.MemberId },
-                audit.SequenceNumber
-            );
         }
 
         async Task AddMessage(

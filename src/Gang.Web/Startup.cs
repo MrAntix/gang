@@ -15,9 +15,9 @@ namespace Gang.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddWebSocketGangs()
-                .AddGangFactory<WebGangHost>()
-                .AddGangEventHandler<GangAddedEvent, WebGangAddedEventHandler>()
-                .AddGangAuthenticationHandler<WebGangAuthenticationHandler>();
+                .AddGangHost<WebGangHost>()
+                .AddGangAuthenticationHandler<WebGangAuthenticationHandler>()
+                .AddGangEventHandler<GangAddedEvent, WebGangAddedEventHandler>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

@@ -1,4 +1,4 @@
-﻿using Gang.Serialization;
+using Gang.Serialization;
 
 namespace Gang.Commands
 {
@@ -11,5 +11,4 @@ namespace Gang.Commands
             return new GangCommandExecutor<THost>(host, serializer);
         }
     }
-
 }
