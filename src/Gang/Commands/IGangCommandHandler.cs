@@ -1,12 +1,10 @@
-using System;
 using System.Threading.Tasks;
 
 namespace Gang.Commands
 {
-    public interface IGangCommandHandler<THost>
+    public interface IGangCommandHandler<THost, TCommand>
+        where THost : GangHostBase
     {
-        string CommandTypeName { get; }
-        Type CommandType { get; }
-        Task HandleAsync(THost host, object command, GangMessageAudit audit);
+        Task HandleAsync(THost host, TCommand command, GangMessageAudit audit);
     }
 }

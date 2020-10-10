@@ -1,6 +1,7 @@
 using Gang.Commands;
 using Gang.Contracts;
 using Gang.Events;
+using Gang.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -77,22 +78,12 @@ namespace Gang
             return services;
         }
 
-        public static IServiceCollection AddGangCommandHandler<THost, THandler>(
-             this IServiceCollection services)
-            where THandler : class, IGangCommandHandler<THost>
-            where THost : GangHostBase
-        {
-            return services
-                .AddTransient<THandler>()
-                .AddSingleton<Func<IGangCommandHandler<THost>>>(sp => sp.GetRequiredService<THandler>);
-        }
-
         public static IServiceCollection AddGangCommandHandlersForHost<THost>(
              this IServiceCollection services)
             where THost : GangHostBase
         {
             return services
-                .AddGangCommandHandlersForHost<THost>(typeof(THost).Assembly);            
+                .AddGangCommandHandlersForHost<THost>(typeof(THost).Assembly);
         }
 
         public static IServiceCollection AddGangCommandHandlersForHost<THost, TInAssembly>(
@@ -110,21 +101,45 @@ namespace Gang
         {
             var hostType = typeof(THost);
 
-            var handlerService = typeof(IGangCommandHandler<THost>);
+            var handlerService = typeof(IGangCommandHandler<,>);
             var providerService = typeof(Func<>).MakeGenericType(handlerService);
 
-            foreach (var handlerType in assembly.GetTypes()
-                .Where(t => handlerService.IsAssignableFrom(t))
-                .ToArray()
+            foreach (var types in (from t in assembly.GetTypes()
+                                   from i in t.GetInterfaces()
+                                   where i.IsGenericType
+                                           && i.GetGenericTypeDefinition() == handlerService
+                                   let gt = i.GetGenericArguments()
+                                   where gt[0] == hostType
+                                   select new { commandType = gt[1], handlerType = t }).ToArray()
             )
             {
                 services
-                    .AddTransient(handlerType)
-                    .AddSingleton<Func<IGangCommandHandler<THost>>>(
-                        sp => () => (IGangCommandHandler<THost>)sp.GetRequiredService(handlerType));
+                    .AddTransient(types.handlerType)
+                    .AddSingleton(
+                        sp =>
+                        {
+                            var serializer = sp.GetRequiredService<IGangSerializationService>();
+                            var handleMethod = typeof(IGangCommandHandler<,>)
+                                .MakeGenericType(hostType, types.commandType)
+                                .GetMethod(nameof(IGangCommandHandler<THost, object>.HandleAsync));
+
+                            dynamic provider() => sp.GetRequiredService(types.handlerType);
+
+                            return new GangNamedFunc<GangCommandHandlerProvider<THost>>(
+                                types.commandType.GetCommandTypeName(),
+                                () => (h, o, a) =>
+                                    {
+                                        var c = serializer.Map(o, types.commandType);
+                                        var handler = provider();
+
+                                        return handleMethod.Invoke(handler, new object[] { h, c, a });
+                                    }
+                                );
+                        }
+                     );
             }
 
-            return services;
+            return services.AddSingleton<IGangCommandExecutor<THost>, GangCommandExecutor<THost>>();
         }
 
 

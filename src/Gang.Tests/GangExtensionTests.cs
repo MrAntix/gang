@@ -1,3 +1,4 @@
+using Gang.Commands;
 using System;
 using Xunit;
 
@@ -6,14 +7,13 @@ namespace Gang.Tests
     public class GangExtensionTests
     {
         [Theory]
-        [InlineData(typeof(ACommand), "A")]
-        [InlineData(typeof(ABC), "ABC")]
+        [InlineData(typeof(ACommand), "a")]
+        [InlineData(typeof(ABC), "aBC")]
         public void GetCommandType(
             Type type,
             string expected)
         {
-            var command = Activator.CreateInstance(type);
-            Assert.Equal(expected, GangExtensions.GetCommandType(command));
+            Assert.Equal(expected, type.GetCommandTypeName());
         }
 
         class ACommand { }

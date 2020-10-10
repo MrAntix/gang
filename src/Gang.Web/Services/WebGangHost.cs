@@ -15,17 +15,14 @@ namespace Gang.Web.Services
 {
     public class WebGangHost : GangStatefulHostBase<WebGangHostState>
     {
-        readonly GangCommandExecutor<WebGangHost> _commands;
 
         public WebGangHost(
-            IGangSerializationService serializer,
-            IEnumerable<Func<IGangCommandHandler<WebGangHost>>> commandHandlerProviders
+            IGangCommandExecutor<WebGangHost> commandExecutor
             )
         {
-            _commands = this.CreateCommandExecutor(serializer)
-                .RegisterErrorHandler(OnErrorAsync)
-                .Register(commandHandlerProviders);
-
+            Use(commandExecutor
+                .RegisterErrorHandler(OnCommandErrorAsync)
+                );
         }
 
         protected override Task OnConnectAsync()
@@ -66,12 +63,7 @@ namespace Gang.Web.Services
                 );
         }
 
-        protected override async Task OnCommandAsync(byte[] data, GangMessageAudit audit)
-        {
-            await _commands.ExecuteAsync(data, audit);
-        }
-
-        async Task OnErrorAsync(object command, GangMessageAudit audit, Exception ex)
+        async Task OnCommandErrorAsync(object command, GangMessageAudit audit, Exception ex)
         {
             await NotifyAsync(
                 new NotifyCommand(

@@ -1,5 +1,6 @@
 using Gang.Commands;
 using Gang.Serialization;
+using Gang.Tests.StatefulHost;
 using Gang.WebSockets.Serialization;
 using System;
 using System.Threading.Tasks;
@@ -13,10 +14,10 @@ namespace Gang.Tests
         public async Task throws_on_serialization_failure()
         {
             var executor = GetExecutor()
-                .Register<Command>(Command.Type, (c) => Task.CompletedTask);
+                .RegisterHandler<Command>(c => Task.CompletedTask);
 
             await Assert.ThrowsAsync<ArgumentNullException>(() =>
-               executor.ExecuteAsync(_command_null_arg, _audit)
+               executor.ExecuteAsync(null, _command_null_arg, _audit)
             );
         }
 
@@ -26,14 +27,14 @@ namespace Gang.Tests
             var handled = false;
 
             var executor = GetExecutor()
-                .Register<Command>(Command.Type, (c) => Task.CompletedTask)
+                .RegisterHandler<Command>(c => Task.CompletedTask)
                 .RegisterErrorHandler((d, a, ex) =>
                 {
                     handled = true;
                     return Task.CompletedTask;
                 });
 
-            await executor.ExecuteAsync(_command_null_arg, _audit);
+            await executor.ExecuteAsync(null, _command_null_arg, _audit);
 
             Assert.True(handled);
         }
@@ -64,13 +65,11 @@ namespace Gang.Tests
             arg = default(string)
         });
 
-        GangCommandExecutor<FakeGangStatefulHost> GetExecutor()
+        static IGangCommandExecutor<FakeGangStatefulHost> GetExecutor()
         {
             return new GangCommandExecutor<FakeGangStatefulHost>(
-                new FakeGangStatefulHost(),
                 _serializer
-                )
-                .Register<FakeGangStatefulHost.SetCommandHandler>();
+                );
         }
     }
 }

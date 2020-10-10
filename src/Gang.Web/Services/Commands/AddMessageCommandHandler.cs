@@ -6,12 +6,9 @@ using System.Threading.Tasks;
 namespace Gang.Web.Services
 {
     public class AddMessageCommandHandler :
-        GangCommandHandlerBase<WebGangHost, AddMessageCommand>
+        IGangCommandHandler<WebGangHost, AddMessageCommand>
     {
-        public override string CommandTypeName { get; } = "addMessage";
-
-        protected override async Task HandleAsync(
-            WebGangHost host, AddMessageCommand command, GangMessageAudit audit)
+        async Task IGangCommandHandler<WebGangHost, AddMessageCommand>.HandleAsync(WebGangHost host, AddMessageCommand command, GangMessageAudit audit)
         {
             var e = new WebGangMessageAddedEvent(
                  command.Id,

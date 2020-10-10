@@ -2,32 +2,39 @@ using Gang.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Gang.Commands
 {
-    public class GangCommandExecutor<THost>
+    public sealed class GangCommandExecutor<THost> :
+        IGangCommandExecutor<THost>
+        where THost : GangHostBase
     {
-        readonly THost _host;
         readonly IGangSerializationService _serializer;
+        readonly IImmutableDictionary<string, GangCommandHandlerProvider<THost>> _handlerProviders;
         readonly Func<byte[], GangMessageAudit, Exception, Task> _errorHandler;
-        readonly IImmutableDictionary<string, Func<object, GangMessageAudit, Task>> _commandHandlers;
 
         public GangCommandExecutor(
-            THost host,
             IGangSerializationService serializer,
-            Func<byte[], GangMessageAudit, Exception, Task> errorHandler = null,
-            IImmutableDictionary<string, Func<object, GangMessageAudit, Task>> commandHandlers = null)
+            IEnumerable<GangNamedFunc<GangCommandHandlerProvider<THost>>> handlerProviders = null,
+            Func<byte[], GangMessageAudit, Exception, Task> errorHandler = null) :
+            this(serializer, handlerProviders?.ToImmutableDictionary(g => g.Name, g => g.Func), errorHandler)
         {
-            _host = host;
-            _serializer = serializer;
-            _errorHandler = errorHandler;
-            _commandHandlers = commandHandlers ??
-                ImmutableDictionary<string, Func<object, GangMessageAudit, Task>>.Empty;
         }
 
-        public async Task ExecuteAsync(byte[] data, GangMessageAudit audit)
+        GangCommandExecutor(
+            IGangSerializationService serializer,
+            IEnumerable<KeyValuePair<string, GangCommandHandlerProvider<THost>>> handlerProviders,
+            Func<byte[], GangMessageAudit, Exception, Task> errorHandler)
+        {
+            _serializer = serializer;
+            _handlerProviders = handlerProviders?.ToImmutableDictionary() ??
+                ImmutableDictionary<string, GangCommandHandlerProvider<THost>>.Empty;
+            _errorHandler = errorHandler;
+        }
+
+        async Task IGangCommandExecutor<THost>.ExecuteAsync(
+            THost host, byte[] data, GangMessageAudit audit)
         {
             if (data is null) throw new ArgumentNullException(nameof(data));
             if (audit is null) throw new ArgumentNullException(nameof(audit));
@@ -35,8 +42,9 @@ namespace Gang.Commands
             try
             {
                 var wrapper = _serializer.Deserialize<GangMessageWrapper>(data);
+                var handler = _handlerProviders[wrapper.Type]();
 
-                await _commandHandlers[wrapper.Type](wrapper.Command, audit);
+                await handler(host, wrapper.Command, audit);
             }
             catch (Exception ex)
             {
@@ -46,90 +54,66 @@ namespace Gang.Commands
             }
         }
 
-        public GangCommandExecutor<THost> RegisterErrorHandler(
+        IGangCommandExecutor<THost> IGangCommandExecutor<THost>.RegisterHandler<TCommand>(
+            Func<TCommand, GangMessageAudit, Task> handle, string typeName)
+        {
+
+            return RegisterHandler(handle, typeName);
+        }
+
+        IGangCommandExecutor<THost> IGangCommandExecutor<THost>.RegisterHandler<TCommand>(
+            Func<TCommand, Task> handle, string typeName)
+        {
+            if (handle is null) throw new ArgumentNullException(nameof(handle));
+
+            return RegisterHandler<TCommand>((c, _) => handle(c), typeName);
+        }
+
+        IGangCommandExecutor<THost> RegisterHandler<TCommand>(
+            Func<TCommand, GangMessageAudit, Task> handle, string typeName)
+        {
+            if (handle is null) throw new ArgumentNullException(nameof(handle));
+
+            return new GangCommandExecutor<THost>(
+                _serializer,
+                _handlerProviders.Add(
+                        typeName ?? typeof(TCommand).GetCommandTypeName(),
+                        () => (_, o, a) =>
+                            {
+                                var c = _serializer.Map<TCommand>(o);
+                                return handle(c, a);
+                            }
+                ),
+                _errorHandler);
+        }
+
+        IGangCommandExecutor<THost> IGangCommandExecutor<THost>.RegisterHandlerProvider<TCommand>(
+            Func<IGangCommandHandler<THost, TCommand>> provider, string typeName)
+        {
+            if (provider is null) throw new ArgumentNullException(nameof(provider));
+
+            return new GangCommandExecutor<THost>(
+                _serializer,
+                _handlerProviders.Add(
+                        typeName ?? typeof(TCommand).GetCommandTypeName(),
+                        () => (h, o, a) =>
+                            {
+                                var c = _serializer.Map<TCommand>(o);
+                                return provider().HandleAsync(h, c, a);
+                            }
+                ),
+                _errorHandler);
+        }
+
+        IGangCommandExecutor<THost> IGangCommandExecutor<THost>.RegisterErrorHandler(
             Func<byte[], GangMessageAudit, Exception, Task> errorHandler)
         {
             if (errorHandler is null) throw new ArgumentNullException(nameof(errorHandler));
 
-            return new GangCommandExecutor<THost>(_host, _serializer,
-                errorHandler,
-                _commandHandlers
-                );
-        }
-
-        public GangCommandExecutor<THost> Register(
-            Func<IGangCommandHandler<THost>> provider)
-        {
-            if (provider is null) throw new ArgumentNullException(nameof(provider));
-
-            return new GangCommandExecutor<THost>(_host, _serializer,
-                _errorHandler,
-               _commandHandlers.Add(
-                   provider().CommandTypeName,
-                    (c, a) =>
-                    {
-                        var h = provider();
-                        return h.HandleAsync(_host, _serializer.Map(c, h.CommandType), a);
-                    })
-               );
-        }
-
-        public GangCommandExecutor<THost> Register<TCommandHandler>(
-            Func<TCommandHandler> provider)
-            where TCommandHandler : IGangCommandHandler<THost>
-        {
-            if (provider is null) throw new ArgumentNullException(nameof(provider));
-
-            return new GangCommandExecutor<THost>(_host, _serializer,
-                _errorHandler,
-               _commandHandlers.Add(
-                   provider().CommandTypeName,
-                    (c, a) =>
-                    {
-                        var h = provider();
-                        return h.HandleAsync(_host, _serializer.Map(c, h.CommandType), a);
-                    })
-               );
-        }
-
-        public GangCommandExecutor<THost> Register<TCommandHandler>()
-            where TCommandHandler : IGangCommandHandler<THost>, new()
-        {
-            return Register(() => new TCommandHandler());
-        }
-
-        public GangCommandExecutor<THost> Register(
-            IEnumerable<Func<IGangCommandHandler<THost>>> providers)
-        {
-            return providers?.Aggregate(this, (c, i) => c.Register(i))
-                ?? throw new ArgumentNullException(nameof(providers));
-        }
-
-        public GangCommandExecutor<THost> Register<TCommand>(
-            string type,
-            Func<TCommand, GangMessageAudit, Task> handler
-            )
-        {
-            if (string.IsNullOrWhiteSpace(type))
-                throw new ArgumentException($"'{nameof(type)}' cannot be null or whitespace", nameof(type));
-            if (handler is null) throw new ArgumentNullException(nameof(handler));
-
-            return new GangCommandExecutor<THost>(_host, _serializer,
-                _errorHandler,
-                _commandHandlers.Add(type, (c, a) => handler(_serializer.Map<TCommand>(c), a))
-                );
-        }
-
-        public GangCommandExecutor<THost> Register<TCommand>(
-            string type,
-            Func<TCommand, Task> handler
-            )
-        {
-            if (string.IsNullOrWhiteSpace(type))
-                throw new ArgumentException($"'{nameof(type)}' cannot be null or whitespace", nameof(type));
-            if (handler is null) throw new ArgumentNullException(nameof(handler));
-
-            return Register<TCommand>(type, (c, _) => handler(c));
+            return new GangCommandExecutor<THost>(
+                _serializer,
+                _handlerProviders,
+                errorHandler);
         }
     }
 }

@@ -8,12 +8,10 @@ using System.Threading.Tasks;
 namespace Gang.Web.Services
 {
     public class UpdateUserNameCommandHandler :
-        GangCommandHandlerBase<WebGangHost, UpdateUserNameCommand>
+        IGangCommandHandler<WebGangHost, UpdateUserNameCommand>
     {
-        public override string CommandTypeName { get; } = "updateUserName";
-
-        protected override async Task HandleAsync(
-            WebGangHost host, UpdateUserNameCommand command, GangMessageAudit audit)
+        async Task IGangCommandHandler<WebGangHost, UpdateUserNameCommand>
+            .HandleAsync(WebGangHost host, UpdateUserNameCommand command, GangMessageAudit audit)
         {
             var user = host.State.Users.First(u => u.Id == command.Id);
             var joined = user.Name == null;

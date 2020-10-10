@@ -1,14 +1,15 @@
-using Gang.Serialization;
+using System;
 
 namespace Gang.Commands
 {
     public static class GangCommandExtensions
     {
-        public static GangCommandExecutor<THost> CreateCommandExecutor<THost>(
-            this THost host,
-            IGangSerializationService serializer)
+        public static string GetCommandTypeName(
+            this Type type)
         {
-            return new GangCommandExecutor<THost>(host, serializer);
+            return type.Name
+                .TryDecapitalize()
+                .TryTrimEnd("Command");
         }
     }
 }

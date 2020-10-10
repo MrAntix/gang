@@ -1,3 +1,4 @@
+using Gang.Commands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,13 +55,13 @@ namespace Gang
             return Encoding.UTF8.GetBytes(value);
         }
 
-        public static Task SendCommandAsync<T>(
+        public static Task SendCommandAsync<TCommand>(
             this IGangController controller,
-            T command,
+            TCommand command,
             IEnumerable<byte[]> memberIds = null)
         {
-            return controller.SendCommandAsync(                
-                GetCommandType(command), command, 
+            return controller.SendCommandAsync(
+                typeof(TCommand).GetCommandTypeName(), command,
                 memberIds);
         }
 
@@ -72,13 +73,31 @@ namespace Gang
             return controller.DisconnectAsync(memberId.GangToBytes(), reason);
         }
 
-        public static string GetCommandType(
-            object command)
+        public static string TryDecapitalize(
+            this string value)
         {
-            var name = command.GetType().Name;
-            return name.EndsWith("Command")
-                ? name.Substring(0, name.Length - 7)
-                : name;
+            if (string.IsNullOrWhiteSpace(value)) return value;
+
+            var chars = value.ToCharArray();
+
+            chars[0] = char.ToLower(chars[0]);
+
+            return new string(chars);
+        }
+
+        public static string TryTrimEnd(
+            this string value, string end)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return value;
+
+            var trimBy = value
+                .EndsWith(end, StringComparison.InvariantCultureIgnoreCase)
+                ? end.Length
+                : 0;
+
+            return value.Substring(0, value.Length - trimBy);
         }
     }
+
+
 }

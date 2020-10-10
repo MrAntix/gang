@@ -1,3 +1,4 @@
+using Gang.Commands;
 using System;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ namespace Gang
         public byte[] Id { get; } = Encoding.UTF8.GetBytes("HOST");
 
         protected IGangController Controller { get; private set; }
+
         protected virtual Task OnConnectAsync() => Task.CompletedTask;
         protected virtual Task OnMemberConnectAsync(byte[] memberId) => Task.CompletedTask;
         protected virtual Task OnMemberDisconnectAsync(byte[] memberId) => Task.CompletedTask;
@@ -16,6 +18,8 @@ namespace Gang
         protected virtual Task OnDisconnectAsync() => Task.CompletedTask;
 
         Func<Task> _onDisconnectAsync;
+        Func<byte[], GangMessageAudit, Task> _onCommandAsync;
+
         async Task IGangMember.ConnectAsync(
             IGangController controller, Func<Task> onDisconnectAsync)
         {
@@ -40,11 +44,24 @@ namespace Gang
 
                     break;
                 case GangMessageTypes.Command:
-                    await OnCommandAsync(data,
-                        new GangMessageAudit(memberId ?? Id, sequenceNumber));
+                    var audit = new GangMessageAudit(memberId ?? Id, sequenceNumber);
+                    await OnCommandAsync(data, audit);
+
+                    if (_onCommandAsync != null) await _onCommandAsync(data, audit);
 
                     break;
             }
+        }
+
+        protected void Use<THost>(
+            IGangCommandExecutor<THost> executor)
+            where THost : GangHostBase
+        {
+            if (executor is null)
+                throw new ArgumentNullException(nameof(executor));
+
+            _onCommandAsync = (byte[] data, GangMessageAudit audit)
+                => executor.ExecuteAsync(this as THost, data, audit);
         }
 
         public async Task DisconnectAsync(string reason = null)
