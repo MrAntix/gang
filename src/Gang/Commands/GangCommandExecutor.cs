@@ -11,25 +11,25 @@ namespace Gang.Commands
         where THost : GangHostBase
     {
         readonly IGangSerializationService _serializer;
-        readonly IImmutableDictionary<string, GangCommandHandlerProvider<THost>> _handlerProviders;
+        readonly IImmutableDictionary<string, GangCommandExecutorFunc<THost>> _handlerProviders;
         readonly Func<byte[], GangMessageAudit, Exception, Task> _errorHandler;
 
         public GangCommandExecutor(
             IGangSerializationService serializer,
-            IEnumerable<GangNamedFunc<GangCommandHandlerProvider<THost>>> handlerProviders = null,
+            IEnumerable<GangCommandExecutorFunc<THost>> handlerProviders = null,
             Func<byte[], GangMessageAudit, Exception, Task> errorHandler = null) :
-            this(serializer, handlerProviders?.ToImmutableDictionary(g => g.Name, g => g.Func), errorHandler)
+            this(serializer, handlerProviders?.ToImmutableDictionary(g => g.Name, g => g), errorHandler)
         {
         }
 
         GangCommandExecutor(
             IGangSerializationService serializer,
-            IEnumerable<KeyValuePair<string, GangCommandHandlerProvider<THost>>> handlerProviders,
+            IEnumerable<KeyValuePair<string, GangCommandExecutorFunc<THost>>> handlerProviders,
             Func<byte[], GangMessageAudit, Exception, Task> errorHandler)
         {
             _serializer = serializer;
             _handlerProviders = handlerProviders?.ToImmutableDictionary() ??
-                ImmutableDictionary<string, GangCommandHandlerProvider<THost>>.Empty;
+                ImmutableDictionary<string, GangCommandExecutorFunc<THost>>.Empty;
             _errorHandler = errorHandler;
         }
 
@@ -42,9 +42,9 @@ namespace Gang.Commands
             try
             {
                 var wrapper = _serializer.Deserialize<GangMessageWrapper>(data);
-                var handler = _handlerProviders[wrapper.Type]();
+                var func = _handlerProviders[wrapper.Type];
 
-                await handler(host, wrapper.Command, audit);
+                await func.ExecuteAsync(host, wrapper.Command, audit);
             }
             catch (Exception ex)
             {
@@ -74,16 +74,15 @@ namespace Gang.Commands
         {
             if (handle is null) throw new ArgumentNullException(nameof(handle));
 
+            var func = GangCommandExecutorFunc<THost>.From(
+                () => (_, o, a) => handle((TCommand)o, a),
+                o => _serializer.Map<TCommand>(o),
+                typeName ?? typeof(TCommand).GetCommandTypeName()
+                );
+
             return new GangCommandExecutor<THost>(
                 _serializer,
-                _handlerProviders.Add(
-                        typeName ?? typeof(TCommand).GetCommandTypeName(),
-                        () => (_, o, a) =>
-                            {
-                                var c = _serializer.Map<TCommand>(o);
-                                return handle(c, a);
-                            }
-                ),
+                _handlerProviders.Add(func.Name, func),
                 _errorHandler);
         }
 
@@ -92,16 +91,15 @@ namespace Gang.Commands
         {
             if (provider is null) throw new ArgumentNullException(nameof(provider));
 
+            var func = GangCommandExecutorFunc<THost>.From(
+                provider,
+                o => _serializer.Map<TCommand>(o),
+                typeName
+                );
+
             return new GangCommandExecutor<THost>(
                 _serializer,
-                _handlerProviders.Add(
-                        typeName ?? typeof(TCommand).GetCommandTypeName(),
-                        () => (h, o, a) =>
-                            {
-                                var c = _serializer.Map<TCommand>(o);
-                                return provider().HandleAsync(h, c, a);
-                            }
-                ),
+                _handlerProviders.Add(func.Name, func),
                 _errorHandler);
         }
 

@@ -110,30 +110,32 @@ namespace Gang
                                            && i.GetGenericTypeDefinition() == handlerService
                                    let gt = i.GetGenericArguments()
                                    where gt[0] == hostType
-                                   select new { commandType = gt[1], handlerType = t }).ToArray()
+                                   select new
+                                   {
+                                       commandType = gt[1],
+                                       handlerService = i,
+                                       handlerImplementation = t
+                                   }).ToArray()
             )
             {
                 services
-                    .AddTransient(types.handlerType)
+                    .AddTransient(types.handlerService, types.handlerImplementation)
                     .AddSingleton(
                         sp =>
                         {
                             var serializer = sp.GetRequiredService<IGangSerializationService>();
-                            var handleMethod = typeof(IGangCommandHandler<,>)
+                            var handle = handlerService
                                 .MakeGenericType(hostType, types.commandType)
                                 .GetMethod(nameof(IGangCommandHandler<THost, object>.HandleAsync));
 
-                            dynamic provider() => sp.GetRequiredService(types.handlerType);
-
-                            return new GangNamedFunc<GangCommandHandlerProvider<THost>>(
-                                types.commandType.GetCommandTypeName(),
-                                () => (h, o, a) =>
-                                    {
-                                        var c = serializer.Map(o, types.commandType);
-                                        var handler = provider();
-
-                                        return handleMethod.Invoke(handler, new object[] { h, c, a });
-                                    }
+                            return GangCommandExecutorFunc<THost>
+                                .From(
+                                    () => (THost h, object c, GangMessageAudit a) =>
+                                        (Task)handle.Invoke(
+                                             sp.GetRequiredService(types.handlerService),
+                                            new object[] { h, c, a }),
+                                    o => serializer.Map(o, types.commandType),
+                                    types.commandType.GetCommandTypeName()
                                 );
                         }
                      );
