@@ -1,16 +1,35 @@
 @import '../../global/component.css';
 
+:host>section {
+  display: grid;
+  grid-template-columns: auto minmax(0, 50em) auto;
+}
+
+:host>section>* {
+  grid-column: 2;
+}
+
+.head {
+  background-color: var(--highlight);
+  padding: var(--padding-unit) 0
+}
+
+.foot {
+  padding: var(--padding-unit) 0
+}
+
 header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
 }
 
-header button{
+header button {
   margin-left: auto;
 }
 
-h1, p {
+h1,
+p {
   margin: 0;
   padding: 0 var(--padding-unit);
 }

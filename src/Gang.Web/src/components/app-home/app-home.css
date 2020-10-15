@@ -87,6 +87,7 @@ li {
   flex-direction: column;
   min-width: 15em;
   max-height: calc(100 * var(--vh) - var(--page-header-height));
+  background-color: var(--lowlight);
 }
 
 .messages-list {
@@ -122,9 +123,14 @@ li {
   display: none;
 }
 
+.message-text-list-item {
+  padding: 0 0 calc(.25 * var(--callout-size));
+}
+
 .messages-list .message.current-user .message-text {
   background-color: var(--current-user-color);
   color: var(--current-user-color-alt);
+  margin-left: auto;
 }
 
 .messages-list .message .message-text {
@@ -146,18 +152,23 @@ li {
   height: 0;
 }
 
-.messages-list .message:not(.current-user) .message-text::after {
+.messages-list .message.current-user .message-text::after {
+  bottom: calc(-2 * var(--callout-size) + 1px);
+  right: var(--callout-border-radius);
+  border-top-color: var(--current-user-color);
+}
+
+.messages-list .message:not(.current-user) .message-text-list-item:not(:first-child) .message-text::after {
+  top: calc(-2 * var(--callout-size) + 1px);
+  left: var(--callout-border-radius);
+  border-bottom-color: var(--user-color);
+}
+
+.messages-list .message:not(.current-user) .message-text-list-item:first-child .message-text::after {
   top: calc(.5 * (1em * var(--text-line-height) + 2 * var(--padding-unit) - 2 * var(--callout-size)));
   left: calc(-2 * var(--callout-size) + 1px);
   border-right-color: var(--user-color);
   border-top-width: calc(.667 * var(--callout-size));
-}
-
-.messages-list .message.current-user .message-text::after {
-  right: var(--callout-border-radius);
-  bottom: calc(-2 * var(--callout-size) + 1px);
-  border-top-color: var(--current-user-color);
-  border-right-width: calc(.667 * var(--callout-size));
 }
 
 .messages-list .message:not(:last-child) {

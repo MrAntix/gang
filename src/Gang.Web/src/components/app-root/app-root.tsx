@@ -1,4 +1,4 @@
-import { Component, h, Listen, State } from '@stencil/core';
+import { Component, Fragment, h, Listen, State } from '@stencil/core';
 
 import { GangContext, GangStore, getGangId, GangConnectionState } from '@gang-js/core';
 
@@ -42,8 +42,8 @@ export class AppRoot {
   }
 
   render() {
-    return (
-      <div>
+    return <Fragment>
+      <section class="head">
         <header>
           <h1>Gang Web</h1>
           {!this.isConnected
@@ -56,7 +56,9 @@ export class AppRoot {
         <div>
           <p><a href="https://github.com/MrAntix/gang">github.com/MrAntix/gang</a></p>
         </div>
+      </section>
 
+      <section class="body">
         <main>
           <stencil-router>
             <stencil-route-switch scrollTopOffset={0}>
@@ -64,11 +66,13 @@ export class AppRoot {
             </stencil-route-switch>
           </stencil-router>
         </main>
+      </section>
 
+      <section class="foot">
         <div>
           <p>Demo app built on a state sharing algorithm using websockets, written in c# on net5.0 and JS client</p>
         </div>
-      </div>
-    );
+      </section>
+    </Fragment>;
   }
 }

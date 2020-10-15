@@ -1,7 +1,7 @@
 import { Component, h, Host, State, Listen } from '@stencil/core';
 import { GangContext, getGangId, GangStore } from '@gang-js/core';
 
-import { IAppState, IAppUser, IAppMessage } from '../../app/models';
+import { IAppState, IAppUser, IAppMessage, IAppMessageGroup } from '../../app/models';
 
 @Component({
   tag: 'app-home',
@@ -17,6 +17,8 @@ export class AppHome {
     messages: [],
     privateMessages: []
   }
+
+  @State() messageGroups: IAppMessageGroup[];
 
   @State() newMessageText: string;
 
@@ -45,10 +47,12 @@ export class AppHome {
 
     this.state = {
       users: sortUsers(state.users || []),
-      messages: sortMessages(
-        (state.messages || []).concat(state.privateMessages || [])
-      )
+      messages: state.messages
     }
+
+    this.messageGroups = sortAndGroupMessages(
+      (state.messages || []).concat(state.privateMessages || [])
+    );
 
     this.currentUser = this.state.users
       .find(u => u.id === this.service.memberId);
@@ -66,20 +70,27 @@ export class AppHome {
   }
 
   render() {
+
     return <Host>
       {!!this.currentUser?.name &&
         <div class="section messages">
           <ol class="messages-list" ref={el => this.messagesList = el}>
-            {this.state.messages?.map(message => <li class={{
+            {this.messageGroups?.map(group => <li class={{
               "message": true,
-              "current-user": message.userId === this.currentUser?.id
+              "current-user": group.userId === this.currentUser?.id
             }}>
               <div class="row detail">
-                <span class="text user-name">{this.userNames[message.userId] || 'Host Bot'}</span>
-                <div class="text message-text">{message.text}</div>
+                <span class="text user-name">{this.userNames[group.userId] || 'Host Bot'}</span>
+                <ol class="message-text-list">
+                  {group.items.map(message =>
+                    <li class="message-text-list-item">
+                      <span class="text message-text">{message.text}</span>
+                    </li>
+                  )}
+                </ol>
               </div>
               <div class="row info">
-                <span class="text message-on">{formatDate(message.on)}</span>
+                <span class="text message-on">{formatDate(group.time)}</span>
               </div>
             </li>)}
           </ol>
@@ -168,10 +179,9 @@ const messageDateFormatter = Intl.DateTimeFormat('en-GB', {
   month: 'short',
   day: 'numeric',
   hour: 'numeric',
-  minute: 'numeric',
-  second: 'numeric'
+  minute: 'numeric'
 }).format;
-function formatDate(date: string) {
+function formatDate(date: string | number) {
 
   return messageDateFormatter(new Date(date));
 }
@@ -190,4 +200,35 @@ function sortMessages(items: IAppMessage[]): IAppMessage[] {
 
   sorted.sort((a, b) => new Date(a.on).getTime() - new Date(b.on).getTime());
   return sorted;
+}
+
+function sortAndGroupMessages(items: IAppMessage[]): IAppMessageGroup[] {
+
+  return sortMessages(items)
+    .reduce<IAppMessageGroup[]>((groups, item) => {
+      const time = new Date(item.on).getTime();
+      let group = groups.find(g =>
+        g.userId === item.userId
+        && Math.abs(g.time - time) < 10000
+      );
+
+      if (!group) {
+
+        groups = [...groups, {
+          time,
+          userId: item.userId,
+          items: [item]
+        }]
+
+      } else {
+
+        groups = groups.map(
+          g => g === group
+            ? { ...group, items: [...group.items, item] }
+            : g);
+      }
+
+
+      return groups;
+    }, []);
 }
