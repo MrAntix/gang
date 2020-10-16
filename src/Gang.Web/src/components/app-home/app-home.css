@@ -32,7 +32,7 @@ li {
 .column {
   overflow: auto;
   overflow-x: hidden;
-  max-height: calc(100 * var(--vh) - var(--page-header-height));
+  max-height: calc(100 * var(--vh) - var(--page-head-height));
 }
 
 .heading {
@@ -86,8 +86,9 @@ li {
   display: flex;
   flex-direction: column;
   min-width: 15em;
-  max-height: calc(100 * var(--vh) - var(--page-header-height));
+  max-height: calc(100 * var(--vh) - var(--page-head-height));
   background-color: var(--lowlight);
+  border-radius: 0 0 calc(var(--padding-unit) + var(--border-radius)) calc(var(--padding-unit) + var(--border-radius));
 }
 
 .messages-list {

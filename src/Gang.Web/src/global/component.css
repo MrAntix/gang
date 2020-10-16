@@ -1,3 +1,7 @@
+* {
+  box-sizing: border-box;
+}
+
 button {
   font: inherit;
   border: none;
@@ -12,6 +16,6 @@ textarea {
   border-radius: var(--border-radius);
 }
 
-a{
-  color: white;
+a {
+  color: var(--link-color);
 }

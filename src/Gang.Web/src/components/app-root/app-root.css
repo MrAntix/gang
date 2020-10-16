@@ -11,11 +11,17 @@
 
 .head {
   background-color: var(--highlight);
-  padding: var(--padding-unit) 0
+  padding: var(--padding-unit) 0;
+  min-height: var(--page-head-height);
+}
+
+.body {
+  min-height: calc(100 * var(--vh) - var(--page-head-height) - var(--page-foot-height));
 }
 
 .foot {
-  padding: var(--padding-unit) 0
+  padding: var(--padding-unit) 0;
+  height: var(--page-foot-height);
 }
 
 header {
