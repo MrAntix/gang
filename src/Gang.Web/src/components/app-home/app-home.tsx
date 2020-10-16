@@ -81,7 +81,7 @@ export class AppHome {
             }}>
               <div class="row detail">
                 <span class="text user-name">{this.userNames[group.userId] || 'Host Bot'}</span>
-                <ol class="message-text-list">
+                <ol class="text message-text-list">
                   {group.items.map(message =>
                     <li class="message-text-list-item">
                       <span class="text message-text">{message.text}</span>
@@ -90,7 +90,7 @@ export class AppHome {
                 </ol>
               </div>
               <div class="row info">
-                <span class="text message-on">{formatDate(group.time)}</span>
+                <span class="message-on">{formatDate(group.time)}</span>
               </div>
             </li>)}
           </ol>

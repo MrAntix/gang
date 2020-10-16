@@ -10,7 +10,11 @@ export const config: Config = {
     {
       type: 'www',
       dir: 'wwwroot',
-      serviceWorker: null
+      serviceWorker: {
+        globPatterns: [
+          '**/*.{js,css,json,html,ico,png}'
+        ]
+      }
     }
   ],
   testing: {

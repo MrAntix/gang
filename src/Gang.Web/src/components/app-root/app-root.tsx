@@ -46,15 +46,15 @@ export class AppRoot {
       <section class="head">
         <header>
           <h1>Gang Web</h1>
-          {!this.isConnected
-            && <button
-              onClick={() => this.onVisibilitychange()}
-            >Connect</button>
-          }
         </header>
 
         <div>
           <p><a href="https://github.com/MrAntix/gang">github.com/MrAntix/gang</a></p>
+          {!this.isConnected
+            && <button class="connect-button"
+              onClick={() => this.onVisibilitychange()}
+            >Connect</button>
+          }
         </div>
       </section>
 

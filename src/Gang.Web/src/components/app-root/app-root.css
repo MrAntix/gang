@@ -1,5 +1,9 @@
 @import '../../global/component.css';
 
+:host {
+  display: block;
+}
+
 :host>section {
   display: grid;
   grid-template-columns: auto minmax(0, 50em) auto;
@@ -13,6 +17,18 @@
   background-color: var(--highlight);
   padding: var(--padding-unit) 0;
   min-height: var(--page-head-height);
+}
+
+.head>header {
+  background-image: url('/assets/icon-96x96.png');
+  background-size: 24px;
+  background-repeat: no-repeat;
+  background-position: right var(--padding-unit) center;
+}
+
+.head>div {
+  display: flex;
+  align-items: center;
 }
 
 .body {
@@ -30,16 +46,14 @@ header {
   align-items: center;
 }
 
-header button {
+.connect-button {
   margin-left: auto;
+  margin-right: var(--padding-unit);
 }
 
 h1,
-p {
-  margin: 0;
-  padding: 0 var(--padding-unit);
-}
-
+p,
 button {
-  margin: var(--padding-unit);
+  margin: 0;
+  padding: calc(.5 * var(--padding-unit)) var(--padding-unit);
 }
