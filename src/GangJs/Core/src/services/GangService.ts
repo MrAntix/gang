@@ -1,4 +1,4 @@
-import { BehaviorSubject, Subject, Observable } from 'rxjs';
+import { BehaviorSubject, Subject, Observable, Subscription } from 'rxjs';
 
 import { GangContext } from '../context';
 import {
@@ -194,11 +194,13 @@ export class GangService {
 
     return new Promise((resolve) => {
       if (this.webSocket) {
-        const wait = this.connectionSubject.subscribe((state) => {
+        let wait: Subscription = null;
+
+        wait = this.connectionSubject.subscribe((state) => {
           if (state === GangConnectionState.disconnected) {
             GangContext.logger('GangService.disconnect disconnected');
 
-            wait.unsubscribe();
+            wait?.unsubscribe();
             resolve();
           }
         });
