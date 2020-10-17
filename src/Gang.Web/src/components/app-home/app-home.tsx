@@ -35,7 +35,7 @@ export class AppHome {
     this.service.mapEvents(this);
   }
 
-  onGangState(state: IAppState) {
+  onGangState(state: Partial<IAppState>) {
     this.logger('onState', { state });
 
     state = {
@@ -75,10 +75,14 @@ export class AppHome {
     this.logger('onMemberDisconnected', { memberId })
 
     this.onGangState({
-      users: [],
-      messages: [],
-      privateMessages: []
+      privateMessages: [{
+        id: 'Welcome',
+        userId: null,
+        on: new Date().toISOString(),
+        text: 'Connection was lost, retrying'
+      }]
     });
+    this.currentUser = null;
   }
 
   render() {

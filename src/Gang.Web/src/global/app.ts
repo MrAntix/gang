@@ -11,6 +11,11 @@ export default async () => {
   GangContext.initialState = {
     users: [],
     messages: [],
-    privateMessages: []
+    privateMessages: [{
+      id: 'Welcome',
+      userId: null,
+      on: new Date().toISOString(),
+      text: 'Welcome to gang demo, enter your name to join in'
+    }]
   }
 };
