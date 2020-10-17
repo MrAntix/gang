@@ -1,6 +1,6 @@
 using System;
 
-namespace Gang
+namespace Gang.Contracts
 {
     public class GangMessageAudit
     {

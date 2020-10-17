@@ -1,4 +1,4 @@
-using Gang.Events;
+using Gang.Contracts;
 using Gang.Web.Services.Events;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -49,7 +49,7 @@ namespace Gang.Web.Services.State
                 );
         }
 
-        public WebGangHostState Apply(WebGangMessageAddedEvent e, GangStateEventAudit a)
+        public WebGangHostState Apply(WebGangMessageAddedEvent e, GangMessageAudit a)
         {
             var message = new WebGangMessage(
                 e.MessageId,

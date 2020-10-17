@@ -1,13 +1,13 @@
 using System.Threading.Tasks;
 
-namespace Gang
+namespace Gang.Members
 {
     public sealed class GangMemberConnectionState
     {
         public GangMemberConnectionState()
         {
             _connected = new TaskCompletionSource<bool>();
-             BlockingTask = _connected.Task;
+            BlockingTask = _connected.Task;
         }
 
         readonly TaskCompletionSource<bool> _connected;

@@ -1,4 +1,6 @@
 using Gang.Commands;
+using Gang.Contracts;
+using Gang.Management;
 using System;
 using System.Text;
 using System.Threading.Tasks;
@@ -60,7 +62,7 @@ namespace Gang
             if (executor is null)
                 throw new ArgumentNullException(nameof(executor));
 
-            _onCommandAsync = (byte[] data, GangMessageAudit audit)
+            _onCommandAsync = (data, audit)
                 => executor.ExecuteAsync(this as THost, data, audit);
         }
 

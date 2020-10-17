@@ -1,4 +1,4 @@
-namespace Gang
+namespace Gang.Contracts
 {
     public interface IHasGangId
     {

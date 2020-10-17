@@ -1,5 +1,3 @@
-using Gang.Events;
-
 namespace Gang.Web.Services.Events
 {
     public class WebGangMessageAddedEvent

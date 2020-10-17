@@ -1,9 +1,9 @@
-﻿namespace Gang.Events
+namespace Gang.Management.Events
 {
-    public class GangMemberDataEvent :
-        GangMemberEvent
+    public class GangMemberDataManagerEvent :
+        GangMemberManagerEvent
     {
-        public GangMemberDataEvent(
+        public GangMemberDataManagerEvent(
             string gangId,
             IGangMember member,
             byte[] data

@@ -1,39 +1,40 @@
 using Gang.Contracts;
-using Gang.Events;
+using Gang.Management.Events;
+using Gang.Members;
 using Gang.Serialization;
 using System;
 using System.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 
-namespace Gang
+namespace Gang.Management
 {
-    public sealed class GangHandler :
-        IGangHandler
+    public sealed class GangManager :
+        IGangManager
     {
         readonly GangCollection _gangs;
         readonly IGangSerializationService _serializer;
-        readonly Subject<GangEvent> _events;
+        readonly Subject<GangManagerEvent> _events;
 
-        public GangHandler(
+        public GangManager(
             GangCollection gangs,
             IGangSerializationService serializer
             )
         {
             _gangs = gangs;
             _serializer = serializer;
-            _events = new Subject<GangEvent>();
+            _events = new Subject<GangManagerEvent>();
         }
 
-        IObservable<GangEvent> IGangHandler.Events => _events;
+        IObservable<GangManagerEvent> IGangManager.Events => _events;
 
-        GangMemberCollection IGangHandler.GangById(
+        GangMemberCollection IGangManager.GangById(
             string gangId)
         {
             return _gangs[gangId];
         }
 
-        async Task<GangMemberConnectionState> IGangHandler.HandleAsync(
+        async Task<GangMemberConnectionState> IGangManager.ManageAsync(
             GangParameters parameters, IGangMember gangMember)
         {
             if (parameters is null)
@@ -45,7 +46,7 @@ namespace Gang
 
             gang = _gangs.AddMemberToGang(
                parameters.GangId, gangMember,
-               _ => _events.OnNext(new GangAddedEvent(parameters.GangId)));
+               _ => _events.OnNext(new GangAddedManagerEvent(parameters.GangId)));
 
             if (gang.HostMember == gangMember)
             {
@@ -57,7 +58,7 @@ namespace Gang
                 await gang.HostMember.SendAsync(GangMessageTypes.Connect, gangMember.Id);
             }
 
-            _events.OnNext(new GangMemberAddedEvent(parameters.GangId, gangMember));
+            _events.OnNext(new GangMemberAddedManagerEvent(parameters.GangId, gangMember));
             uint? commandSequenceNumber = 0;
 
             var controller = new GangController(
@@ -93,7 +94,7 @@ namespace Gang
                             .SendAsync(GangMessageTypes.Command, data[4..], gangMember.Id, sequenceNumber);
                     }
 
-                    _events.OnNext(new GangMemberDataEvent(parameters.GangId, gangMember, data));
+                    _events.OnNext(new GangMemberDataManagerEvent(parameters.GangId, gangMember, data));
                 },
                 _serializer
                 );
@@ -108,7 +109,7 @@ namespace Gang
                     await gang.HostMember
                         .SendAsync(GangMessageTypes.Disconnect, gangMember.Id);
 
-                _events.OnNext(new GangMemberRemovedEvent(parameters.GangId, gangMember));
+                _events.OnNext(new GangMemberRemovedManagerEvent(parameters.GangId, gangMember));
 
                 state.Disconnected();
             });

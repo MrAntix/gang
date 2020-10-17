@@ -1,4 +1,5 @@
-using Gang.Events;
+using Gang.Management;
+using Gang.Management.Events;
 using Gang.Web.Services;
 using Gang.WebSockets;
 using Microsoft.AspNetCore.Builder;
@@ -17,7 +18,8 @@ namespace Gang.Web
             services.AddWebSocketGangs()
                 .AddGangHost<WebGangHost>()
                 .AddGangAuthenticationHandler<WebGangAuthenticationHandler>()
-                .AddGangEventHandler<GangAddedEvent, WebGangAddedEventHandler>();
+                .AddGangEventHandler<GangAddedManagerEvent, WebGangAddedEventHandler>()
+                .AddGangEventHandler<GangMemberAddedManagerEvent, WebGangMemberAddedEventHandler>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -38,7 +40,7 @@ namespace Gang.Web
             IApplicationBuilder app)
         {
             var gangHandler = app.ApplicationServices
-                .GetRequiredService<IGangHandler>();
+                .GetRequiredService<IGangManager>();
 
             app.Run(async context =>
             {

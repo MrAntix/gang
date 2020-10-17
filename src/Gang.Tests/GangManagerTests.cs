@@ -1,5 +1,6 @@
 using Gang.Contracts;
-using Gang.Events;
+using Gang.Management;
+using Gang.Management.Events;
 using Gang.WebSockets.Serialization;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using Xunit;
 
 namespace Gang.Tests
 {
-    public class GangHandlerTests
+    public class GangManagerTests
     {
         readonly GangParameters _gangParameters = new GangParameters("gangId", null);
 
@@ -19,7 +20,7 @@ namespace Gang.Tests
             var handler = GetGangHander();
             var firstGangMember = new FakeGangMember("firstGangMember");
 
-            await handler.HandleAsync(_gangParameters, firstGangMember);
+            await handler.ManageAsync(_gangParameters, firstGangMember);
 
             Assert.Equal(GangMessageTypes.Host, firstGangMember.MessagesReceived[0].Type);
         }
@@ -32,8 +33,8 @@ namespace Gang.Tests
             var firstGangMember = new FakeGangMember("firstGangMember");
             var secondGangMember = new FakeGangMember("secondGangMember");
 
-            await handler.HandleAsync(_gangParameters, firstGangMember);
-            await handler.HandleAsync(_gangParameters, secondGangMember);
+            await handler.ManageAsync(_gangParameters, firstGangMember);
+            await handler.ManageAsync(_gangParameters, secondGangMember);
 
             Assert.Equal(GangMessageTypes.Member, secondGangMember.MessagesReceived[0].Type);
         }
@@ -46,8 +47,8 @@ namespace Gang.Tests
             var firstGangMember = new FakeGangMember("firstGangMember");
             var secondGangMember = new FakeGangMember("secondGangMember");
 
-            await handler.HandleAsync(_gangParameters, firstGangMember);
-            await handler.HandleAsync(_gangParameters, secondGangMember);
+            await handler.ManageAsync(_gangParameters, firstGangMember);
+            await handler.ManageAsync(_gangParameters, secondGangMember);
 
             await firstGangMember.DisconnectAsync();
 
@@ -63,9 +64,9 @@ namespace Gang.Tests
             var secondGangMember = new FakeGangMember("secondGangMember");
             var thirdGangMember = new FakeGangMember("thirdGangMember");
 
-            await handler.HandleAsync(_gangParameters, firstGangMember);
-            await handler.HandleAsync(_gangParameters, secondGangMember);
-            await handler.HandleAsync(_gangParameters, thirdGangMember);
+            await handler.ManageAsync(_gangParameters, firstGangMember);
+            await handler.ManageAsync(_gangParameters, secondGangMember);
+            await handler.ManageAsync(_gangParameters, thirdGangMember);
 
             await firstGangMember.Controller.SendAsync(new[] { (byte)1 });
 
@@ -81,8 +82,8 @@ namespace Gang.Tests
             using var hostMember = new FakeGangMember("hostMember");
             using var otherMember = new FakeGangMember("otherMember");
 
-            await handler.HandleAsync(_gangParameters, hostMember);
-            await handler.HandleAsync(_gangParameters, otherMember);
+            await handler.ManageAsync(_gangParameters, hostMember);
+            await handler.ManageAsync(_gangParameters, otherMember);
 
             uint sequenceNumber = 266;
             await otherMember.Controller.SendAsync(BitConverter.GetBytes(sequenceNumber));
@@ -95,19 +96,19 @@ namespace Gang.Tests
         public async Task member_add_remove_events()
         {
             var handler = GetGangHander();
-            var events = new List<GangEvent>();
+            var events = new List<GangManagerEvent>();
             handler.Events.Subscribe(e => events.Add(e));
 
             var hostMember = new FakeGangMember("hostMember");
 
-            await handler.HandleAsync(_gangParameters, hostMember);
+            await handler.ManageAsync(_gangParameters, hostMember);
 
             await hostMember.DisconnectAsync();
 
             Assert.Equal(3, events.Count);
-            Assert.IsType<GangAddedEvent>(events[0]);
-            Assert.IsType<GangMemberAddedEvent>(events[1]);
-            Assert.IsType<GangMemberRemovedEvent>(events[2]);
+            Assert.IsType<GangAddedManagerEvent>(events[0]);
+            Assert.IsType<GangMemberAddedManagerEvent>(events[1]);
+            Assert.IsType<GangMemberRemovedManagerEvent>(events[2]);
         }
 
         [Fact]
@@ -119,13 +120,13 @@ namespace Gang.Tests
             var firstGangMember = new FakeGangMember("firstGangMember");
 
             using (handler.Events
-                .OfType<GangAddedEvent>()
+                .OfType<GangAddedManagerEvent>()
                 .Subscribe(async e =>
 
-                 await handler.HandleAsync(_gangParameters, hostMember).BlockAsync()
+                 await handler.ManageAsync(_gangParameters, hostMember).BlockAsync()
              ))
             {
-                await handler.HandleAsync(_gangParameters, firstGangMember);
+                await handler.ManageAsync(_gangParameters, firstGangMember);
 
                 var gang = handler.GangById(_gangParameters.GangId);
                 Assert.Equal(2, gang.Members.Count);
@@ -134,10 +135,10 @@ namespace Gang.Tests
             }
         }
 
-        IGangHandler GetGangHander(
+        IGangManager GetGangHander(
             GangCollection gangs = null)
         {
-            return new GangHandler(
+            return new GangManager(
                 gangs ?? new GangCollection(),
                 new WebSocketGangJsonSerializationService()
                 );

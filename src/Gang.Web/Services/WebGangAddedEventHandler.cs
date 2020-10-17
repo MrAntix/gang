@@ -1,33 +1,51 @@
 using Gang.Contracts;
-using Gang.Events;
-using Gang.Web.Services.Events;
-using Gang.Web.Services.State;
+using Gang.Management;
+using Gang.Management.Events;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Gang.Web.Services
 {
-    public class WebGangAddedEventHandler : GangEventHandlerBase<GangAddedEvent>
+    public class WebGangAddedEventHandler : GangManagerEventHandlerBase<GangAddedManagerEvent>
     {
-        readonly IGangHandler _handler;
-        readonly Func<WebGangHost> _getHost;
+        readonly IGangManager _handler;
+        readonly Func<WebGangHost> _createHost;
 
         public WebGangAddedEventHandler(
-            IGangHandler handler,
-            Func<WebGangHost> getHost)
+            IGangManager handler,
+            Func<WebGangHost> createHost)
         {
             _handler = handler;
-            _getHost = getHost;
+            _createHost = createHost;
         }
 
-        protected async override Task HandleAsync(GangAddedEvent e)
+        protected async override Task HandleAsync(GangAddedManagerEvent e)
         {
-            var host = _getHost();
+            var host = _createHost();
 
-            await _handler.HandleAsync(
+            await _handler.ManageAsync(
                 new GangParameters(e.GangId, null),
                 host);
+        }
+    }
+
+    public class WebGangMemberAddedEventHandler : GangManagerEventHandlerBase<GangMemberAddedManagerEvent>
+    {
+        readonly IGangManager _handler;
+
+        public WebGangMemberAddedEventHandler(
+            IGangManager handler)
+        {
+            _handler = handler;
+        }
+
+        protected async override Task HandleAsync(GangMemberAddedManagerEvent e)
+        {
+            var host = _handler.GangById(e.GangId).HostMember;
+
+            //await _handler.HandleAsync(
+            //    new GangParameters(e.GangId, null),
+            //    host);
         }
     }
 }

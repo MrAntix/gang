@@ -1,3 +1,4 @@
+using Gang.Contracts;
 using Gang.Serialization;
 using System;
 using System.Collections.Generic;
@@ -41,7 +42,7 @@ namespace Gang.Commands
 
             try
             {
-                var wrapper = _serializer.Deserialize<GangMessageWrapper>(data);
+                var wrapper = _serializer.Deserialize<GangCommandWrapper>(data);
                 var func = _handlerProviders[wrapper.Type];
 
                 await func.ExecuteAsync(host, wrapper.Command, audit);

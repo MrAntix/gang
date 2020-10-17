@@ -1,9 +1,9 @@
-﻿namespace Gang.Events
+namespace Gang.Management.Events
 {
-    public class GangMemberEvent :
-        GangEvent
+    public class GangMemberManagerEvent :
+        GangManagerEvent
     {
-        public GangMemberEvent(
+        public GangMemberManagerEvent(
             string gangId,
             IGangMember member
             ) : base(gangId)

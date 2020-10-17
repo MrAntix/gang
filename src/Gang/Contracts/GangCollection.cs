@@ -1,13 +1,14 @@
+using Gang.Members;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
-namespace Gang
+namespace Gang.Contracts
 {
     public class GangCollection : IEnumerable<GangMemberCollection>
     {
-        static readonly object lockObject = new object();
+        static readonly object _lockObject = new object();
 
         IImmutableDictionary<string, GangMemberCollection> _gangs;
 
@@ -34,7 +35,7 @@ namespace Gang
             string gangId, IGangMember member,
             Action<GangMemberCollection> onNewGang = null)
         {
-            lock (lockObject)
+            lock (_lockObject)
             {
                 var gang = this[gangId];
                 if (gang == null)
@@ -60,13 +61,9 @@ namespace Gang
             var gang = _gangs[gangId].RemoveMember(member);
 
             if (gang == null)
-            {
                 _gangs = _gangs.Remove(gangId);
-            }
             else
-            {
                 _gangs = _gangs.SetItem(gangId, gang);
-            }
         }
 
         IEnumerator<GangMemberCollection> IEnumerable<GangMemberCollection>.GetEnumerator() => _gangs.Values.GetEnumerator();

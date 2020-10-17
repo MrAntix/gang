@@ -1,5 +1,6 @@
-using Gang.Commands;
 using Gang.Contracts;
+using Gang.Management;
+using Gang.Management.Events;
 using Gang.Serialization;
 using Gang.WebSockets.Serialization;
 using Microsoft.AspNetCore.Builder;
@@ -29,9 +30,9 @@ namespace Gang.WebSockets
             string path
             )
         {
-            var handler = app.ApplicationServices.GetRequiredService<IGangHandler>();
+            var handler = app.ApplicationServices.GetRequiredService<IGangManager>();
             var authenticateAsync = app.ApplicationServices.GetRequiredService<Func<GangParameters, Task<byte[]>>>();
-            var eventHandlerFactories = app.ApplicationServices.GetRequiredService<Dictionary<Type, List<Func<IGangEventHandler>>>>();
+            var eventHandlerFactories = app.ApplicationServices.GetRequiredService<Dictionary<Type, List<Func<IGangManagerEventHandler>>>>();
 
             if (eventHandlerFactories?.Any() ?? false)
             {
@@ -63,7 +64,7 @@ namespace Gang.WebSockets
                         using var gangMember = await GetGangMemberAsync(gangMemberId, context);
 
                         if (gangMember.Id != null)
-                            await handler.HandleAsync(parameters, gangMember).BlockAsync();
+                            await handler.ManageAsync(parameters, gangMember).BlockAsync();
 
                         else
                             await gangMember.DisconnectAsync("denied");
@@ -99,7 +100,7 @@ namespace Gang.WebSockets
         {
             if (!query.TryGetValue(name, out var values))
             {
-                value = default(string);
+                value = default;
                 return false;
             }
 

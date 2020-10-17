@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace Gang
+namespace Gang.Members
 {
     public class GangMemberCollection
     {
@@ -39,11 +39,9 @@ namespace Gang
         public GangMemberCollection RemoveMember(IGangMember member)
         {
             if (member == HostMember)
-            {
                 return OtherMembers.Any()
                     ? new GangMemberCollection(OtherMembers[0], OtherMembers.Skip(1))
                     : null;
-            }
 
             return new GangMemberCollection(HostMember, OtherMembers.Remove(member));
         }

@@ -1,6 +1,7 @@
 using Gang.Commands;
 using Gang.Contracts;
-using Gang.Events;
+using Gang.Management;
+using Gang.Management.Events;
 using Gang.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -16,19 +17,19 @@ namespace Gang
         public static IServiceCollection AddGangs(
             this IServiceCollection services)
         {
-            services.AddSingleton<IGangHandler, GangHandler>();
+            services.AddSingleton<IGangManager, GangManager>();
             services.AddTransient<GangCollection>();
             services.AddSingleton<Func<GangParameters, Task<byte[]>>>(
                 _ => Task.FromResult($"{Guid.NewGuid():N}".GangToBytes())
                 );
             services.AddSingleton(
-                sp => sp.GetServices<Tuple<Type, Func<IGangEventHandler>>>()
-                    .Aggregate(new Dictionary<Type, List<Func<IGangEventHandler>>>(),
+                sp => sp.GetServices<Tuple<Type, Func<IGangManagerEventHandler>>>()
+                    .Aggregate(new Dictionary<Type, List<Func<IGangManagerEventHandler>>>(),
                     (p, t) =>
                     {
                         if (!p.ContainsKey(t.Item1))
                         {
-                            p.Add(t.Item1, new List<Func<IGangEventHandler>>());
+                            p.Add(t.Item1, new List<Func<IGangManagerEventHandler>>());
                         }
                         p[t.Item1].Add(t.Item2);
                         return p;
@@ -68,12 +69,12 @@ namespace Gang
 
         public static IServiceCollection AddGangEventHandler<TEvent, T>(
             this IServiceCollection services)
-            where TEvent : GangEvent
-            where T : GangEventHandlerBase<TEvent>
+            where TEvent : GangManagerEvent
+            where T : GangManagerEventHandlerBase<TEvent>
         {
             services.AddTransient<T>();
-            services.AddTransient(typeof(Tuple<Type, Func<IGangEventHandler>>),
-                sp => Tuple.Create<Type, Func<IGangEventHandler>>(typeof(TEvent), sp.GetRequiredService<T>));
+            services.AddTransient(typeof(Tuple<Type, Func<IGangManagerEventHandler>>),
+                sp => Tuple.Create<Type, Func<IGangManagerEventHandler>>(typeof(TEvent), sp.GetRequiredService<T>));
 
             return services;
         }

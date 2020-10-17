@@ -1,6 +1,7 @@
 using Gang.Commands;
+using Gang.Contracts;
 using Gang.Events;
-using Gang.Serialization;
+using Gang.Members;
 using Gang.Web.Services.Commands;
 using Gang.Web.Services.Events;
 using Gang.Web.Services.State;
@@ -34,9 +35,9 @@ namespace Gang.Web.Services
 
             ApplyStateEvents(
                 new[]{
-                    new GangStateEventWrapper(
+                    new GangEventWrapper(
                         new WebGangMessageAddedEvent("Welcome", "Gang Chat Started"),
-                        new GangStateEventAudit(Id, 1, DateTimeOffset.Now)
+                        new GangMessageAudit(Id, null, 1, DateTimeOffset.Now)
                         )
                 });
 
@@ -75,7 +76,7 @@ namespace Gang.Web.Services
         }
 
         protected override async Task OnStateEventAsync(
-            object e, GangStateEventAudit a)
+            object e, GangMessageAudit a)
         {
             Console.WriteLine(
                 $"EVENT: {e.GetType().Name}" +

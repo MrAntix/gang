@@ -1,3 +1,4 @@
+using Gang.Contracts;
 using System.Threading.Tasks;
 
 namespace Gang.Commands

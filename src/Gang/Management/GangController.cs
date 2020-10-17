@@ -1,22 +1,24 @@
+using Gang.Contracts;
+using Gang.Members;
 using Gang.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Gang
+namespace Gang.Management
 {
     public sealed class GangController : IGangController
     {
         readonly string _gangId;
-        readonly IGangHandler _handler;
+        readonly IGangManager _handler;
         readonly GangMemberSendAsync _sendAsync;
         readonly IGangSerializationService _serializer;
-        uint _commandSequenceNumber = uint.MaxValue-10;
+        uint _commandSequenceNumber = uint.MaxValue - 10;
 
         public GangController(
             string gangId,
-            IGangHandler handler,
+            IGangManager handler,
             GangMemberSendAsync sendAsync,
             IGangSerializationService serializer
             )

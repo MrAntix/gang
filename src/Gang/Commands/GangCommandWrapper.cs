@@ -1,8 +1,8 @@
-namespace Gang
+namespace Gang.Commands
 {
-    public sealed class GangMessageWrapper
+    public sealed class GangCommandWrapper
     {
-        public GangMessageWrapper(
+        public GangCommandWrapper(
             string type,
             object command,
             uint? rsn)

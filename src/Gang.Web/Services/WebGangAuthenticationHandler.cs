@@ -1,4 +1,5 @@
 using Gang.Contracts;
+using Gang.Management;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,10 +9,10 @@ namespace Gang.Web.Services
         IGangAuthenticationHandler
     {
         const int MAX_USERS = 10;
-        readonly IGangHandler _handler;
+        readonly IGangManager _handler;
 
         public WebGangAuthenticationHandler(
-            IGangHandler handler)
+            IGangManager handler)
         {
             _handler = handler;
         }

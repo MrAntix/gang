@@ -1,3 +1,5 @@
+using Gang.Contracts;
+
 namespace Gang.Web.Services.State
 {
     public class WebGangUser : IHasGangIdString

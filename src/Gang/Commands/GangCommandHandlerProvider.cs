@@ -1,3 +1,4 @@
+using Gang.Contracts;
 using System;
 using System.Threading.Tasks;
 

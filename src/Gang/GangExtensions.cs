@@ -1,4 +1,7 @@
 using Gang.Commands;
+using Gang.Contracts;
+using Gang.Management;
+using Gang.Members;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,12 +49,16 @@ namespace Gang
         public static string GangToString(
             this byte[] value)
         {
+            if (value == null) return null;
+
             return Encoding.UTF8.GetString(value);
         }
 
         public static byte[] GangToBytes(
             this string value)
         {
+            if (value == null) return null;
+
             return Encoding.UTF8.GetBytes(value);
         }
 

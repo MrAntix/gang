@@ -1,7 +1,9 @@
+using Gang.Contracts;
+using Gang.Members;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Gang
+namespace Gang.Management
 {
     public interface IGangController
     {

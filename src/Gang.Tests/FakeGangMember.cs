@@ -1,5 +1,5 @@
-using Gang.Serialization;
-using Gang.WebSockets.Serialization;
+using Gang.Contracts;
+using Gang.Management;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,14 +9,12 @@ namespace Gang.Tests
 {
     public class FakeGangMember : IGangMember
     {
-        IGangSerializationService _serializer;
 
         public FakeGangMember(
             string id)
         {
             Id = Encoding.UTF8.GetBytes(id);
             MessagesReceived = new List<Message>();
-            _serializer = new WebSocketGangJsonSerializationService();
         }
 
         public byte[] Id { get; }
@@ -53,6 +51,7 @@ namespace Gang.Tests
 
         void IDisposable.Dispose()
         {
+            GC.SuppressFinalize(this);
             DisconnectAsync("disposed").GetAwaiter().GetResult();
         }
 

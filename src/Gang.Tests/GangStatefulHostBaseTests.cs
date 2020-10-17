@@ -1,6 +1,8 @@
 using Gang.Commands;
 using Gang.Contracts;
 using Gang.Events;
+using Gang.Management;
+using Gang.Members;
 using Gang.Tests.StatefulHost;
 using Gang.WebSockets.Serialization;
 using System;
@@ -19,12 +21,12 @@ namespace Gang.Tests
             var host = GetHost();
 
             var handler = GetGangHandler();
-            await handler.HandleAsync(_gangParameters, host);
+            await handler.ManageAsync(_gangParameters, host);
 
             var events = new[] {
-                new GangStateEventWrapper(
+                new GangEventWrapper(
                     new CountSetEvent(1),
-                    new GangStateEventAudit(Array.Empty<byte>(), 10, DateTimeOffset.Now)
+                    new GangMessageAudit(host.Id, Array.Empty<byte>(), 10, DateTimeOffset.Now)
                     )
             };
 
@@ -39,16 +41,16 @@ namespace Gang.Tests
             var host = GetHost();
 
             var handler = GetGangHandler();
-            await handler.HandleAsync(_gangParameters, host);
+            await handler.ManageAsync(_gangParameters, host);
 
             var events = new[] {
-                new GangStateEventWrapper(
+                new GangEventWrapper(
                     new CountSetEvent(0),
-                    new GangStateEventAudit(Array.Empty<byte>(), 10, DateTimeOffset.Now)
+                    new GangMessageAudit(host.Id, Array.Empty<byte>(), 10, DateTimeOffset.Now)
                     ),
-                new GangStateEventWrapper(
+                new GangEventWrapper(
                     new CountSetEvent(1),
-                    new GangStateEventAudit(Array.Empty<byte>(), 1, DateTimeOffset.Now)
+                    new GangMessageAudit(host.Id, Array.Empty<byte>(), 1, DateTimeOffset.Now)
                     )
             };
 
@@ -63,10 +65,10 @@ namespace Gang.Tests
             var host = GetHost();
 
             var handler = GetGangHandler();
-            await handler.HandleAsync(_gangParameters, host);
+            await handler.ManageAsync(_gangParameters, host);
 
             var member = new FakeGangMember("Member");
-            await handler.HandleAsync(_gangParameters, member);
+            await handler.ManageAsync(_gangParameters, member);
 
             await member.Controller.SendCommandAsync(
                 "increment",
@@ -81,10 +83,10 @@ namespace Gang.Tests
             var host = GetHost();
 
             var handler = GetGangHandler();
-            await handler.HandleAsync(_gangParameters, host);
+            await handler.ManageAsync(_gangParameters, host);
 
             var member = new FakeGangMember("Member");
-            await handler.HandleAsync(_gangParameters, member);
+            await handler.ManageAsync(_gangParameters, member);
 
             await member.Controller.SendCommandAsync(
                 "decrement",
@@ -99,10 +101,10 @@ namespace Gang.Tests
             var host = GetHost();
 
             var handler = GetGangHandler();
-            await handler.HandleAsync(_gangParameters, host);
+            await handler.ManageAsync(_gangParameters, host);
 
             var member = new FakeGangMember("Member");
-            await handler.HandleAsync(_gangParameters, member);
+            await handler.ManageAsync(_gangParameters, member);
 
             await member.Controller.SendCommandAsync(
                 "set",
@@ -125,10 +127,10 @@ namespace Gang.Tests
             return new GangCommandExecutor<FakeGangStatefulHost>(serializer);
         }
 
-        static IGangHandler GetGangHandler(
+        static IGangManager GetGangHandler(
             GangCollection gangs = null)
         {
-            return new GangHandler(
+            return new GangManager(
                 gangs ?? new GangCollection(),
                 new WebSocketGangJsonSerializationService()
                 );

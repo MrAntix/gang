@@ -1,4 +1,5 @@
 using Gang.Commands;
+using Gang.Contracts;
 using Gang.Web.Services.Commands;
 using Gang.Web.Services.Events;
 using System.Linq;
