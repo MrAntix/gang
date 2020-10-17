@@ -121,12 +121,12 @@ export class AppHome {
             />
           </li>
           <li class="heading">Other Users</li>
-          {this.state.users?.filter(u => u.id !== this.currentUser.id)
+          {this.state.users?.filter(u => !!u?.name && u.id !== this.currentUser.id)
             .map(user => <li class={{
               "user-name other text": true,
               "is-online": user.isOnline
             }}
-            >{user?.name || '(anon)'}</li>)}
+            >{user.name}</li>)}
         </ol>
       </div>
     </Host>
