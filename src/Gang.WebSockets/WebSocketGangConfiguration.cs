@@ -106,16 +106,5 @@ namespace Gang.WebSockets
             value = values.Single();
             return true;
         }
-
-        static bool TryGetGuid(IQueryCollection query, string name, out Guid value)
-        {
-            if (!query.TryGetValue(name, out var values))
-            {
-                value = default(Guid);
-                return false;
-            }
-
-            return Guid.TryParse(values.Single(), out value);
-        }
     }
 }
