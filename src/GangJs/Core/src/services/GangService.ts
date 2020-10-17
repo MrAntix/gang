@@ -42,7 +42,9 @@ export class GangService {
   onCommand: Observable<GangCommandWrapper<unknown>>;
   onState: Observable<unknown>;
 
-  constructor(private webSocketFactory: GangWebSocketFactory) {
+  constructor(
+    private webSocketFactory: GangWebSocketFactory,
+    initialState: Record<string, unknown> = undefined) {
     if (!location) throw new Error('required location object not found');
 
     const protocol = location.protocol.replace('http', 'ws');
@@ -64,7 +66,7 @@ export class GangService {
     >();
     this.onState = this.stateSubject = new BehaviorSubject<
       Record<string, unknown>
-    >(undefined);
+    >(initialState);
   }
 
   async connect(url: string, gangId: string, token?: string): Promise<void> {
