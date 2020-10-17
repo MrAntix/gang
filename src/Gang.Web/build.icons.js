@@ -17,8 +17,8 @@ const outRoot = './src/';
   await convertToPNG('a', 512);
 
   await imagemin(
-    [`./${outRoot}/assets/*.png`],
-    `./${outRoot}/assets/`, {
+    [`./${outRoot}assets/*.png`],
+    `./${outRoot}assets/`, {
     plugins: [
       imageminPngquant()
     ]
@@ -27,7 +27,7 @@ const outRoot = './src/';
 
 async function convertToPNG(name, width, height, output) {
   height = height || width;
-  output = output || `./${outRoot}/assets/${name}-${width}x${height}.png`;
+  output = output || `./${outRoot}assets/${name}-${width}x${height}.png`;
 
   await convertFile(`./src/assets/${name}.svg`, {
     width,
@@ -40,10 +40,10 @@ async function convertToPNG(name, width, height, output) {
 
 async function convertToICO(name, sizes) {
   const files = sizes.map(size =>
-    fs.readFileSync(`./${outRoot}/assets/${name}-${size}x${size}.png`),
+    fs.readFileSync(`./${outRoot}assets/${name}-${size}x${size}.png`),
   );
 
-  const output = `./${outRoot}/assets/${name}.ico`;
+  const output = `./${outRoot}assets/${name}.ico`;
 
   toIco(files).then(buf => {
     fs.writeFileSync(output, buf);
