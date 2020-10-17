@@ -19,6 +19,8 @@
 
   --user-color: var(--color-alt);
   --user-color-alt: var(--color);
+  --host-bot-color: #dca;
+  --host-bot-color-alt: #111;
   --current-user-color: var(--primary-color);
   --current-user-color-alt: var(--primary-color-alt);
 

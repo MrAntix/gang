@@ -7,5 +7,10 @@ export default async () => {
    * is wrapped in the function() that is exported.
    */
 
-  GangContext.logger = console.info;
+  GangContext.logger = console.debug;
+  GangContext.initialState = {
+    users: [],
+    messages: [],
+    privateMessages: []
+  }
 };

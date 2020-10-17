@@ -21,7 +21,7 @@
 
 .head>header {
   background-image: url('/assets/icon-96x96.png');
-  background-size: 24px;
+  background-size: 32px;
   background-repeat: no-repeat;
   background-position: right var(--padding-unit) center;
 }

@@ -21,12 +21,12 @@ namespace Gang.Web.Services.State
 
         public WebGangHostState Apply(WebGangUserCreatedEvent e)
         {
-            var user = new WebGangUser(e.UserId, null, e.IsOnline);
+            var user = new WebGangUser(e.UserId, e.Name, true);
 
             return new WebGangHostState(
-                                    Users.Add(user),
-                                    Messages
-                                );
+                    Users.Add(user),
+                    Messages
+                );
         }
 
         public WebGangHostState Apply(WebGangUserNameUpdatedEvent e)
@@ -34,8 +34,8 @@ namespace Gang.Web.Services.State
             var user = Users.First(u => u.Id == e.UserId);
 
             return new WebGangHostState(
-                  Users.Replace(user, user.Update(e)),
-                  Messages
+                    Users.Replace(user, user.Update(e)),
+                    Messages
                 );
         }
 
@@ -44,8 +44,8 @@ namespace Gang.Web.Services.State
             var user = Users.First(u => u.Id == e.UserId);
 
             return new WebGangHostState(
-                  Users.Replace(user, user.Update(e)),
-                  Messages
+                    Users.Replace(user, user.Update(e)),
+                    Messages
                 );
         }
 
@@ -57,9 +57,9 @@ namespace Gang.Web.Services.State
                 e.Text);
 
             return new WebGangHostState(
-                                    Users,
-                                    Messages.Add(message)
-                                );
+                    Users,
+                    Messages.Add(message)
+                );
         }
     }
 }

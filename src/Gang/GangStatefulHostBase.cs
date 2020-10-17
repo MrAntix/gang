@@ -61,7 +61,7 @@ namespace Gang.Members
                 });
         }
 
-        public async Task RaiseStateEventAsync<TEvent>(
+        protected async Task RaiseStateEventAsync<TEvent>(
             TEvent e, byte[] memberId,
             Func<TEvent, GangMessageAudit, TState> apply)
         {

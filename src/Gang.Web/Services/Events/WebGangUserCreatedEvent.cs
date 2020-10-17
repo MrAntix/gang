@@ -4,14 +4,14 @@ namespace Gang.Web.Services.Events
     {
         public WebGangUserCreatedEvent(
             string userId,
-            bool isOnline
+            string name
             )
         {
             UserId = userId;
-            IsOnline = isOnline;
+            Name = name;
         }
 
         public string UserId { get; }
-        public bool IsOnline { get; }
+        public string Name { get; }
     }
 }

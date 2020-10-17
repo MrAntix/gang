@@ -36,7 +36,7 @@ export class AppRoot {
     this.service.connect('ws', 'demo', this.token);
   }
 
-  onConnection(connectionState: GangConnectionState) {
+  onGangConnection(connectionState: GangConnectionState) {
 
     this.isConnected = connectionState === GangConnectionState.connected;
   }

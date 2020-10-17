@@ -1,4 +1,4 @@
-import { Component, h, Host, State, Listen } from '@stencil/core';
+import { Component, h, Host, State, Listen, Fragment } from '@stencil/core';
 import { GangContext, getGangId, GangStore } from '@gang-js/core';
 
 import { IAppState, IAppUser, IAppMessage, IAppMessageGroup } from '../../app/models';
@@ -11,12 +11,9 @@ import { IAppState, IAppUser, IAppMessage, IAppMessageGroup } from '../../app/mo
 export class AppHome {
 
   service = GangContext.service;
+  logger = GangContext.logger;
 
-  @State() state: IAppState = {
-    users: [],
-    messages: [],
-    privateMessages: []
-  }
+  @State() state: IAppState;
 
   @State() messageGroups: IAppMessageGroup[];
 
@@ -38,7 +35,8 @@ export class AppHome {
     this.service.mapEvents(this);
   }
 
-  onState(state: IAppState) {
+  onGangState(state: IAppState) {
+    this.logger('onState', { state });
 
     state = {
       ...this.state,
@@ -54,47 +52,62 @@ export class AppHome {
       (state.messages || []).concat(state.privateMessages || [])
     );
 
-    this.currentUser = this.state.users
-      .find(u => u.id === this.service.memberId);
-
-    if (this.currentUser
-      && !this.currentUser.name
-      && GangStore.get('name')) {
-      this.updateUserName(GangStore.get('name'));
-    }
-
     this.userNames = this.state.users.reduce((map, user) => {
       map[user.id] = user.name;
       return map;
     }, {});
+
+    this.currentUser = this.state
+      .users.find(u => u.id === this.service.memberId);
+  }
+
+  onGangMemberConnected(memberId: string) {
+    this.logger('onMemberConnected', { memberId })
+    if (!memberId) return;
+
+    if (!this.currentUser?.name
+      && GangStore.get('name')) {
+      this.updatetUserName(memberId, GangStore.get('name'));
+    }
+  }
+
+  onGangMemberDisconnected(memberId: string) {
+    this.logger('onMemberDisconnected', { memberId })
+
+    this.onGangState({
+      users: [],
+      messages: [],
+      privateMessages: []
+    });
   }
 
   render() {
 
     return <Host>
-      {!!this.currentUser?.name &&
-        <div class="section messages">
-          <ol class="messages-list" ref={el => this.messagesList = el}>
-            {this.messageGroups?.map(group => <li class={{
-              "message": true,
-              "current-user": group.userId === this.currentUser?.id
-            }}>
-              <div class="row detail">
-                <span class="text user-name">{this.userNames[group.userId] || 'Host Bot'}</span>
-                <ol class="text message-text-list">
-                  {group.items.map(message =>
-                    <li class="message-text-list-item">
-                      <span class="text message-text">{message.text}</span>
-                    </li>
-                  )}
-                </ol>
-              </div>
-              <div class="row info">
-                <span class="message-on">{formatDate(group.time)}</span>
-              </div>
-            </li>)}
-          </ol>
+      <div class="section messages">
+        <ol class="messages-list" ref={el => this.messagesList = el}>
+          {this.messageGroups?.map(group => <li class={{
+            "message": true,
+            "current-user": !!group.userId && group.userId === this.currentUser?.id,
+            "host-bot": !this.userNames[group.userId]
+          }}>
+            <div class="row detail">
+              <span class="text user-name">{this.userNames[group.userId] || 'Host Bot'}</span>
+              <ol class="text message-text-list">
+                {group.items.map(message =>
+                  <li class="message-text-list-item">
+                    <span class="text message-text">{this.replaceUserIds(message.text)}</span>
+                  </li>
+                )}
+              </ol>
+            </div>
+            <div class="row info">
+              <span class="message-on">{formatDate(group.time)}</span>
+            </div>
+          </li>)}
+        </ol>
 
+        {!!this.currentUser?.name &&
           <form class="row"
             onSubmit={e => this.addMessage(e, this.newMessageText)}
           >
@@ -108,25 +121,30 @@ export class AppHome {
               disabled={!this.newMessageText}
             >Send</button>
           </form>
-        </div>
-      }
+        }
+      </div>
+
       <div class="section users">
         <ol>
           <li class="heading">You</li>
           <li>
-            <input class="input user-name"
+            <input class="input user-name" autoFocus
               placeholder="(set your name)"
-              onChange={(e: any) => this.updateUserName(e.target.value)}
+              onChange={(e: any) => this.updatetUserName(this.service.memberId, e.target.value)}
               value={this.currentUser?.name}
             />
           </li>
-          <li class="heading">Other Users</li>
-          {this.state.users?.filter(u => !!u?.name && u.id !== this.currentUser.id)
-            .map(user => <li class={{
-              "user-name other text": true,
-              "is-online": user.isOnline
-            }}
-            >{user.name}</li>)}
+
+          {!!this.currentUser?.name && <Fragment>
+            <li class="heading">Other Users</li>
+            {this.state.users?.filter(u => !!u?.name && u.id !== this.currentUser?.id)
+              .map(user => <li class={{
+                "user-name other text": true,
+                "is-online": user.isOnline
+              }}
+              >{user.name}</li>)}
+          </Fragment>
+          }
         </ol>
       </div>
     </Host>
@@ -139,21 +157,35 @@ export class AppHome {
     }
   }
 
-  updateUserName(name: string) {
+  updatetUserName(id: string, name: string) {
+    this.logger('updatetUserName', { id, name });
+
+    if (!id) throw 'id is required'
+    if (!name) throw 'name is required'
 
     GangStore.set('name', name);
 
     this.service
       .sendCommand('updateUserName', {
-        id: this.currentUser.id,
+        id,
         name
       });
   }
 
+  replaceUserIds(text: string): string {
+
+    return this.state.users.reduce((text, user) => {
+
+      return text.replace(`@${user.id}`, user.name);
+
+    }, text);
+  }
+
   async addMessage(e: Event, text: string) {
+
     e.preventDefault();
 
-    console.debug('addMessage', { text })
+    this.logger('addMessage', { text })
     if (!text) return;
 
     await this.service
@@ -162,7 +194,7 @@ export class AppHome {
         text
       });
 
-    console.debug('addMessage.done', { text })
+    this.logger('addMessage.done', { text })
     this.newMessageText = '';
   }
 
@@ -227,7 +259,6 @@ function sortAndGroupMessages(items: IAppMessage[]): IAppMessageGroup[] {
             ? { ...group, items: [...group.items, item] }
             : g);
       }
-
 
       return groups;
     }, []);

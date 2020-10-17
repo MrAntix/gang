@@ -8,6 +8,7 @@ using Gang.Web.Services.State;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -46,21 +47,30 @@ namespace Gang.Web.Services
 
         protected override async Task OnMemberConnectAsync(byte[] memberId)
         {
-            var userId = Encoding.UTF8.GetString(memberId);
+            var user = State.Users.TryGetByIdString(memberId);
+            if (user == null) return;
 
             await UpdateUser(
-                new UpdateUserIsOnlineCommand(userId, true),
+                user.Id, true,
                 new GangMessageAudit(memberId, null)
                 );
+
+            await SendWelcome(memberId);
         }
 
         protected override async Task OnMemberDisconnectAsync(byte[] memberId)
         {
-            var userId = Encoding.UTF8.GetString(memberId);
+            var user = State.Users.TryGetByIdString(memberId);
+            if (user == null) return;
 
             await UpdateUser(
-                new UpdateUserIsOnlineCommand(userId, false),
+                user.Id, false,
                 new GangMessageAudit(memberId, null)
+                );
+
+            await PrivateMessage(
+                $"@{user.Id} Left",
+                GetUserMemberIds(memberId).ToArray()
                 );
         }
 
@@ -83,18 +93,45 @@ namespace Gang.Web.Services
                 $"\n{JsonConvert.SerializeObject(e)}" +
                 $"\n{JsonConvert.SerializeObject(a)}");
 
-            await Controller.SendStateAsync(State);
+            var userMemberIds = GetUserMemberIds();
+
+            await Controller.SendStateAsync(State, userMemberIds);
         }
 
-        async Task UpdateUser(
-            UpdateUserIsOnlineCommand command,
+        public async Task UpdateUser(
+            string userId,
+            bool isOnline,
             GangMessageAudit audit)
         {
-            if (State.Users.Any(u => u.Id == command.Id))
+            if (string.IsNullOrWhiteSpace(userId))
+                throw new ArgumentNullException(nameof(userId));
+
+            if (State.Users.Any(u => u.Id == userId))
             {
                 var e = new WebGangUserIsOnlineUpdatedEvent(
-                    command.Id,
-                    command.IsOnline
+                    userId,
+                    isOnline
+                );
+
+                await RaiseStateEventAsync(e, audit.MemberId, State.Apply);
+            }
+        }
+
+        public async Task UpdateUser(
+            string userId,
+            string name,
+            GangMessageAudit audit)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                throw new ArgumentNullException(nameof(userId));
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentNullException(nameof(name));
+
+            if (State.Users.Any(u => u.Id == userId))
+            {
+                var e = new WebGangUserNameUpdatedEvent(
+                    userId,
+                    name
                 );
 
                 await RaiseStateEventAsync(e, audit.MemberId, State.Apply);
@@ -102,44 +139,65 @@ namespace Gang.Web.Services
             else
             {
                 var e = new WebGangUserCreatedEvent(
-                    command.Id,
-                    command.IsOnline
+                    userId,
+                    name
                 );
 
                 await RaiseStateEventAsync(e, audit.MemberId, State.Apply);
+
+                await SendWelcome(audit.MemberId);
             }
         }
 
-        async Task AddMessage(
-            string message)
+        public async Task AddMessage(
+            string message,
+            string messageId = null,
+            GangMessageAudit audit = null)
         {
+            if (string.IsNullOrWhiteSpace(message))
+                throw new ArgumentNullException(nameof(message));
+
             var e = new WebGangMessageAddedEvent(
-                Guid.NewGuid().ToString("N"),
+                messageId ?? Guid.NewGuid().ToString("N"),
                 message
             );
 
-            await RaiseStateEventAsync(e, Id, State.Apply);
+            await RaiseStateEventAsync(e, audit?.MemberId ?? Id, State.Apply);
+        }
+
+        public async Task PrivateMessage(
+            string message,
+            params byte[][] memberIds)
+        {
+            await Controller.SendStateAsync(new
+            {
+                PrivateMessages = new[] {
+                            new WebGangMessage(
+                                Guid.NewGuid().ToString("N"),
+                                DateTimeOffset.Now, Id.GangToString(),
+                                message)
+                              }
+            },
+            memberIds);
         }
 
         public async Task SendWelcome(byte[] memberId)
         {
             var user = State.Users.TryGetByIdString(memberId);
-
-            await AddMessage(
-                $"{user.Name} Joined"
-                );
-
-            await Task.Delay(3000);
-
-            await Controller.SendStateAsync(new
+            if (user == null)
             {
-                PrivateMessages = new[] {
-                            new WebGangMessage(
-                                "Welcome", DateTimeOffset.Now, null,
-                                $"Hello {user.Name}, welcome to the gang")
-                              }
-            },
-            new[] { memberId });
+
+                await PrivateMessage($"Hello enter your name to join in", memberId);
+            }
+            else
+            {
+                await PrivateMessage($"Hello @{user.Id}, welcome to the gang", memberId);
+
+                await PrivateMessage(
+                    $"@{user.Id} joined",
+                    GetUserMemberIds(memberId)
+                    );
+            }
         }
 
         public async Task NotifyAsync(
@@ -154,6 +212,21 @@ namespace Gang.Web.Services
                 memberIds,
                 inReplyToSequenceNumber
                 );
+        }
+
+        byte[][] GetUserMemberIds(params byte[][] exceptMemberIds)
+        {
+            var exceptUserIds = exceptMemberIds.Select(e => e.GangToString()).ToArray();
+
+            return GetUserMemberIds(exceptUserIds);
+        }
+
+        byte[][] GetUserMemberIds(string[] exceptUserIds)
+        {
+            return State.Users
+                .Where(u => !exceptUserIds.Contains(u.Id))
+                .Select(u => u.Id.GangToBytes())
+                .ToArray();
         }
     }
 }

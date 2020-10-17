@@ -1,7 +1,6 @@
 using Gang.Commands;
 using Gang.Contracts;
 using Gang.Web.Services.Commands;
-using Gang.Web.Services.Events;
 using System.Threading.Tasks;
 
 namespace Gang.Web.Services
@@ -11,12 +10,11 @@ namespace Gang.Web.Services
     {
         async Task IGangCommandHandler<WebGangHost, AddMessageCommand>.HandleAsync(WebGangHost host, AddMessageCommand command, GangMessageAudit audit)
         {
-            var e = new WebGangMessageAddedEvent(
-                 command.Id,
-                 command.Text
+            await host.AddMessage(
+                command.Text,
+                command.Id,
+                audit
              );
-
-            await host.RaiseStateEventAsync(e, audit.MemberId, host.State.Apply);
 
             await host.NotifyAsync(
                 new NotifyCommand(

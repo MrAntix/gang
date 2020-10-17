@@ -134,6 +134,12 @@ li {
   padding: 0 0 calc(.25 * var(--callout-size));
 }
 
+.messages-list .message.host-bot .message-text {
+  background-color: var(--host-bot-color);
+  color: var(--host-bot-color-alt);
+  font-family: monospace;
+}
+
 .messages-list .message.current-user .message-text {
   background-color: var(--current-user-color);
   color: var(--current-user-color-alt);
@@ -176,6 +182,14 @@ li {
   left: calc(-2 * var(--callout-size) + 1px);
   border-right-color: var(--user-color);
   border-top-width: calc(.667 * var(--callout-size));
+}
+
+.messages-list .message.host-bot .message-text-list-item:not(:first-child) .message-text::after {
+  border-bottom-color: var(--host-bot-color);
+}
+
+.messages-list .message.host-bot .message-text-list-item:first-child .message-text::after {
+  border-right-color: var(--host-bot-color);
 }
 
 .messages-list .message:not(:last-child) {

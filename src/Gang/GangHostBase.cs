@@ -49,7 +49,8 @@ namespace Gang
                     var audit = new GangMessageAudit(Id, memberId, sequenceNumber);
                     await OnCommandAsync(data, audit);
 
-                    if (_onCommandAsync != null) await _onCommandAsync(data, audit);
+                    if (_onCommandAsync != null)
+                        await _onCommandAsync(data, audit);
 
                     break;
             }
