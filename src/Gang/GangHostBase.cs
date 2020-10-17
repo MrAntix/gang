@@ -44,7 +44,7 @@ namespace Gang
 
                     break;
                 case GangMessageTypes.Command:
-                    var audit = new GangMessageAudit(memberId ?? Id, sequenceNumber);
+                    var audit = new GangMessageAudit(Id, memberId, sequenceNumber);
                     await OnCommandAsync(data, audit);
 
                     if (_onCommandAsync != null) await _onCommandAsync(data, audit);
