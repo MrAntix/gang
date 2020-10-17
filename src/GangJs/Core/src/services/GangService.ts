@@ -222,22 +222,28 @@ export class GangService {
    */
   mapEvents<TState>(component: {
     disconnectedCallback?: () => void;
-    onConnection?: (connectionState: GangConnectionState) => void;
-    onState?: (state: TState) => void;
-    onCommand?: (command: unknown) => void;
-    onMemberConnected?: (memberId: string) => void;
-    onMemberDisconnected?: (memberId: string) => void;
+    onGangConnection?: (connectionState: GangConnectionState) => void;
+    onGangState?: (state: TState) => void;
+    onGangCommand?: (command: unknown) => void;
+    onGangMemberConnected?: (memberId: string) => void;
+    onGangMemberDisconnected?: (memberId: string) => void;
   }): void {
     const subs: { unsubscribe: () => undefined }[] = [];
     [
-      'onConnection',
-      'onState',
-      'onCommand',
-      'onMemberConnected',
-      'onMemberDisconnected',
+      'Connection',
+      'State',
+      'Command',
+      'MemberConnected',
+      'MemberDisconnected',
     ].forEach((key) => {
-      if (component[key])
-        subs.push(this[key].subscribe((e: unknown) => component[key](e)));
+      const componentKey = `onGang${key}`;
+      const serviceKey = `on${key}`;
+
+      if (component[componentKey])
+        subs.push(this[serviceKey].subscribe((e: unknown) => component[componentKey](e)));
+
+      else if (component[serviceKey] !== undefined)
+        console.warn(`${serviceKey} changed to ${componentKey}, please update your code`, component)
     });
 
     const disconnectedCallback = component.disconnectedCallback;
