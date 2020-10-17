@@ -36,8 +36,9 @@
 }
 
 .foot {
+  background-color: var(--highlight);
   padding: var(--padding-unit) 0;
-  height: var(--page-foot-height);
+  min-height: var(--page-foot-height);
 }
 
 header {
@@ -55,5 +56,5 @@ h1,
 p,
 button {
   margin: 0;
-  padding: calc(.5 * var(--padding-unit)) var(--padding-unit);
+  padding: calc(.25 * var(--padding-unit)) var(--padding-unit);
 }

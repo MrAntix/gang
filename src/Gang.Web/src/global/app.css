@@ -26,8 +26,8 @@
   --highlight: rgba(0, 0, 0, .1);
 
   --vh: 1vh;
-  --page-head-height: 100px;
-  --page-foot-height: 40px;
+  --page-head-height: 90px;
+  --page-foot-height: 75px;
 }
 
 @media (prefers-color-scheme: light) {
@@ -47,4 +47,5 @@ body {
   color: var(--color-alt);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
+  padding: 0;
 }
