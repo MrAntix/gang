@@ -8,7 +8,7 @@ namespace Gang.Management
 {
     public interface IGangManager : IDisposable
     {
-        Task<GangMemberConnectionState> ManageAsync(GangParameters parameters, IGangMember gangMember, GangAuth auth = null);
+        Task<GangMemberConnectionState> ManageAsync(GangParameters parameters, IGangMember gangMember, byte[] authToken = null);
         IObservable<GangManagerEvent> Events { get; }
         GangMemberCollection GangById(string gangId);
     }

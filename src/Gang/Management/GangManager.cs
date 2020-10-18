@@ -35,7 +35,7 @@ namespace Gang.Management
         }
 
         async Task<GangMemberConnectionState> IGangManager.ManageAsync(
-            GangParameters parameters, IGangMember gangMember, GangAuth auth)
+            GangParameters parameters, IGangMember gangMember, byte[] authToken)
         {
             if (parameters is null)
                 throw new ArgumentNullException(nameof(parameters));
@@ -58,8 +58,8 @@ namespace Gang.Management
                 await gang.HostMember.SendAsync(GangMessageTypes.Connect, gangMember.Id);
             }
 
-            if (auth?.Token != null)
-                await gangMember.SendAsync(GangMessageTypes.Authenticated, auth.Token);
+            if (authToken != null)
+                await gangMember.SendAsync(GangMessageTypes.Authenticated, authToken);
 
             _events.OnNext(new GangMemberAddedManagerEvent(parameters.GangId, gangMember));
             uint? commandSequenceNumber = 0;

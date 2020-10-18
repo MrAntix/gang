@@ -25,8 +25,7 @@ namespace Gang.Web.Services
 
             await _handler.ManageAsync(
                 new GangParameters(e.GangId, null),
-                host,
-                new GangAuth(host.Id, null)
+                host
                 );
         }
     }
