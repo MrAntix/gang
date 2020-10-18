@@ -19,9 +19,13 @@ namespace Gang
         {
             services.AddSingleton<IGangManager, GangManager>();
             services.AddTransient<GangCollection>();
-            services.AddSingleton<Func<GangParameters, Task<byte[]>>>(
-                _ => Task.FromResult($"{Guid.NewGuid():N}".GangToBytes())
-                );
+            services.AddSingleton<Func<GangParameters, Task<GangAuth>>>(
+                _ => Task.FromResult(
+                    new GangAuth(
+                        $"{Guid.NewGuid():N}".GangToBytes(),
+                        $"{Guid.NewGuid():N}".GangToBytes()
+                        )
+                    ));
             services.AddSingleton(
                 sp => sp.GetServices<Tuple<Type, Func<IGangManagerEventHandler>>>()
                     .Aggregate(new Dictionary<Type, List<Func<IGangManagerEventHandler>>>(),
@@ -52,7 +56,7 @@ namespace Gang
             where T : class, IGangAuthenticationHandler
         {
             services.AddTransient<T>();
-            services.AddSingleton<Func<GangParameters, Task<byte[]>>>(
+            services.AddSingleton<Func<GangParameters, Task<GangAuth>>>(
                 sp => sp.GetRequiredService<T>().AuthenticateAsync);
 
             return services;
@@ -60,7 +64,7 @@ namespace Gang
 
         public static IServiceCollection AddGangAuthenticationHandler(
             this IServiceCollection services,
-            Func<GangParameters, Task<byte[]>> authenticate)
+            Func<GangParameters, Task<GangAuth>> authenticate)
         {
             services.AddSingleton(authenticate);
 

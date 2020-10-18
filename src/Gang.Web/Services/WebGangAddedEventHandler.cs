@@ -25,27 +25,9 @@ namespace Gang.Web.Services
 
             await _handler.ManageAsync(
                 new GangParameters(e.GangId, null),
-                host);
-        }
-    }
-
-    public class WebGangMemberAddedEventHandler : GangManagerEventHandlerBase<GangMemberAddedManagerEvent>
-    {
-        readonly IGangManager _handler;
-
-        public WebGangMemberAddedEventHandler(
-            IGangManager handler)
-        {
-            _handler = handler;
-        }
-
-        protected async override Task HandleAsync(GangMemberAddedManagerEvent e)
-        {
-            var host = _handler.GangById(e.GangId).HostMember;
-
-            //await _handler.HandleAsync(
-            //    new GangParameters(e.GangId, null),
-            //    host);
+                host,
+                new GangAuth(host.Id, null)
+                );
         }
     }
 }

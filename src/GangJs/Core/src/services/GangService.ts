@@ -31,12 +31,14 @@ export class GangService {
   isHost: boolean;
 
   private memberConnectedSubject: Subject<string>;
+  private authenticatedSubject: Subject<string>;
   private memberDisconnectedSubject: Subject<string>;
   private commandSubject: Subject<GangCommandWrapper<unknown>>;
   private stateSubject: BehaviorSubject<Record<string, unknown>>;
   private unsentCommands: GangCommandWrapper<unknown>[] = [];
 
   onConnection: Observable<GangConnectionState>;
+  onAuthenticated: Observable<string>;
   onMemberConnected: Observable<string>;
   onMemberDisconnected: Observable<string>;
   onCommand: Observable<GangCommandWrapper<unknown>>;
@@ -51,22 +53,12 @@ export class GangService {
     const host = location.host;
     this.rootUrl = `${protocol}//${host}/`;
 
-    this.onConnection = this.connectionSubject = new BehaviorSubject(
-      GangConnectionState.disconnected
-    );
-
-    this.onMemberConnected = this.memberConnectedSubject = new Subject<
-      string
-    >();
-    this.onMemberDisconnected = this.memberDisconnectedSubject = new Subject<
-      string
-    >();
-    this.onCommand = this.commandSubject = new Subject<
-      GangCommandWrapper<Record<string, unknown>>
-    >();
-    this.onState = this.stateSubject = new BehaviorSubject<
-      Record<string, unknown>
-    >(initialState);
+    this.onConnection = this.connectionSubject = new BehaviorSubject(GangConnectionState.disconnected);
+    this.onAuthenticated = this.authenticatedSubject = new Subject<string>();
+    this.onMemberConnected = this.memberConnectedSubject = new Subject<string>();
+    this.onMemberDisconnected = this.memberDisconnectedSubject = new Subject<string>();
+    this.onCommand = this.commandSubject = new Subject<GangCommandWrapper<Record<string, unknown>>>();
+    this.onState = this.stateSubject = new BehaviorSubject<Record<string, unknown>>(initialState);
   }
 
   async connect(url: string, gangId: string, token?: string): Promise<void> {
@@ -121,16 +113,22 @@ export class GangService {
         switch (messageType) {
           default:
             throw new Error(`unknown message type: ${messageType}`);
-          case 'H':
+          case 'H': {
             this.isHost = true;
             this.memberId = readString(data, 1);
             this.memberConnectedSubject.next(this.memberId);
             break;
-          case 'M':
+          }
+          case 'M': {
             this.isHost = false;
             this.memberId = readString(data, 1);
             this.memberConnectedSubject.next(this.memberId);
             break;
+          }
+          case 'A': {
+            this.authenticatedSubject.next(readString(data, 1));
+            break;
+          }
           case '+': {
             const memberId = readString(data, 1);
             this.memberConnectedSubject.next(memberId);
@@ -223,6 +221,7 @@ export class GangService {
   mapEvents<TState>(component: {
     disconnectedCallback?: () => void;
     onGangConnection?: (connectionState: GangConnectionState) => void;
+    onGangAuthenticated?: (token: string) => void;
     onGangState?: (state: TState) => void;
     onGangCommand?: (command: unknown) => void;
     onGangMemberConnected?: (memberId: string) => void;
@@ -231,6 +230,7 @@ export class GangService {
     const subs: { unsubscribe: () => undefined }[] = [];
     [
       'Connection',
+      'Authenticated',
       'State',
       'Command',
       'MemberConnected',

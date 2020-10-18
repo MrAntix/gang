@@ -5,6 +5,6 @@ namespace Gang.Management
 {
     public interface IGangAuthenticationHandler
     {
-        Task<byte[]> AuthenticateAsync(GangParameters parameters);
+        Task<GangAuth> AuthenticateAsync(GangParameters parameters);
     }
 }

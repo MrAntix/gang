@@ -3,6 +3,7 @@
  */
 
 export * from './constants';
+export * from './GangAuth';
 export * from './GangCommandWrapper';
 export * from './GangConnectionState';
 export * from './GangMessage';

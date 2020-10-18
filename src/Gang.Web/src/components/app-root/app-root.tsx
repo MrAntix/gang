@@ -10,6 +10,8 @@ import { GangContext, GangStore, getGangId, GangConnectionState } from '@gang-js
 export class AppRoot {
 
   service = GangContext.service;
+  logger = GangContext.logger;
+
   @State() token = GangStore.get('token', () => getGangId());
 
   @State() isConnected: boolean = false
@@ -39,6 +41,13 @@ export class AppRoot {
   onGangConnection(connectionState: GangConnectionState) {
 
     this.isConnected = connectionState === GangConnectionState.connected;
+  }
+
+  onGangAuthenticated(token: string) {
+    this.logger('onGangAuthenticated', { token })
+
+    GangStore.set('token', token);
+    this.token = token;
   }
 
   render() {

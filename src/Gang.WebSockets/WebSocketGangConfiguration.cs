@@ -31,7 +31,7 @@ namespace Gang.WebSockets
             )
         {
             var handler = app.ApplicationServices.GetRequiredService<IGangManager>();
-            var authenticateAsync = app.ApplicationServices.GetRequiredService<Func<GangParameters, Task<byte[]>>>();
+            var authenticateAsync = app.ApplicationServices.GetRequiredService<Func<GangParameters, Task<GangAuth>>>();
             var eventHandlerFactories = app.ApplicationServices.GetRequiredService<Dictionary<Type, List<Func<IGangManagerEventHandler>>>>();
 
             if (eventHandlerFactories?.Any() ?? false)
@@ -60,11 +60,11 @@ namespace Gang.WebSockets
 
                         var parameters = GetGangParameters(context.Request.Query);
 
-                        var gangMemberId = await authenticateAsync(parameters);
-                        using var gangMember = await GetGangMemberAsync(gangMemberId, context);
+                        var auth = await authenticateAsync(parameters);
+                        using var gangMember = await GetGangMemberAsync(auth?.MemberId, context);
 
                         if (gangMember.Id != null)
-                            await handler.ManageAsync(parameters, gangMember).BlockAsync();
+                            await handler.ManageAsync(parameters, gangMember, auth).BlockAsync();
 
                         else
                             await gangMember.DisconnectAsync("denied");
