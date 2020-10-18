@@ -3,7 +3,7 @@ import { GangLogger } from './GangLogger';
 
 export class GangContext {
   private static _service: GangService;
-  private constructor() { }
+  private constructor() {}
 
   public static logger: GangLogger = () => undefined;
   public static initialState: Record<string, unknown> = undefined;
@@ -11,7 +11,10 @@ export class GangContext {
   public static get service(): GangService {
     return (
       GangContext._service ||
-      (GangContext._service = new GangService(createGangWebSocket, GangContext.initialState))
+      (GangContext._service = new GangService(
+        createGangWebSocket,
+        GangContext.initialState
+      ))
     );
   }
 }

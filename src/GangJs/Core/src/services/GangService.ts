@@ -46,19 +46,30 @@ export class GangService {
 
   constructor(
     private webSocketFactory: GangWebSocketFactory,
-    initialState: Record<string, unknown> = undefined) {
+    initialState: Record<string, unknown> = undefined
+  ) {
     if (!location) throw new Error('required location object not found');
 
     const protocol = location.protocol.replace('http', 'ws');
     const host = location.host;
     this.rootUrl = `${protocol}//${host}/`;
 
-    this.onConnection = this.connectionSubject = new BehaviorSubject(GangConnectionState.disconnected);
+    this.onConnection = this.connectionSubject = new BehaviorSubject(
+      GangConnectionState.disconnected
+    );
     this.onAuthenticated = this.authenticatedSubject = new Subject<string>();
-    this.onMemberConnected = this.memberConnectedSubject = new Subject<string>();
-    this.onMemberDisconnected = this.memberDisconnectedSubject = new Subject<string>();
-    this.onCommand = this.commandSubject = new Subject<GangCommandWrapper<Record<string, unknown>>>();
-    this.onState = this.stateSubject = new BehaviorSubject<Record<string, unknown>>(initialState);
+    this.onMemberConnected = this.memberConnectedSubject = new Subject<
+      string
+    >();
+    this.onMemberDisconnected = this.memberDisconnectedSubject = new Subject<
+      string
+    >();
+    this.onCommand = this.commandSubject = new Subject<
+      GangCommandWrapper<Record<string, unknown>>
+    >();
+    this.onState = this.stateSubject = new BehaviorSubject<
+      Record<string, unknown>
+    >(initialState);
   }
 
   async connect(url: string, gangId: string, token?: string): Promise<void> {
@@ -240,10 +251,14 @@ export class GangService {
       const serviceKey = `on${key}`;
 
       if (component[componentKey])
-        subs.push(this[serviceKey].subscribe((e: unknown) => component[componentKey](e)));
-
+        subs.push(
+          this[serviceKey].subscribe((e: unknown) => component[componentKey](e))
+        );
       else if (component[serviceKey] !== undefined)
-        console.warn(`${serviceKey} changed to ${componentKey}, please update your code`, component)
+        console.warn(
+          `${serviceKey} changed to ${componentKey}, please update your code`,
+          component
+        );
     });
 
     const disconnectedCallback = component.disconnectedCallback;
