@@ -1,4 +1,4 @@
-import { Component, h, Host, State, Listen, Fragment } from '@stencil/core';
+import { Component, h, Host, State, Listen, Fragment, Element } from '@stencil/core';
 import { GangContext, getGangId, GangStore } from '@gang-js/core';
 
 import { IAppState, IAppUser, IAppMessage, IAppMessageGroup } from '../../app/models';
@@ -9,6 +9,7 @@ import { IAppState, IAppUser, IAppMessage, IAppMessageGroup } from '../../app/mo
   shadow: true
 })
 export class AppHome {
+  @Element() element: HTMLElement;
 
   service = GangContext.service;
   logger = GangContext.logger;
@@ -111,11 +112,26 @@ export class AppHome {
           </li>)}
         </ol>
 
-        {!!this.currentUser?.name &&
-          <form class="row"
+        {!this.currentUser?.name
+          ? <form class="row">
+            <input class="input user-name"
+              autoFocus
+              placeholder="(set your name)"
+              onChange={(e: any) => {
+                this.updatetUserName(this.service.memberId, e.target.value);
+                window.setTimeout(() =>
+                  this.focus('.input.message'), 300);
+              }}
+              value={this.currentUser?.name}
+            />
+            <button class="button"
+            >Join In</button>
+          </form>
+          : <form class="row"
             onSubmit={e => this.addMessage(e, this.newMessageText)}
           >
             <textarea class="input message"
+              autoFocus
               rows={2} placeholder="(type the message to send here)"
               value={this.newMessageText}
               onInput={(e: any) => this.newMessageText = e.target.value}
@@ -128,29 +144,32 @@ export class AppHome {
         }
       </div>
 
-      <div class="section users">
-        <ol>
-          <li class="heading">You</li>
-          <li>
-            <input class="input user-name" autoFocus
-              placeholder="(set your name)"
-              onChange={(e: any) => this.updatetUserName(this.service.memberId, e.target.value)}
-              value={this.currentUser?.name}
-            />
-          </li>
+      {!!this.currentUser?.name &&
+        <div class="section users">
+          <ol>
+            <li class="heading">You</li>
+            <li>
+              <input class="input user-name"
+                autoFocus
+                placeholder="(set your name)"
+                onChange={(e: any) => this.updatetUserName(this.service.memberId, e.target.value)}
+                value={this.currentUser?.name}
+              />
+            </li>
 
-          {!!this.currentUser?.name && <Fragment>
-            <li class="heading">Other Users</li>
-            {this.state.users?.filter(u => !!u?.name && u.id !== this.currentUser?.id)
-              .map(user => <li class={{
-                "user-name other text": true,
-                "is-online": user.isOnline
-              }}
-              >{user.name}</li>)}
-          </Fragment>
-          }
-        </ol>
-      </div>
+            {!!this.currentUser?.name && <Fragment>
+              <li class="heading">Other Users</li>
+              {this.state.users?.filter(u => !!u?.name && u.id !== this.currentUser?.id)
+                .map(user => <li class={{
+                  "user-name other text": true,
+                  "is-online": user.isOnline
+                }}
+                >{user.name}</li>)}
+            </Fragment>
+            }
+          </ol>
+        </div>
+      }
     </Host>
   }
 
@@ -206,6 +225,11 @@ export class AppHome {
     this.messagesList
       ?.querySelector('.message:last-child')
       ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  focus(selector: string) {
+    this.element.shadowRoot
+      .querySelector<HTMLElement>(selector)?.focus();
   }
 }
 

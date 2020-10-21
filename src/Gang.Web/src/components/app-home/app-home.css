@@ -70,12 +70,12 @@ li {
   display: flex;
 }
 
-.users {
-  flex: 1 0 auto;
+.input.user-name {
+  flex: 1 1 auto;
 }
 
-.users .input.user-name {
-  flex: 1 1 auto;
+.users {
+  flex: 1 0 auto;
 }
 
 .users .user-name.other:not(.is-online) {
