@@ -120,7 +120,7 @@ export class AppHome {
               onChange={(e: any) => {
                 this.updatetUserName(this.service.memberId, e.target.value);
                 window.setTimeout(() =>
-                  this.focus('.input.message'), 300);
+                  this.focus('.input.message'), 600);
               }}
               value={this.currentUser?.name}
             />
