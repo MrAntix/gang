@@ -1,0 +1,101 @@
+using Gang.Contracts;
+using Gang.Management;
+using Gang.WebSockets;
+using System;
+using System.Threading.Tasks;
+using Xunit;
+
+namespace Gang.Tests
+{
+    public sealed class WebSocketGangAuthenticatorTests
+    {
+        readonly string MEMBER_ID = "MEMBER_ID";
+        readonly GangParameters parmeters = new GangParameters("GANG_ID", "TOKEN");
+
+        [Fact]
+        public async Task gets_an_id_and_token()
+        {
+            var auth = GetService(
+                parameter => Task.FromResult(new GangAuth(
+                    MEMBER_ID.GangToBytes(),
+                    parameter.Token.GangToBytes()
+                    ))
+                );
+            var member = new FakeGangMember(MEMBER_ID);
+
+            await auth.ExecuteAsync(
+                parmeters, GetMember(member));
+
+            Assert.True(member.Connected);
+        }
+
+        [Fact]
+        public async Task gets_an_id_but_no_token()
+        {
+            var auth = GetService(
+                parameter => Task.FromResult(new GangAuth(
+                    MEMBER_ID.GangToBytes(),
+                    null
+                    ))
+                );
+            var member = new FakeGangMember(MEMBER_ID);
+
+            await auth.ExecuteAsync(
+                parmeters, GetMember(member));
+
+            Assert.True(member.Connected);
+        }
+
+        [Fact]
+        public async Task gets_no_id_or_token()
+        {
+            var auth = GetService(
+                parameter => Task.FromResult(new GangAuth(
+                    null,
+                    null
+                    ))
+                );
+            var member = new FakeGangMember(MEMBER_ID);
+
+            await auth.ExecuteAsync(
+                parmeters, GetMember(member));
+
+            Assert.True(member.Disconnected);
+            Assert.Equal(
+                WebSocketGangAuthenticator.RESULT_DENIED,
+                member.DisconnectedReason);
+        }
+
+        [Fact]
+        public async Task gets_null()
+        {
+            var auth = GetService(
+                parameter => Task.FromResult(default(GangAuth))
+                );
+            var member = new FakeGangMember(MEMBER_ID);
+
+            await auth.ExecuteAsync(
+                parmeters, GetMember(member));
+
+            Assert.True(member.Disconnected);
+            Assert.Equal(
+                WebSocketGangAuthenticator.RESULT_DENIED,
+                member.DisconnectedReason);
+        }
+
+        static IWebSocketGangAutherticator GetService(
+           GangAuthenticationFunc authenticateAsync)
+        {
+            return new WebSocketGangAuthenticator(
+                authenticateAsync,
+                new FakeGangManager()
+            );
+        }
+
+        static Func<byte[], Task<IGangMember>> GetMember(
+            FakeGangMember member)
+        {
+            return _id => Task.FromResult((IGangMember)member);
+        }
+    }
+}

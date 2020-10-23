@@ -11,20 +11,20 @@ namespace Gang.Management
     public sealed class GangController : IGangController
     {
         readonly string _gangId;
-        readonly IGangManager _handler;
+        readonly IGangManager _manager;
         readonly GangMemberSendAsync _sendAsync;
         readonly IGangSerializationService _serializer;
         uint _commandSequenceNumber = uint.MaxValue - 10;
 
         public GangController(
             string gangId,
-            IGangManager handler,
+            IGangManager manager,
             GangMemberSendAsync sendAsync,
             IGangSerializationService serializer
             )
         {
             _gangId = gangId;
-            _handler = handler;
+            _manager = manager;
             _sendAsync = sendAsync;
             _serializer = serializer;
         }
@@ -33,13 +33,13 @@ namespace Gang.Management
 
         GangMemberCollection IGangController.GetGang()
         {
-            return _handler.GangById(_gangId);
+            return _manager.GangById(_gangId);
         }
 
         async Task IGangController.DisconnectAsync(
             byte[] memberId, string reason)
         {
-            var gang = _handler.GangById(_gangId);
+            var gang = _manager.GangById(_gangId);
             var member = gang.MemberById(memberId);
 
             await member.DisconnectAsync(reason);

@@ -7,13 +7,19 @@ using System.Threading.Tasks;
 
 namespace Gang.Tests
 {
+
     public class FakeGangMember : IGangMember
     {
 
         public FakeGangMember(
-            string id)
+            string id) : this(Encoding.UTF8.GetBytes(id))
         {
-            Id = Encoding.UTF8.GetBytes(id);
+        }
+
+        public FakeGangMember(
+             byte[] id)
+        {
+            Id = id;
             MessagesReceived = new List<Message>();
         }
 
@@ -22,12 +28,17 @@ namespace Gang.Tests
         public IGangController Controller { get; private set; }
         public Func<Task> OnDisconnectAsync { get; private set; }
 
+        public bool Connected { get; private set; }
+        public bool Disconnected { get; private set; }
+        public string DisconnectedReason { get; private set; }
+
 
         Task IGangMember.ConnectAsync(
             IGangController controller, Func<Task> onDisconnectAsync)
         {
             Controller = controller;
             OnDisconnectAsync = onDisconnectAsync;
+            Connected = true;
             return Task.CompletedTask;
         }
 
@@ -38,6 +49,8 @@ namespace Gang.Tests
                 await OnDisconnectAsync();
                 OnDisconnectAsync = null;
             }
+            Disconnected = true;
+            DisconnectedReason = reason;
         }
 
         Task IGangMember.SendAsync(GangMessageTypes type,
@@ -52,7 +65,6 @@ namespace Gang.Tests
         void IDisposable.Dispose()
         {
             GC.SuppressFinalize(this);
-            DisconnectAsync("disposed").GetAwaiter().GetResult();
         }
 
         public class Message

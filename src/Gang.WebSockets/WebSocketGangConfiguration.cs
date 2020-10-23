@@ -20,6 +20,7 @@ namespace Gang.WebSockets
             this IServiceCollection services)
         {
             services.AddGangs();
+            services.AddSingleton<IWebSocketGangAutherticator, WebSocketGangAuthenticator>();
             services.AddSingleton<IGangSerializationService, WebSocketGangJsonSerializationService>();
 
             return services;
@@ -30,13 +31,13 @@ namespace Gang.WebSockets
             string path
             )
         {
-            var handler = app.ApplicationServices.GetRequiredService<IGangManager>();
-            var authenticateAsync = app.ApplicationServices.GetRequiredService<GangAuthenticationFunc>();
+            var auth = app.ApplicationServices.GetRequiredService<IWebSocketGangAutherticator>();
+            var manager = app.ApplicationServices.GetRequiredService<IGangManager>();
             var eventHandlerFactories = app.ApplicationServices.GetRequiredService<Dictionary<Type, List<Func<IGangManagerEventHandler>>>>();
 
             if (eventHandlerFactories?.Any() ?? false)
             {
-                handler.Events.Subscribe(e =>
+                manager.Events.Subscribe(e =>
                 {
                     var eventType = e.GetType();
                     if (!eventHandlerFactories.ContainsKey(eventType)) return;
@@ -58,17 +59,9 @@ namespace Gang.WebSockets
                             return;
                         }
 
-                        var parameters = GetGangParameters(context.Request.Query);
-
-                        var auth = await authenticateAsync(parameters);
-                        using var gangMember = await GetGangMemberAsync(auth?.MemberId, context);
-
-                        if (gangMember.Id != null)
-                            await handler.ManageAsync(parameters, gangMember, auth?.Token).BlockAsync();
-
-                        else
-                            await gangMember.DisconnectAsync("denied");
-
+                        await auth.ExecuteAsync(
+                            GetGangParameters(context.Request.Query),
+                            id => GetGangMemberAsync(id, context));
                     });
             });
 

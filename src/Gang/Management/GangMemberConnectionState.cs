@@ -14,7 +14,7 @@ namespace Gang.Members
 
         public Task BlockingTask { get; }
 
-        internal void Disconnected()
+        public void Disconnected()
         {
             _connected.SetResult(true);
         }
