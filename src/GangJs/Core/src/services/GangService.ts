@@ -310,7 +310,13 @@ export class GangService {
    * received from the host having the same sequence number
    * or after 10s (promise is not rejected)
    */
-  async sendCommand<T>(type: string, command: T): Promise<void> {
+  async sendCommand<T>(
+    type: string,
+    command: T,
+    options?: {
+      timeout?: number;
+    }
+  ): Promise<GangCommandWrapper<unknown>> {
     const wrapper = new GangCommandWrapper(type, command);
     GangContext.logger('GangService.sendCommand', {
       wrapper,
@@ -328,11 +334,16 @@ export class GangService {
       return;
     }
 
-    await this.sendCommandWrapper(wrapper);
+    return await this.sendCommandWrapper(wrapper, options);
   }
 
   private sn = 0;
-  private sendCommandWrapper<T>(wrapper: GangCommandWrapper<T>): Promise<void> {
+  private sendCommandWrapper<T>(
+    wrapper: GangCommandWrapper<T>,
+    options?: {
+      timeout?: number;
+    }
+  ): Promise<GangCommandWrapper<unknown>> {
     const sn = ++this.sn;
     this.send(JSON.stringify(wrapper), sn);
 
@@ -343,17 +354,17 @@ export class GangService {
     });
 
     return new Promise((resolve) => {
-      const sub = this.onCommand.subscribe((c) => {
-        if (c.rsn == sn) {
+      const sub = this.onCommand.subscribe((w) => {
+        if (w.rsn == sn) {
           sub.unsubscribe();
-          resolve();
+          resolve(w);
         }
       });
 
       setTimeout(() => {
         sub.unsubscribe();
-        resolve();
-      }, 10000);
+        resolve(null);
+      }, options?.timeout || 10000);
     });
   }
 
