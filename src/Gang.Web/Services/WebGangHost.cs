@@ -28,7 +28,7 @@ namespace Gang.Web.Services
         protected override Task OnConnectAsync()
         {
             SetState(new WebGangHostState(
-              new List<WebGangUser>(),
+              new List<State.WebGangUser>(),
               new List<WebGangMessage>())
             );
 

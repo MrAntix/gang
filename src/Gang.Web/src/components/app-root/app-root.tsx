@@ -47,6 +47,7 @@ export class AppRoot {
     this.logger('onGangAuthenticated', { token })
 
     GangStore.set('token', token);
+    GangStore.set('properties', atob(token.substr(0, token.indexOf('.'))))
     this.token = token;
   }
 

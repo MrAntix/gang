@@ -32,7 +32,7 @@ namespace Gang.WebSockets
                 await gangMember.DisconnectAsync(RESULT_DENIED);
 
             else
-                await _manager.ManageAsync(parameters, gangMember, auth?.Token).BlockAsync();
+                await _manager.ManageAsync(parameters, gangMember, auth.Token).BlockAsync();
         }
     }
 }
