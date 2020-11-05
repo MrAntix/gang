@@ -9,7 +9,7 @@ namespace Gang.Tests.StatefulHost
         IGangCommandHandler<FakeGangStatefulHost, SetCommand>
     {
         async Task IGangCommandHandler<FakeGangStatefulHost, SetCommand>
-            .HandleAsync(FakeGangStatefulHost host, SetCommand command, GangMessageAudit audit)
+            .HandleAsync(FakeGangStatefulHost host, SetCommand command, GangAudit audit)
         {
             if (host is null) throw new ArgumentNullException(nameof(host));
             if (command is null) throw new ArgumentNullException(nameof(command));

@@ -1,11 +1,11 @@
+using Antix.Handlers;
 using Gang.Commands;
 using Gang.Contracts;
 using Gang.Management;
-using Gang.Management.Events;
+using Gang.Management.Contracts;
 using Gang.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -19,28 +19,24 @@ namespace Gang
         {
             services.AddSingleton<IGangManager, GangManager>();
             services.AddTransient<GangCollection>();
+            services.AddSingleton<IGangManagerEventSequenceNumberProvider, GangManagerInMemoryEventSequenceNumberProvider>();
+
+            // default auth func, just uses the token as the member id
             services.AddSingleton<GangAuthenticationFunc>(
                 parameters => Task.FromResult(
                     new GangAuth(
-                        parameters.Token.GangToBytes(),
-                        null
+                        parameters.Token,
+                        null, null
                         )
                     ));
-            services.AddSingleton(
-                sp => sp.GetServices<Tuple<Type, Func<IGangManagerEventHandler>>>()
-                    .Aggregate(new Dictionary<Type, List<Func<IGangManagerEventHandler>>>(),
-                    (p, t) =>
-                    {
-                        if (!p.ContainsKey(t.Item1))
-                        {
-                            p.Add(t.Item1, new List<Func<IGangManagerEventHandler>>());
-                        }
-                        p[t.Item1].Add(t.Item2);
-                        return p;
-                    })
-                );
-
             return services;
+        }
+
+        public static IServiceCollection AddGangManagerEventHandlers<TAssemblyOf>(
+             this IServiceCollection services)
+        {
+            return services
+                .AddHandlersInAssembly<IGangManagerEvent, TAssemblyOf>();
         }
 
         public static IServiceCollection AddGangHost<THost>(
@@ -71,17 +67,17 @@ namespace Gang
             return services;
         }
 
-        public static IServiceCollection AddGangEventHandler<TEvent, T>(
-            this IServiceCollection services)
-            where TEvent : GangManagerEvent
-            where T : GangManagerEventHandlerBase<TEvent>
-        {
-            services.AddTransient<T>();
-            services.AddTransient(typeof(Tuple<Type, Func<IGangManagerEventHandler>>),
-                sp => Tuple.Create<Type, Func<IGangManagerEventHandler>>(typeof(TEvent), sp.GetRequiredService<T>));
+        //public static IServiceCollection AddGangEventHandler<TEvent, T>(
+        //    this IServiceCollection services)
+        //    where TEvent : GangManagerEvent
+        //    where T : GangManagerEventHandlerBase<TEvent>
+        //{
+        //    services.AddTransient<T>();
+        //    services.AddTransient(typeof(Tuple<Type, Func<IGangManagerEventHandler>>),
+        //        sp => Tuple.Create<Type, Func<IGangManagerEventHandler>>(typeof(TEvent), sp.GetRequiredService<T>));
 
-            return services;
-        }
+        //    return services;
+        //}
 
         public static IServiceCollection AddGangCommandHandlersForHost<THost>(
              this IServiceCollection services)
@@ -135,7 +131,7 @@ namespace Gang
 
                             return GangCommandExecutorFunc<THost>
                                 .From(
-                                    () => (THost h, object c, GangMessageAudit a) =>
+                                    () => (THost h, object c, GangAudit a) =>
                                         (Task)handle.Invoke(
                                              sp.GetRequiredService(types.handlerService),
                                             new object[] { h, c, a }),

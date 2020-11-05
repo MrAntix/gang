@@ -23,7 +23,7 @@ namespace Gang.Commands
 
         public string Name { get; }
         public Task ExecuteAsync(
-            THost host, object command, GangMessageAudit audit)
+            THost host, object command, GangAudit audit)
         {
             var typedCommand = _map(command);
             var handler = _provider();

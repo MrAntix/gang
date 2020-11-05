@@ -37,13 +37,28 @@ namespace Gang
             return list.FirstOrDefault(item => item.Id.SequenceEqual(id));
         }
 
-        public static T TryGetByIdString<T>(
+        public static T TryGetById<T>(
             this IEnumerable<T> list,
-            byte[] id)
+            string id)
             where T : IHasGangIdString
         {
-            var idString = id.GangToString();
-            return list.FirstOrDefault(item => item.Id == idString);
+            return list.FirstOrDefault(item => item.Id == id);
+        }
+
+        public static IEnumerable<T> TryRemoveById<T>(
+            this IEnumerable<T> list,
+            byte[] id)
+            where T : IHasGangId
+        {
+            return list.Where(item => !item.Id.SequenceEqual(id));
+        }
+
+        public static IEnumerable<T> TryRemoveById<T>(
+            this IEnumerable<T> list,
+            string id)
+            where T : IHasGangIdString
+        {
+            return list.Where(item => item.Id != id);
         }
 
         public static string GangToString(

@@ -66,7 +66,14 @@ namespace Gang.Contracts
                 _gangs = _gangs.SetItem(gangId, gang);
         }
 
-        IEnumerator<GangMemberCollection> IEnumerable<GangMemberCollection>.GetEnumerator() => _gangs.Values.GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => _gangs.Values.GetEnumerator();
+        IEnumerator<GangMemberCollection> IEnumerable<GangMemberCollection>.GetEnumerator()
+        {
+            return _gangs.Values.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return _gangs.Values.GetEnumerator();
+        }
     }
 }

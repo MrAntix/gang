@@ -23,16 +23,16 @@ namespace Gang.WebSockets
 
         async Task IWebSocketGangAutherticator.ExecuteAsync(
             GangParameters parameters,
-            Func<byte[], Task<IGangMember>> getMemberAsync)
+            Func<GangAuth, Task<IGangMember>> getMemberAsync)
         {
             var auth = await _authenticateAsync(parameters);
-            using var gangMember = await getMemberAsync(auth?.MemberId);
+            using var gangMember = await getMemberAsync(auth);
 
-            if (auth?.MemberId == null)
+            if (auth?.Id == null)
                 await gangMember.DisconnectAsync(RESULT_DENIED);
 
             else
-                await _manager.ManageAsync(parameters, gangMember, auth.Token).BlockAsync();
+                await _manager.ManageAsync(parameters, gangMember).BlockAsync();
         }
     }
 }

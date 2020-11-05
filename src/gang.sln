@@ -19,6 +19,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gang.Web", "Gang.Web\Gang.Web.csproj", "{A957A724-5CC0-4D0E-843D-48C763C6B17B}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gang.Auth", "Gang.Auth\Gang.Auth.csproj", "{AF2FB9FC-2532-4B41-8899-9D950D9E4123}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,10 @@ Global
 		{A957A724-5CC0-4D0E-843D-48C763C6B17B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A957A724-5CC0-4D0E-843D-48C763C6B17B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A957A724-5CC0-4D0E-843D-48C763C6B17B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF2FB9FC-2532-4B41-8899-9D950D9E4123}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF2FB9FC-2532-4B41-8899-9D950D9E4123}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF2FB9FC-2532-4B41-8899-9D950D9E4123}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF2FB9FC-2532-4B41-8899-9D950D9E4123}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,20 +1,33 @@
 using Gang.Contracts;
 using Gang.Management;
-using Gang.Management.Events;
+using Gang.Management.Contracts;
 using Gang.Members;
 using System;
-using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 
 namespace Gang.Tests
 {
-    public class FakeGangManager : IGangManager
+    public sealed class FakeGangManager : IGangManager
     {
-        public IObservable<GangManagerEvent> Events =>
-            Observable.Never<GangManagerEvent>();
+        uint _lastEventSequenceNumber;
+        readonly Subject<IGangManagerEvent> _events = new();
+        public IObservable<IGangManagerEvent> Events => _events;
 
-        public void Dispose()
+        public void RaiseEvent<TEventData>(
+            TEventData data,
+            string gangId,
+            byte[] memberId = null)
         {
+            if (data == null) throw new ArgumentNullException(nameof(data));
+
+            lock (_events)
+            {
+                _events.OnNext(new GangManagerEvent<TEventData>(
+                    data,
+                    new GangAudit(gangId, memberId, ++_lastEventSequenceNumber)
+                    ));
+            }
         }
 
         public GangMemberCollection GangById(string gangId)
@@ -24,8 +37,7 @@ namespace Gang.Tests
 
         public Task<GangMemberConnectionState> ManageAsync(
             GangParameters parameters,
-            IGangMember gangMember,
-            byte[] authToken = null)
+            IGangMember gangMember)
         {
             var state = new GangMemberConnectionState();
             state.Disconnected();
@@ -35,6 +47,10 @@ namespace Gang.Tests
             return Task.FromResult(
                 state
                 );
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

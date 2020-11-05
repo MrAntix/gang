@@ -51,8 +51,8 @@ namespace Gang.Tests
             public string Arg { get; }
         }
 
-        static readonly GangMessageAudit _audit = new GangMessageAudit(
-            "Host".GangToBytes(),
+        static readonly GangAudit _audit = new(
+            "Host",
             "MemberId".GangToBytes()
             );
 

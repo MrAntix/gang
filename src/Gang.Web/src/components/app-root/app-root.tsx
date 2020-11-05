@@ -10,9 +10,10 @@ import { GangContext, GangStore, getGangId, GangConnectionState } from '@gang-js
 export class AppRoot {
 
   service = GangContext.service;
+  auth = GangContext.auth;
   logger = GangContext.logger;
 
-  @State() token = GangStore.get('token', () => getGangId());
+  @State() token: string;
 
   @State() isConnected: boolean = false
 
@@ -31,8 +32,11 @@ export class AppRoot {
       this.service.connect('ws', 'demo', this.token);
   }
 
-  componentWillLoad() {
+  async componentDidLoad() {
     this.onResize();
+
+    this.token = await this.auth.tryLinkInUrl()
+      || GangStore.get('token', () => getGangId());
 
     this.service.mapEvents(this);
     this.service.connect('ws', 'demo', this.token);

@@ -1,13 +1,11 @@
 using Gang.Contracts;
 using Gang.Management;
-using Gang.Management.Events;
 using Gang.Serialization;
 using Gang.WebSockets.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -31,21 +29,8 @@ namespace Gang.WebSockets
             string path
             )
         {
-            var auth = app.ApplicationServices.GetRequiredService<IWebSocketGangAutherticator>();
+            var authenticator = app.ApplicationServices.GetRequiredService<IWebSocketGangAutherticator>();
             var manager = app.ApplicationServices.GetRequiredService<IGangManager>();
-            var eventHandlerFactories = app.ApplicationServices.GetRequiredService<Dictionary<Type, List<Func<IGangManagerEventHandler>>>>();
-
-            if (eventHandlerFactories?.Any() ?? false)
-            {
-                manager.Events.Subscribe(e =>
-                {
-                    var eventType = e.GetType();
-                    if (!eventHandlerFactories.ContainsKey(eventType)) return;
-
-                    foreach (var factory in eventHandlerFactories[eventType])
-                        factory().HandleAsync(e);
-                });
-            }
 
             app.UseWebSockets();
             app.Map(path, subApp =>
@@ -59,9 +44,9 @@ namespace Gang.WebSockets
                             return;
                         }
 
-                        await auth.ExecuteAsync(
+                        await authenticator.ExecuteAsync(
                             GetGangParameters(context.Request.Query),
-                            id => GetGangMemberAsync(id, context));
+                            auth => GetGangMemberAsync(auth, context));
                     });
             });
 
@@ -69,12 +54,13 @@ namespace Gang.WebSockets
         }
 
         static async Task<IGangMember> GetGangMemberAsync(
-            byte[] id,
+            GangAuth auth,
             HttpContext context
             )
         {
             return new WebSocketGangMember(
-                id,
+                $"{Guid.NewGuid():N}".GangToBytes(),
+                auth,
                 await context.WebSockets.AcceptWebSocketAsync()
                 );
         }

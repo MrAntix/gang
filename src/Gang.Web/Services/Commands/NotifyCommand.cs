@@ -4,7 +4,7 @@ namespace Gang.Web.Services.Commands
     {
         public const string TYPE_NAME = "notify";
 
-        public NotifyCommand(            
+        public NotifyCommand(
             string type,
             string message
             )

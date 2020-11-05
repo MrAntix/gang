@@ -8,7 +8,7 @@ namespace Gang.Web.Services
     public class AddMessageCommandHandler :
         IGangCommandHandler<WebGangHost, AddMessageCommand>
     {
-        async Task IGangCommandHandler<WebGangHost, AddMessageCommand>.HandleAsync(WebGangHost host, AddMessageCommand command, GangMessageAudit audit)
+        async Task IGangCommandHandler<WebGangHost, AddMessageCommand>.HandleAsync(WebGangHost host, AddMessageCommand command, GangAudit audit)
         {
             await host.AddMessage(
                 command.Text,

@@ -11,7 +11,7 @@ namespace Gang.Commands
         /// Register a local method as a command handler
         /// </summary>
         IGangCommandExecutor<THost> RegisterHandler<TCommand>(
-            Func<TCommand, GangMessageAudit, Task> handler, string typeName = null);
+            Func<TCommand, GangAudit, Task> handler, string typeName = null);
 
         /// <summary>
         /// Register a local method as a command handler
@@ -29,11 +29,11 @@ namespace Gang.Commands
         /// Register a local method as a command error handler
         /// </summary>
         IGangCommandExecutor<THost> RegisterErrorHandler(
-            Func<byte[], GangMessageAudit, Exception, Task> errorHandler);
+            Func<byte[], GangAudit, Exception, Task> errorHandler);
 
         /// <summary>
         /// Execute a command
         /// </summary>
-        Task ExecuteAsync(THost host, byte[] data, GangMessageAudit audit);
+        Task ExecuteAsync(THost host, byte[] data, GangAudit audit);
     }
 }

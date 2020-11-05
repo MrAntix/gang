@@ -1,30 +1,33 @@
+using Antix.Handlers;
 using Gang.Contracts;
 using Gang.Management;
-using Gang.Management.Events;
+using Gang.Management.Contracts;
 using System;
 using System.Threading.Tasks;
 
 namespace Gang.Web.Services
 {
-    public class WebGangAddedEventHandler : GangManagerEventHandlerBase<GangAddedManagerEvent>
+    public sealed class WebGangAddedEventHandler :
+        IHandler<GangManagerEvent<GangAdded>>
     {
-        readonly IGangManager _handler;
+        readonly IGangManager _manager;
         readonly Func<WebGangHost> _createHost;
 
         public WebGangAddedEventHandler(
-            IGangManager handler,
+            IGangManager manager,
             Func<WebGangHost> createHost)
         {
-            _handler = handler;
+            _manager = manager;
             _createHost = createHost;
         }
 
-        protected async override Task HandleAsync(GangAddedManagerEvent e)
+        async Task IHandler<GangManagerEvent<GangAdded>>
+            .HandleAsync(GangManagerEvent<GangAdded> e)
         {
             var host = _createHost();
 
-            await _handler.ManageAsync(
-                new GangParameters(e.GangId, null),
+            await _manager.ManageAsync(
+                new GangParameters(e.Audit.GangId),
                 host
                 );
         }

@@ -1,7 +1,7 @@
 import { Component, h, Host, State, Listen, Fragment, Element } from '@stencil/core';
 import { GangContext, getGangId, GangStore } from '@gang-js/core';
 
-import { IAppState, IAppUser, IAppMessage, IAppMessageGroup } from '../../app/models';
+import { IAppState, IAppUser, IAppMessage, IAppMessageGroup, userIsOnline } from '../../app/models';
 
 @Component({
   tag: 'app-home',
@@ -37,7 +37,7 @@ export class AppHome {
   }
 
   onGangState(state: Partial<IAppState>) {
-    this.logger('onState', { state });
+    this.logger('onGangState', { state });
 
     state = {
       ...this.state,
@@ -59,21 +59,26 @@ export class AppHome {
     }, {});
 
     this.currentUser = this.state
-      .users.find(u => u.id === this.service.memberId);
+      .users.find(u => u.memberIds?.includes(this.service.memberId));
+
+    console.log({
+      memberId: this.service.memberId,
+      currentUser: this.currentUser
+    })
   }
 
   onGangMemberConnected(memberId: string) {
-    this.logger('onMemberConnected', { memberId })
+    this.logger('onGangMemberConnected', { memberId })
     if (!memberId) return;
 
     if (!this.currentUser?.name
       && GangStore.get('name')) {
-      this.updatetUserName(memberId, GangStore.get('name'));
+      this.updatetUserName(GangStore.get('name'));
     }
   }
 
   onGangMemberDisconnected(memberId: string) {
-    this.logger('onMemberDisconnected', { memberId })
+    this.logger('onGangMemberDisconnected', { memberId })
 
     this.onGangState({
       privateMessages: [{
@@ -118,7 +123,7 @@ export class AppHome {
               autoFocus
               placeholder="(set your name)"
               onChange={(e: any) => {
-                this.updatetUserName(this.service.memberId, e.target.value);
+                this.updatetUserName(e.target.value);
                 window.setTimeout(() =>
                   this.focus('.input.message'), 600);
               }}
@@ -152,7 +157,7 @@ export class AppHome {
               <input class="input user-name"
                 autoFocus
                 placeholder="(set your name)"
-                onChange={(e: any) => this.updatetUserName(this.service.memberId, e.target.value)}
+                onChange={(e: any) => this.updatetUserName(e.target.value)}
                 value={this.currentUser?.name}
               />
             </li>
@@ -162,7 +167,7 @@ export class AppHome {
               {this.state.users?.filter(u => !!u?.name && u.id !== this.currentUser?.id)
                 .map(user => <li class={{
                   "user-name other text": true,
-                  "is-online": user.isOnline
+                  "is-online": userIsOnline(user)
                 }}
                 >{user.name}</li>)}
             </Fragment>
@@ -180,17 +185,15 @@ export class AppHome {
     }
   }
 
-  updatetUserName(id: string, name: string) {
-    this.logger('updatetUserName', { id, name });
+  updatetUserName(name: string) {
+    this.logger('updatetUserName', { name });
 
-    if (!id) throw 'id is required'
     if (!name) throw 'name is required'
 
     GangStore.set('name', name);
 
     this.service
       .sendCommand('updateUserName', {
-        id,
         name
       });
   }
@@ -249,9 +252,9 @@ function formatDate(date: string | number) {
 function sortUsers(items: IAppUser[]): IAppUser[] {
   const sorted = [...items];
 
-  sorted.sort((a, b) => a.isOnline && b.isOnline
+  sorted.sort((a, b) => userIsOnline(a) && userIsOnline(b)
     ? a.name?.localeCompare(b.name)
-    : a.isOnline ? -1 : 1);
+    : userIsOnline(a) ? -1 : 1);
   return sorted;
 }
 

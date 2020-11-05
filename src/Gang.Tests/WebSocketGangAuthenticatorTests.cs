@@ -10,15 +10,16 @@ namespace Gang.Tests
     public sealed class WebSocketGangAuthenticatorTests
     {
         readonly string MEMBER_ID = "MEMBER_ID";
-        readonly GangParameters parmeters = new GangParameters("GANG_ID", "TOKEN");
+        readonly GangParameters parmeters = new("GANG_ID", "TOKEN");
 
         [Fact]
         public async Task gets_an_id_and_token()
         {
             var auth = GetService(
                 parameter => Task.FromResult(new GangAuth(
-                    MEMBER_ID.GangToBytes(),
-                    parameter.Token.GangToBytes()
+                    MEMBER_ID,
+                    null,
+                    parameter.Token
                     ))
                 );
             var member = new FakeGangMember(MEMBER_ID);
@@ -34,7 +35,7 @@ namespace Gang.Tests
         {
             var auth = GetService(
                 parameter => Task.FromResult(new GangAuth(
-                    MEMBER_ID.GangToBytes(),
+                    MEMBER_ID,
                     null
                     ))
                 );
@@ -92,10 +93,10 @@ namespace Gang.Tests
             );
         }
 
-        static Func<byte[], Task<IGangMember>> GetMember(
+        static Func<GangAuth, Task<IGangMember>> GetMember(
             FakeGangMember member)
         {
-            return _id => Task.FromResult((IGangMember)member);
+            return _ => Task.FromResult((IGangMember)member);
         }
     }
 }

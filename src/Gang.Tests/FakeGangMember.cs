@@ -2,7 +2,6 @@ using Gang.Contracts;
 using Gang.Management;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Gang.Tests
@@ -12,18 +11,21 @@ namespace Gang.Tests
     {
 
         public FakeGangMember(
-            string id) : this(Encoding.UTF8.GetBytes(id))
+            string id) : this(id.GangToBytes(), null)
         {
         }
 
         public FakeGangMember(
-             byte[] id)
+             byte[] id,
+             GangAuth auth)
         {
             Id = id;
+            Auth = auth;
             MessagesReceived = new List<Message>();
         }
 
         public byte[] Id { get; }
+        public GangAuth Auth { get; }
 
         public IGangController Controller { get; private set; }
         public Func<Task> OnDisconnectAsync { get; private set; }

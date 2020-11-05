@@ -2,10 +2,10 @@ using System;
 
 namespace Gang.Contracts
 {
-    public class GangMessageAudit
+    public class GangAudit
     {
-        public GangMessageAudit(
-            byte[] gangId,
+        public GangAudit(
+            string gangId,
             byte[] memberId = null,
             uint? sequenceNumber = null,
             DateTimeOffset? on = null)
@@ -16,7 +16,7 @@ namespace Gang.Contracts
             On = on ?? DateTimeOffset.UtcNow;
         }
 
-        public byte[] GangId { get; }
+        public string GangId { get; }
         public byte[] MemberId { get; }
         public uint? SequenceNumber { get; }
         public DateTimeOffset On { get; }

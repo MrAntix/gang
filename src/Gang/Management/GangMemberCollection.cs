@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -30,6 +31,9 @@ namespace Gang.Members
 
         public GangMemberCollection AddMember(IGangMember member)
         {
+            if (Members.Any(m => m.Id.SequenceEqual(member.Id)))
+                throw new Exception("Member exists");
+
             if (HostMember == null)
                 return new GangMemberCollection(member);
 

@@ -8,6 +8,6 @@ namespace Gang.WebSockets
     {
         Task ExecuteAsync(
             GangParameters parameters,
-            Func<byte[], Task<IGangMember>> getMemberAsync);
+            Func<GangAuth, Task<IGangMember>> getMemberAsync);
     }
 }

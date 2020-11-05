@@ -9,10 +9,10 @@ namespace Gang.Web.Services
         IGangCommandHandler<WebGangHost, UpdateUserNameCommand>
     {
         async Task IGangCommandHandler<WebGangHost, UpdateUserNameCommand>
-            .HandleAsync(WebGangHost host, UpdateUserNameCommand command, GangMessageAudit audit)
+            .HandleAsync(WebGangHost host, UpdateUserNameCommand command, GangAudit audit)
         {
             await host.UpdateUser(
-                command.Id, command.Name,
+                command.Name,
                 audit);
 
             await host.NotifyAsync(

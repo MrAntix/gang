@@ -19,7 +19,7 @@ namespace Gang.Tests.StatefulHost
                 );
         }
 
-        public async Task SetCount(int value, GangMessageAudit audit)
+        public async Task SetCount(int value, GangAudit audit)
         {
             if (audit is null) throw new ArgumentNullException(nameof(audit));
 
@@ -32,7 +32,7 @@ namespace Gang.Tests.StatefulHost
             );
         }
 
-        async Task IncrementCommandHandler(IncrementCommand _, GangMessageAudit a)
+        async Task IncrementCommandHandler(IncrementCommand _, GangAudit a)
         {
             if (a is null) throw new ArgumentNullException(nameof(a));
 

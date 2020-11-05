@@ -1,6 +1,5 @@
 using Gang.Commands;
 using Gang.Contracts;
-using Gang.Events;
 using Gang.Management;
 using Gang.Members;
 using Gang.Tests.StatefulHost;
@@ -13,7 +12,7 @@ namespace Gang.Tests
 {
     public sealed class GangStatefulHostBaseTests
     {
-        readonly GangParameters _gangParameters = new GangParameters("gangId", null);
+        readonly GangParameters _gangParameters = new("gangId", null);
 
         [Fact]
         public async Task apply_events()
@@ -24,9 +23,9 @@ namespace Gang.Tests
             await handler.ManageAsync(_gangParameters, host);
 
             var events = new[] {
-                new GangEventWrapper(
+                new GangEvent(
                     new CountSetEvent(1),
-                    new GangMessageAudit(host.Id, Array.Empty<byte>(), 10, DateTimeOffset.Now)
+                    new GangAudit(_gangParameters.GangId, host.Id, 10, DateTimeOffset.Now)
                     )
             };
 
@@ -44,13 +43,13 @@ namespace Gang.Tests
             await handler.ManageAsync(_gangParameters, host);
 
             var events = new[] {
-                new GangEventWrapper(
+                new GangEvent(
                     new CountSetEvent(0),
-                    new GangMessageAudit(host.Id, Array.Empty<byte>(), 10, DateTimeOffset.Now)
+                    new GangAudit(_gangParameters.GangId, host.Id,  10, DateTimeOffset.Now)
                     ),
-                new GangEventWrapper(
+                new GangEvent(
                     new CountSetEvent(1),
-                    new GangMessageAudit(host.Id, Array.Empty<byte>(), 1, DateTimeOffset.Now)
+                    new GangAudit(_gangParameters.GangId, host.Id, 1, DateTimeOffset.Now)
                     )
             };
 
@@ -132,7 +131,8 @@ namespace Gang.Tests
         {
             return new GangManager(
                 gangs ?? new GangCollection(),
-                new WebSocketGangJsonSerializationService()
+                new WebSocketGangJsonSerializationService(),
+                new GangManagerInMemoryEventSequenceNumberProvider()
                 );
         }
 

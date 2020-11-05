@@ -1,16 +1,29 @@
+using System.Collections.Generic;
+using System.Collections.Immutable;
+
 namespace Gang.Contracts
 {
     public class GangAuth
     {
         public GangAuth(
-            byte[] memberId,
-            byte[] token)
+            string id,
+            string name = null, string emailAddress = null,
+            IEnumerable<string> roles = null,
+            string token = null)
         {
-            MemberId = memberId;
+            Id = id;
+            Name = name;
+            EmailAddress = emailAddress;
+            Roles = roles?.ToImmutableSortedSet()
+               ?? ImmutableSortedSet<string>.Empty;
             Token = token;
         }
 
-        public byte[] MemberId { get; }
-        public byte[] Token { get; }
+        public string Id { get; }
+        public string Name { get; }
+        public string EmailAddress { get; }
+        public IImmutableSet<string> Roles { get; }
+
+        public string Token { get; }
     }
 }

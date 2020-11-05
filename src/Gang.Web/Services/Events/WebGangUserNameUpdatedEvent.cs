@@ -7,7 +7,8 @@ namespace Gang.Web.Services.Events
     {
         public WebGangUserNameUpdatedEvent(
             string userId,
-            string name)
+            string name
+            )
         {
             UserId = userId;
             Name = name;

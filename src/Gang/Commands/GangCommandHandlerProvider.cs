@@ -4,5 +4,5 @@ using System.Threading.Tasks;
 
 namespace Gang.Commands
 {
-    public delegate Func<THost, object, GangMessageAudit, Task> GangCommandHandlerProvider<THost>();
+    public delegate Func<THost, object, GangAudit, Task> GangCommandHandlerProvider<THost>();
 }

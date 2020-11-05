@@ -13,12 +13,12 @@ namespace Gang.Commands
     {
         readonly IGangSerializationService _serializer;
         readonly IImmutableDictionary<string, GangCommandExecutorFunc<THost>> _handlerProviders;
-        readonly Func<byte[], GangMessageAudit, Exception, Task> _errorHandler;
+        readonly Func<byte[], GangAudit, Exception, Task> _errorHandler;
 
         public GangCommandExecutor(
             IGangSerializationService serializer,
             IEnumerable<GangCommandExecutorFunc<THost>> handlerProviders = null,
-            Func<byte[], GangMessageAudit, Exception, Task> errorHandler = null) :
+            Func<byte[], GangAudit, Exception, Task> errorHandler = null) :
             this(serializer, handlerProviders?.ToImmutableDictionary(g => g.Name, g => g), errorHandler)
         {
         }
@@ -26,7 +26,7 @@ namespace Gang.Commands
         GangCommandExecutor(
             IGangSerializationService serializer,
             IEnumerable<KeyValuePair<string, GangCommandExecutorFunc<THost>>> handlerProviders,
-            Func<byte[], GangMessageAudit, Exception, Task> errorHandler)
+            Func<byte[], GangAudit, Exception, Task> errorHandler)
         {
             _serializer = serializer;
             _handlerProviders = handlerProviders?.ToImmutableDictionary() ??
@@ -35,7 +35,7 @@ namespace Gang.Commands
         }
 
         async Task IGangCommandExecutor<THost>.ExecuteAsync(
-            THost host, byte[] data, GangMessageAudit audit)
+            THost host, byte[] data, GangAudit audit)
         {
             if (data is null) throw new ArgumentNullException(nameof(data));
             if (audit is null) throw new ArgumentNullException(nameof(audit));
@@ -56,7 +56,7 @@ namespace Gang.Commands
         }
 
         IGangCommandExecutor<THost> IGangCommandExecutor<THost>.RegisterHandler<TCommand>(
-            Func<TCommand, GangMessageAudit, Task> handle, string typeName)
+            Func<TCommand, GangAudit, Task> handle, string typeName)
         {
 
             return RegisterHandler(handle, typeName);
@@ -71,7 +71,7 @@ namespace Gang.Commands
         }
 
         IGangCommandExecutor<THost> RegisterHandler<TCommand>(
-            Func<TCommand, GangMessageAudit, Task> handle, string typeName)
+            Func<TCommand, GangAudit, Task> handle, string typeName)
         {
             if (handle is null) throw new ArgumentNullException(nameof(handle));
 
@@ -105,7 +105,7 @@ namespace Gang.Commands
         }
 
         IGangCommandExecutor<THost> IGangCommandExecutor<THost>.RegisterErrorHandler(
-            Func<byte[], GangMessageAudit, Exception, Task> errorHandler)
+            Func<byte[], GangAudit, Exception, Task> errorHandler)
         {
             if (errorHandler is null) throw new ArgumentNullException(nameof(errorHandler));
 

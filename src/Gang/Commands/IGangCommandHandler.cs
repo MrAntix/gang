@@ -6,6 +6,6 @@ namespace Gang.Commands
     public interface IGangCommandHandler<THost, TCommand>
         where THost : GangHostBase
     {
-        Task HandleAsync(THost host, TCommand command, GangMessageAudit audit);
+        Task HandleAsync(THost host, TCommand command, GangAudit audit);
     }
 }

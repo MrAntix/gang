@@ -1,6 +1,5 @@
 using Gang.Commands;
 using Gang.Contracts;
-using Gang.Events;
 using Gang.Members;
 using Gang.Web.Services.Commands;
 using Gang.Web.Services.Events;
@@ -8,6 +7,7 @@ using Gang.Web.Services.State;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -15,7 +15,6 @@ namespace Gang.Web.Services
 {
     public class WebGangHost : GangStatefulHostBase<WebGangHostState>
     {
-
         public WebGangHost(
             IGangCommandExecutor<WebGangHost> commandExecutor
             )
@@ -28,51 +27,57 @@ namespace Gang.Web.Services
         protected override Task OnConnectAsync()
         {
             SetState(new WebGangHostState(
-              new List<State.WebGangUser>(),
+              new List<WebGangUser>(),
               new List<WebGangMessage>())
             );
 
             ApplyStateEvents(
                 new[]{
-                    new GangEventWrapper(
+                    new GangEvent(
                         new WebGangMessageAddedEvent("Welcome", "Gang Chat Started"),
-                        new GangMessageAudit(Id, null, 1, DateTimeOffset.Now)
+                        new GangAudit(Controller.GangId, Id, 1, DateTimeOffset.Now)
                         )
                 });
 
             return base.OnConnectAsync();
         }
 
-        protected override async Task OnMemberConnectAsync(byte[] memberId)
+        protected override async Task OnMemberConnectAsync(
+            byte[] memberId)
         {
-            var user = State.Users.TryGetByIdString(memberId);
+            var member = Controller.GetGang().MemberById(memberId);
+            var user = State.Users.TryGetById(member.Auth.Id);
             if (user == null) return;
 
             await UpdateUser(
-                user.Id, true,
-                new GangMessageAudit(memberId, null)
+                user.Id,
+                user.MemberIds.Add(memberId.GangToString()),
+                new GangAudit(Controller.GangId, memberId)
                 );
 
             await SendWelcome(memberId);
         }
 
-        protected override async Task OnMemberDisconnectAsync(byte[] memberId)
+        protected override async Task OnMemberDisconnectAsync(
+            byte[] memberId)
         {
-            var user = State.Users.TryGetByIdString(memberId);
+            var user = State.Users.TryGetByMemberId(memberId);
             if (user == null) return;
 
             await UpdateUser(
-                user.Id, false,
-                new GangMessageAudit(memberId, null)
+                user.Id,
+                user.MemberIds.Remove(memberId.GangToString()),
+                new GangAudit(Controller.GangId, memberId)
                 );
 
             await PrivateMessage(
                 $"@{user.Id} Left",
-                GetUserMemberIds(memberId).ToArray()
+                GetMemberIds(memberId).ToArray()
                 );
         }
 
-        async Task OnCommandErrorAsync(object command, GangMessageAudit audit, Exception ex)
+        async Task OnCommandErrorAsync(
+            object command, GangAudit audit, Exception ex)
         {
             await NotifyAsync(
                 new NotifyCommand(
@@ -84,51 +89,48 @@ namespace Gang.Web.Services
         }
 
         protected override async Task OnStateEventAsync(
-            object e, GangMessageAudit a)
+            object e, GangAudit a)
         {
             Console.WriteLine(
                 $"EVENT: {e.GetType().Name}" +
                 $"\n{JsonConvert.SerializeObject(e)}" +
                 $"\n{JsonConvert.SerializeObject(a)}");
 
-            var userMemberIds = GetUserMemberIds();
+            var memberIds = GetMemberIds();
 
-            await Controller.SendStateAsync(State, userMemberIds);
+            await Controller.SendStateAsync(State, memberIds);
         }
 
         public async Task UpdateUser(
             string userId,
-            bool isOnline,
-            GangMessageAudit audit)
+            IEnumerable<string> memberIds,
+            GangAudit audit)
         {
-            if (string.IsNullOrWhiteSpace(userId))
-                throw new ArgumentNullException(nameof(userId));
+            if (memberIds is null)
+                throw new ArgumentNullException(nameof(memberIds));
 
-            if (State.Users.Any(u => u.Id == userId))
-            {
-                var e = new WebGangUserIsOnlineUpdatedEvent(
+            var e = new WebGangUserMemberIdsUpdatedEvent(
                     userId,
-                    isOnline
-                );
+                    memberIds
+            );
 
-                await RaiseStateEventAsync(e, audit.MemberId, State.Apply);
-            }
+            await RaiseStateEventAsync(e, audit.MemberId, State.Apply);
         }
 
         public async Task UpdateUser(
-            string userId,
             string name,
-            GangMessageAudit audit)
+            GangAudit audit)
         {
-            if (string.IsNullOrWhiteSpace(userId))
-                throw new ArgumentNullException(nameof(userId));
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentNullException(nameof(name));
 
-            if (State.Users.Any(u => u.Id == userId))
+            var member = Controller.GetGang().MemberById(audit.MemberId);
+            var user = State.Users.TryGetById(member.Auth.Id);
+
+            if (user != null)
             {
                 var e = new WebGangUserNameUpdatedEvent(
-                    userId,
+                    user.Id,
                     name
                 );
 
@@ -136,9 +138,11 @@ namespace Gang.Web.Services
             }
             else
             {
+
                 var e = new WebGangUserCreatedEvent(
-                    userId,
-                    name
+                    member.Auth.Id,
+                    name,
+                    member.Id, member.Auth.Roles
                 );
 
                 await RaiseStateEventAsync(e, audit.MemberId, State.Apply);
@@ -150,7 +154,7 @@ namespace Gang.Web.Services
         public async Task AddMessage(
             string message,
             string messageId = null,
-            GangMessageAudit audit = null)
+            GangAudit audit = null)
         {
             if (string.IsNullOrWhiteSpace(message))
                 throw new ArgumentNullException(nameof(message));
@@ -181,7 +185,9 @@ namespace Gang.Web.Services
 
         public async Task SendWelcome(byte[] memberId)
         {
-            var user = State.Users.TryGetByIdString(memberId);
+            var member = Controller.GetGang().MemberById(memberId);
+            var user = State.Users.TryGetById(member.Auth.Id);
+
             if (user == null)
             {
 
@@ -193,7 +199,7 @@ namespace Gang.Web.Services
 
                 await PrivateMessage(
                     $"@{user.Id} joined",
-                    GetUserMemberIds(memberId)
+                    memberId
                     );
             }
         }
@@ -212,18 +218,11 @@ namespace Gang.Web.Services
                 );
         }
 
-        byte[][] GetUserMemberIds(params byte[][] exceptMemberIds)
+        byte[][] GetMemberIds(params byte[][] exceptMemberIds)
         {
-            var exceptUserIds = exceptMemberIds.Select(e => e.GangToString()).ToArray();
-
-            return GetUserMemberIds(exceptUserIds);
-        }
-
-        byte[][] GetUserMemberIds(string[] exceptUserIds)
-        {
-            return State.Users
-                .Where(u => !exceptUserIds.Contains(u.Id))
-                .Select(u => u.Id.GangToBytes())
+            return Controller.GetGang().OtherMembers
+                .Select(m => m.Id)
+                .Where(mId => !exceptMemberIds.Any(eMId => eMId.SequenceEqual(mId)))
                 .ToArray();
         }
     }

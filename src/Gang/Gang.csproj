@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -10,7 +10,7 @@
     <RepositoryUrl>https://github.com/MrAntix/gang</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>gang relay</PackageTags>
-    <Version>2.0.0-beta.8</Version>
+    <Version>2.0.0-beta.9</Version>
     <OutputType>Library</OutputType>
     <IsPackable>true</IsPackable>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -21,9 +21,10 @@
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0-rc.2.20475.5" />
+    <PackageReference Include="Antix.Handlers" Version="1.0.0-beta.3" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="System.Reactive" Version="5.0.0-preview.220" />
+    <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
 
 </Project>

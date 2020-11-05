@@ -1,4 +1,7 @@
 using Gang.Contracts;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 
 namespace Gang.Web.Services.State
 {
@@ -7,15 +10,21 @@ namespace Gang.Web.Services.State
         public WebGangUser(
             string id,
             string name,
-            bool isOnline)
+            IEnumerable<string> memberIds,
+            IEnumerable<string> properties
+            )
         {
             Id = id;
             Name = name;
-            IsOnline = isOnline;
+            MemberIds = memberIds?.ToImmutableList();
+            Properties = properties?.ToImmutableList();
+            IsOnline = MemberIds?.Any() ?? false;
         }
 
         public string Id { get; }
         public string Name { get; }
+        public IImmutableList<string> MemberIds { get; }
+        public IEnumerable<string> Properties { get; }
         public bool IsOnline { get; }
 
         public WebGangUser Update(IWebGangUserChangeName change)
@@ -23,16 +32,16 @@ namespace Gang.Web.Services.State
             return new WebGangUser(
                 Id,
                 change.Name,
-                IsOnline
+                MemberIds, Properties
                 );
         }
 
-        public WebGangUser Update(IWebGangUserChangeIsOnline change)
+        public WebGangUser Update(IWebGangUserMemberIdsUpdatedEvent change)
         {
             return new WebGangUser(
                 Id,
                 Name,
-                change.IsOnline
+                change.MemberIds, Properties
                 );
         }
     }

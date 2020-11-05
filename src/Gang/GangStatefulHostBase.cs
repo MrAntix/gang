@@ -1,5 +1,4 @@
 using Gang.Contracts;
-using Gang.Events;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -23,11 +22,14 @@ namespace Gang.Members
         }
 
         protected virtual Task OnStateEventAsync(
-            object e, GangMessageAudit a) => Task.CompletedTask;
+            object e, GangAudit a)
+        {
+            return Task.CompletedTask;
+        }
 
         public TState State => _state;
         public uint StateVersion => _stateVersion;
-        IImmutableDictionary<Type, Func<TState, GangEventWrapper, TState>> _stateApplyMethods;
+        IImmutableDictionary<Type, Func<TState, GangEvent, TState>> _stateApplyMethods;
 
         public void SetState(
             TState state, uint version = 0
@@ -38,7 +40,7 @@ namespace Gang.Members
         }
 
         public void ApplyStateEvents(
-            IEnumerable<GangEventWrapper> events)
+            IEnumerable<GangEvent> events)
         {
             if (_stateApplyMethods == null)
                 _stateApplyMethods = typeof(TState)
@@ -57,18 +59,18 @@ namespace Gang.Members
                             );
 
                     _stateVersion = w.Audit.SequenceNumber.Value;
-                    return _stateApplyMethods[w.Event.GetType()](s, w);
+                    return _stateApplyMethods[w.Data.GetType()](s, w);
                 });
         }
 
         protected async Task RaiseStateEventAsync<TEvent>(
             TEvent e, byte[] memberId,
-            Func<TEvent, GangMessageAudit, TState> apply)
+            Func<TEvent, GangAudit, TState> apply)
         {
             _stateVersion++;
 
-            var a = new GangMessageAudit(
-                Id,
+            var a = new GangAudit(
+                Controller.GangId,
                 memberId,
                 _stateVersion, DateTimeOffset.UtcNow);
 
@@ -85,21 +87,21 @@ namespace Gang.Members
                 (e, _) => apply(e));
         }
 
-        static Tuple<Type, Func<TState, GangEventWrapper, TState>> NormaliseMethod(MethodInfo m)
+        static Tuple<Type, Func<TState, GangEvent, TState>> NormaliseMethod(MethodInfo m)
         {
             if (m.ReturnType != typeof(TState)) return null;
 
             var p = m.GetParameters();
             if (p.Length < 1 || p.Length > 2) return null;
-            if (p.Length == 2 && p[1].ParameterType != typeof(GangMessageAudit)) return null;
+            if (p.Length == 2 && p[1].ParameterType != typeof(GangAudit)) return null;
 
             return Tuple
-                .Create<Type, Func<TState, GangEventWrapper, TState>>(
+                .Create<Type, Func<TState, GangEvent, TState>>(
                     p[0].ParameterType,
                     (s, w) => (TState)m
                          .Invoke(s, p.Length == 1
-                         ? new[] { w.Event }
-                         : new[] { w.Event, w.Audit })
+                         ? new[] { w.Data }
+                         : new[] { w.Data, w.Audit })
                 );
         }
     }
