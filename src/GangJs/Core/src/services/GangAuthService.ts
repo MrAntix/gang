@@ -20,6 +20,24 @@ export class GangAuthService {
   settings: IGangAuthSettings;
 
   /**
+   * Request a link
+   *
+   * @param email email address
+   */
+  async requestLink(email: string) {
+
+    const result = await fetch(`${this.settings.rootUrl}/request-link`, {
+      method: 'POST',
+      headers: {
+        'Content-type': 'application/json'
+      },
+      body: `"${email}"`
+    });
+
+    return result.ok;
+  }
+
+  /**
    * Checks the url for a link token
    *
    * if found, it will be used to fetch a session token
