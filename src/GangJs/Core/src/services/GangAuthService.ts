@@ -8,7 +8,7 @@ export class GangAuthService {
     private window: {
       location: { href: string },
       document: { title: string },
-      history: { pushState: (state: any, title: string, url?: string) => void }
+      history: { pushState: (state: unknown, title: string, url?: string) => void }
     } = null
   ) {
     this.settings = {
@@ -24,7 +24,7 @@ export class GangAuthService {
    *
    * @param email email address
    */
-  async requestLink(email: string) {
+  async requestLink(email: string): Promise<boolean> {
 
     const result = await fetch(`${this.settings.rootUrl}/request-link`, {
       method: 'POST',
@@ -47,11 +47,11 @@ export class GangAuthService {
    * @param {string} [parameterName=link-token] - name of the url parameter
    */
   async tryLinkInUrl(
-    parameterName: string = 'link-token'
+    parameterName = 'link-token'
   ): Promise<string> {
 
     let token: string = null;
-    let win = this.window || window;
+    const win = this.window || window;
 
     const urlBuilder = new GangUrlBuilder(win.location.href);
     const linkToken = urlBuilder.parameters[parameterName];
