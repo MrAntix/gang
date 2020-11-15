@@ -1,6 +1,7 @@
 using Gang.Auth.Contracts;
 using Gang.Contracts;
 using Gang.Management;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
@@ -9,17 +10,20 @@ namespace Gang.Auth
     public class GangAuthService :
         IGangAuthService
     {
+        private readonly ILogger<GangAuthService> _logger;
         private readonly GangAuthSettings _settings;
         readonly IGangTokenService _tokens;
         readonly IGangManager _manager;
         readonly IGangAuthUserStore _users;
 
         public GangAuthService(
+            ILogger<GangAuthService> logger,
             GangAuthSettings settings,
             IGangTokenService tokens,
             IGangManager manager,
             IGangAuthUserStore users)
         {
+            _logger = logger;
             _settings = settings;
             _tokens = tokens;
             _manager = manager;
@@ -29,26 +33,33 @@ namespace Gang.Auth
         async Task IGangAuthService
             .RequestLink(string emailAddress)
         {
-            var user = await _users.TryGetByEmailAddressAsync(emailAddress);
-            if (user == null)
+            try
             {
-                user = new GangUser(
+                var user = await _users.TryGetByEmailAddressAsync(emailAddress);
+                if (user == null)
+                {
+                    user = new GangUser(
+                        $"{Guid.NewGuid():N}",
+                        emailAddress, emailAddress
+                        );
+                }
+
+                var token = new GangUserToken(
                     $"{Guid.NewGuid():N}",
-                    emailAddress, emailAddress
+                    DateTimeOffset.Now.AddMinutes(_settings.LinkTokenExpiryMinutes)
+                    );
+                user = user.SetLinkToken(token);
+
+                await _users.SetAsync(user);
+
+                _manager.RaiseEvent(
+                    user.GetLink(token)
                     );
             }
-
-            var token = new GangUserToken(
-                $"{Guid.NewGuid():N}",
-                DateTimeOffset.Now.AddMinutes(_settings.LinkTokenExpiryMinutes)
-                );
-            user = user.SetLinkToken(token);
-
-            await _users.SetAsync(user);
-
-            _manager.RaiseEvent(
-                user.GetLink(token)
-                );
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Request Link Failed");
+            }
         }
 
         async Task<string> IGangAuthService
