@@ -2,19 +2,20 @@ import { GangUrlBuilder } from '../models';
 import { IGangAuthSettings } from './IGangAuthSettings';
 
 export class GangAuthService {
-
   constructor(
     settings: IGangAuthSettings = null,
     private window: {
-      location: { href: string },
-      document: { title: string },
-      history: { pushState: (state: unknown, title: string, url?: string) => void }
+      location: { href: string };
+      document: { title: string };
+      history: {
+        pushState: (state: unknown, title: string, url?: string) => void;
+      };
     } = null
   ) {
     this.settings = {
       rootUrl: 'api/gang/auth',
-      ...settings
-    }
+      ...settings,
+    };
   }
 
   settings: IGangAuthSettings;
@@ -25,13 +26,12 @@ export class GangAuthService {
    * @param email email address
    */
   async requestLink(email: string): Promise<boolean> {
-
     const result = await fetch(`${this.settings.rootUrl}/request-link`, {
       method: 'POST',
       headers: {
-        'Content-type': 'application/json'
+        'Content-type': 'application/json',
       },
-      body: `"${email}"`
+      body: `"${email}"`,
     });
 
     return result.ok;
@@ -46,10 +46,7 @@ export class GangAuthService {
    *
    * @param {string} [parameterName=link-token] - name of the url parameter
    */
-  async tryLinkInUrl(
-    parameterName = 'link-token'
-  ): Promise<string> {
-
+  async tryLinkInUrl(parameterName = 'link-token'): Promise<string> {
     let token: string = null;
     const win = this.window || window;
 
@@ -72,10 +69,7 @@ export class GangAuthService {
    * @param {string} [linkToken] - link token
    */
   async getTokenFromLink(linkToken: string): Promise<string> {
-
     const result = await fetch(`${this.settings.rootUrl}/link/${linkToken}`);
-    return result.ok
-      ? await result.text()
-      : null;
+    return result.ok ? await result.text() : null;
   }
 }
