@@ -135,6 +135,27 @@ namespace Gang.Tests
 
         }
 
+        [Fact]
+        public async Task event_handler_throws()
+        {
+            var manager = GetGangManager();
+
+            var hostMember = new FakeGangMember("host");
+            var firstGangMember = new FakeGangMember("firstGangMember");
+
+            using var _ = manager.Events
+                .OfType<GangManagerEvent<GangAdded>>()
+                .Subscribe(_ => throw new Exception("Eek!")
+             ); ;
+
+            var ex = await Assert.ThrowsAsync<Exception>(async ()=>
+                await manager.ManageAsync(_gangParameters, firstGangMember)
+            );
+
+            Assert.Equal("Eek!", ex.Message);
+
+        }
+
         static IGangManager GetGangManager(
             GangCollection gangs = null)
         {

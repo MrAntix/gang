@@ -26,6 +26,7 @@ namespace Gang.WebSockets
             Func<GangAuth, Task<IGangMember>> getMemberAsync)
         {
             var auth = await _authenticateAsync(parameters);
+            
             using var gangMember = await getMemberAsync(auth);
 
             if (auth?.Id == null)
