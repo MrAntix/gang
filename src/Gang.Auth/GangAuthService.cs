@@ -63,8 +63,15 @@ namespace Gang.Auth
             var user = await _users.TryGetByLinkTokenAsync(token);
             _logger.LogDebug($"Link token {token} => user {user?.Id}");
 
-            if (user == null
-                || user.LinkToken.Expires < DateTimeOffset.Now) return null;
+            if (user?.LinkToken == null) return null;
+
+            var expires = user.LinkToken.Expires;
+
+            // clear the link token
+            user = user.SetLinkToken(null);
+            await _users.SetAsync(user);
+
+            if (expires < DateTimeOffset.Now) return null;
 
             return GetToken(user);
         }
