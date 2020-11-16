@@ -33,6 +33,8 @@ namespace Gang.Auth
         async Task IGangAuthService
             .RequestLink(string emailAddress)
         {
+            _logger.LogDebug($"Requesting link for {emailAddress}");
+
             try
             {
                 var user = await _users.TryGetByEmailAddressAsync(emailAddress);
@@ -66,6 +68,8 @@ namespace Gang.Auth
             .Link(string token)
         {
             var user = await _users.TryGetByLinkTokenAsync(token);
+            _logger.LogDebug($"Link token {token} => user {user?.Id}");
+
             if (user == null
                 || user.LinkToken.Expires < DateTimeOffset.Now) return null;
 
