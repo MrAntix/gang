@@ -35,33 +35,26 @@ namespace Gang.Auth
         {
             _logger.LogDebug($"Requesting link for {emailAddress}");
 
-            try
+            var user = await _users.TryGetByEmailAddressAsync(emailAddress);
+            if (user == null)
             {
-                var user = await _users.TryGetByEmailAddressAsync(emailAddress);
-                if (user == null)
-                {
-                    user = new GangUser(
-                        $"{Guid.NewGuid():N}",
-                        emailAddress, emailAddress
-                        );
-                }
-
-                var token = new GangUserToken(
+                user = new GangUser(
                     $"{Guid.NewGuid():N}",
-                    DateTimeOffset.Now.AddMinutes(_settings.LinkTokenExpiryMinutes)
-                    );
-                user = user.SetLinkToken(token);
-
-                await _users.SetAsync(user);
-
-                _manager.RaiseEvent(
-                    user.GetLink(token)
+                    emailAddress, emailAddress
                     );
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Request Link Failed");
-            }
+
+            var token = new GangUserToken(
+                $"{Guid.NewGuid():N}",
+                DateTimeOffset.Now.AddMinutes(_settings.LinkTokenExpiryMinutes)
+                );
+            user = user.SetLinkToken(token);
+
+            await _users.SetAsync(user);
+
+            _manager.RaiseEvent(
+                user.GetLink(token)
+                );
         }
 
         async Task<string> IGangAuthService

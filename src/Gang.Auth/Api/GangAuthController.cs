@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Threading.Tasks;
 
 namespace Gang.Auth.Api
@@ -6,11 +8,14 @@ namespace Gang.Auth.Api
     public class GangAuthController :
         Controller
     {
+        readonly ILogger<GangAuthController> _logger;
         readonly IGangAuthService _authService;
 
         public GangAuthController(
+            ILogger<GangAuthController> logger,
             IGangAuthService authService)
         {
+            _logger = logger;
             _authService = authService;
         }
 
@@ -19,12 +24,20 @@ namespace Gang.Auth.Api
         public async Task<IActionResult> RequestLinkAsync(
             [FromBody] string identity)
         {
-            if (string.IsNullOrWhiteSpace(identity))
-                return BadRequest();
+            try
+            {
+                if (string.IsNullOrWhiteSpace(identity))
+                    return BadRequest();
 
-            await _authService.RequestLink(identity);
+                await _authService.RequestLink(identity);
 
-            return Ok();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Request Link Error");
+                throw;
+            }
         }
 
         [HttpGet]
@@ -32,12 +45,20 @@ namespace Gang.Auth.Api
         public async Task<IActionResult> LinkAsync(
             [FromRoute] string token)
         {
-            if (string.IsNullOrWhiteSpace(token))
-                return BadRequest();
+            try
+            {
+                if (string.IsNullOrWhiteSpace(token))
+                    return BadRequest();
 
-            var sessionToken = await _authService.Link(token);
+                var sessionToken = await _authService.Link(token);
 
-            return Ok(sessionToken);
+                return Ok(sessionToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Link Error");
+                throw;
+            }
         }
     }
 }
