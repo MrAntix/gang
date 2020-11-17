@@ -7,7 +7,7 @@ export * from './GangAuth';
 export * from './GangCommandWrapper';
 export * from './GangConnectionState';
 export * from './GangMessage';
-export * from './IGangTokenData';
 export * from './GangUrlBuilder';
 export * from './GangWebSocket';
 export * from './GangWebSocketFactory';
+export * from './IGangTokenData';

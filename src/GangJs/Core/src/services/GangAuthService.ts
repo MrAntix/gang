@@ -13,7 +13,7 @@ export class GangAuthService {
     } = null
   ) {
     this.settings = {
-      rootUrl: 'api/gang/auth',
+      rootUrl: '/api/gang/auth',
       ...settings,
     };
   }
@@ -79,12 +79,10 @@ export class GangAuthService {
    * @param token valid token
    */
   decodeToken(token: string): IGangTokenData {
-
     if (!token) return null;
 
     const tokenParts = token.split('.');
-    if (tokenParts.length != 2)
-      return null;
+    if (tokenParts.length != 2) return null;
 
     const data = tokenParts[0];
 
