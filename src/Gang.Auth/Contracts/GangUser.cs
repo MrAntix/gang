@@ -65,6 +65,30 @@ namespace Gang.Auth.Contracts
                 );
         }
 
+        public GangUser SetName(
+            string name)
+        {
+            return new GangUser(
+                Id,
+                name, EmailAddress,
+                Roles,
+                Secret,
+                LinkToken
+                );
+        }
+
+        public GangUser SetEmailAddress(
+            string emailAddress)
+        {
+            return new GangUser(
+                Id,
+                Name, emailAddress,
+                Roles,
+                Secret,
+                LinkToken
+                );
+        }
+
         public GangUser SetLinkToken(GangUserToken linkToken)
         {
             return new GangUser(
