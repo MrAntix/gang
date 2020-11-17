@@ -31,7 +31,7 @@ namespace Gang.Auth
         }
 
         async Task IGangAuthService
-            .RequestLink(string emailAddress)
+            .RequestLink(string emailAddress, object data)
         {
             _logger.LogDebug($"Requesting link for {emailAddress}");
 
@@ -53,7 +53,7 @@ namespace Gang.Auth
             await _users.SetAsync(user);
 
             _manager.RaiseEvent(
-                user.GetLink(token)
+                user.GetLink(token, data)
                 );
         }
 

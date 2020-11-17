@@ -52,7 +52,7 @@ namespace Gang.Auth.Contracts
                 );
         }
 
-        public GangUserLink GetLink(GangUserToken token)
+        public GangUserLink GetLink(GangUserToken token, object data = null)
         {
             if (token.Value == null
                 || token.Expires == null
@@ -61,7 +61,7 @@ namespace Gang.Auth.Contracts
 
             return new GangUserLink(
                 Name, EmailAddress,
-                token
+                token, data
                 );
         }
 
