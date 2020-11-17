@@ -1,4 +1,4 @@
-import { GangUrlBuilder } from '../models';
+import { IGangTokenData, GangUrlBuilder } from '../models';
 import { IGangAuthSettings } from './IGangAuthSettings';
 
 export class GangAuthService {
@@ -71,5 +71,23 @@ export class GangAuthService {
   async getTokenFromLink(linkToken: string): Promise<string> {
     const result = await fetch(`${this.settings.rootUrl}/link/${linkToken}`);
     return result.ok ? await result.text() : null;
+  }
+
+  /**
+   * decode a token to data
+   *
+   * @param token valid token
+   */
+  decodeToken(token: string): IGangTokenData {
+
+    if (!token) return null;
+
+    const tokenParts = token.split('.');
+    if (tokenParts.length != 2)
+      return null;
+
+    const data = tokenParts[0];
+
+    return JSON.parse(atob(data)) as IGangTokenData;
   }
 }
