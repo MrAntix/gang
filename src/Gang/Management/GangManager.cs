@@ -3,6 +3,7 @@ using Gang.Contracts;
 using Gang.Management.Contracts;
 using Gang.Members;
 using Gang.Serialization;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Reactive.Subjects;
@@ -13,23 +14,26 @@ namespace Gang.Management
     public sealed class GangManager :
         IGangManager
     {
+        readonly ILogger<GangManager> _logger;
         readonly GangCollection _gangs;
         readonly IGangSerializationService _serializer;
         readonly IGangManagerEventSequenceNumberProvider _eventSequenceNumber;
-        readonly Executor<IGangManagerEvent> _eventHandlerExecutor;
+        readonly Executor<IGangManagerEvent> _eventExecutor;
         readonly Subject<IGangManagerEvent> _events;
 
         public GangManager(
+            ILogger<GangManager> logger,
             GangCollection gangs,
             IGangSerializationService serializer,
             IGangManagerEventSequenceNumberProvider eventSequenceNumber,
-            Executor<IGangManagerEvent> eventHandlerExecutor = null
+            Executor<IGangManagerEvent> eventExecutor = null
             )
         {
+            _logger = logger;
             _gangs = gangs;
             _serializer = serializer;
             _eventSequenceNumber = eventSequenceNumber;
-            _eventHandlerExecutor = eventHandlerExecutor;
+            _eventExecutor = eventExecutor;
             _events = new Subject<IGangManagerEvent>();
         }
 
@@ -50,9 +54,16 @@ namespace Gang.Management
                     );
 
                 _events.OnNext(e);
-                _eventHandlerExecutor?.ExecuteAsync(e)
+
+                _eventExecutor?.ExecuteAsync(e)
                     .ContinueWith(
-                        t => RaiseEvent(new GangError(data, t.Exception), gangId),
+                        t =>
+                        {
+                            var ex = t.Exception.InnerException;
+
+                            _logger.LogError(ex, "Gang Manager Event Error In Handler");
+                            RaiseEvent(new GangError(data, ex), gangId);
+                        },
                         TaskContinuationOptions.OnlyOnFaulted);
             }
         }

@@ -1,7 +1,9 @@
+using Antix.Handlers;
 using Gang.Contracts;
 using Gang.Management;
 using Gang.Management.Contracts;
 using Gang.WebSockets.Serialization;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
@@ -136,52 +138,43 @@ namespace Gang.Tests
 
         }
 
-        //[Fact]
-        //public async Task event_handler_throws()
-        //{
-        //    var manager = GetGangManager();
+        [Fact]
+        public void event_handler_throws()
+        {
+            var ex = default(Exception);
+            var a = new AutoResetEvent(false);
 
-        //    var hostMember = new FakeGangMember("host");
-        //    var firstGangMember = new FakeGangMember("firstGangMember");
+            var executor = new Executor<IGangManagerEvent>()
+                .AddHandler<GangManagerEvent<GangAdded>>(async e =>
+                {
+                    await Task.Delay(500);
+                    throw new Exception("Eek!");
+                })
+                .AddHandler<GangManagerEvent<GangError>>(e =>
+                {
+                    ex = e.Data.Exception;
+                    a.Set();
+                });
 
-        //    var ex = default(Exception);
-        //    var a = new AutoResetEvent(false);
+            var manager = GetGangManager(executor: executor);
 
-        //    using var _ = manager.Events
-        //        .Subscribe(async e =>
-        //        {
-        //            switch (e)
-        //            {
-        //                case GangManagerEvent<GangAdded> _:
-        //                    await Task.Delay(500);
-        //                    throw new Exception("Eek!");
+            manager.ManageAsync(_gangParameters, new FakeGangMember("firstGangMember"));
 
-        //                case GangManagerEvent<GangError> err:
-        //                    ex = err.Data.Exception;
-        //                    a.Set();
-        //                    break;
-        //            }
-        //        },
-        //        err =>
-        //        {
-        //            ex = err;
-        //        }
-        //     );
+            a.WaitOne();
 
-        //    manager.ManageAsync(_gangParameters, firstGangMember);
-
-        //    a.WaitOne();
-
-        //    Assert.Equal("Eek!", ex.Message);
-        //}
+            Assert.Equal("Eek!", ex.Message);
+        }
 
         static IGangManager GetGangManager(
-            GangCollection gangs = null)
+            GangCollection gangs = null,
+            Executor<IGangManagerEvent> executor = null)
         {
             return new GangManager(
+                NullLogger<GangManager>.Instance,
                 gangs ?? new GangCollection(),
                 new WebSocketGangJsonSerializationService(),
-                new GangManagerInMemoryEventSequenceNumberProvider()
+                new GangManagerInMemoryEventSequenceNumberProvider(),
+                executor
                 );
         }
     }

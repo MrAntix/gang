@@ -4,6 +4,8 @@ using Gang.Management;
 using Gang.Members;
 using Gang.Tests.StatefulHost;
 using Gang.WebSockets.Serialization;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Threading.Tasks;
 using Xunit;
@@ -130,6 +132,7 @@ namespace Gang.Tests
             GangCollection gangs = null)
         {
             return new GangManager(
+                NullLogger<GangManager>.Instance,
                 gangs ?? new GangCollection(),
                 new WebSocketGangJsonSerializationService(),
                 new GangManagerInMemoryEventSequenceNumberProvider()
