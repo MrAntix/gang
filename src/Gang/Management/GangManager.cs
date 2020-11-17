@@ -51,11 +51,9 @@ namespace Gang.Management
 
                 _events.OnNext(e);
                 _eventHandlerExecutor?.ExecuteAsync(e)
-                    .ContinueWith(t =>
-                    {
-
-                        if (t.Exception != null) throw t.Exception;
-                    });
+                    .ContinueWith(
+                        t => RaiseEvent(new GangError(data, t.Exception), gangId),
+                        TaskContinuationOptions.OnlyOnFaulted);
             }
         }
 
@@ -86,7 +84,7 @@ namespace Gang.Management
             }
             else
             {
-                await gang.HostMember.SendAsync(GangMessageTypes.Connect, gangMember.Id); 
+                await gang.HostMember.SendAsync(GangMessageTypes.Connect, gangMember.Id);
                 await gangMember.SendAsync(GangMessageTypes.Member, gangMember.Id);
             }
 

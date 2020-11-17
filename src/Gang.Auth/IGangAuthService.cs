@@ -5,7 +5,7 @@ namespace Gang.Auth
 {
     public interface IGangAuthService
     {
-        Task RequestLink(string emailAddress);
+        Task RequestLink(string emailAddress); //, object data);
         Task<string> Link(string token);
         Task<GangAuth> AuthenticateAsync(string token);
     }
