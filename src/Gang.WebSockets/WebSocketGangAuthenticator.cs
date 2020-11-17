@@ -5,15 +5,15 @@ using System.Threading.Tasks;
 
 namespace Gang.WebSockets
 {
-    public sealed class WebSocketGangAuthenticator :
-        IWebSocketGangAutherticator
+    public sealed class WebSocketGangAuthenticationenticator :
+        IWebSocketGangAuthenticationerticator
     {
         public const string RESULT_DENIED = "denied";
 
         readonly GangAuthenticationFunc _authenticateAsync;
         readonly IGangManager _manager;
 
-        public WebSocketGangAuthenticator(
+        public WebSocketGangAuthenticationenticator(
             GangAuthenticationFunc authenticateAsync,
             IGangManager manager)
         {
@@ -21,12 +21,12 @@ namespace Gang.WebSockets
             _manager = manager;
         }
 
-        async Task IWebSocketGangAutherticator.ExecuteAsync(
+        async Task IWebSocketGangAuthenticationerticator.ExecuteAsync(
             GangParameters parameters,
             Func<GangAuth, Task<IGangMember>> getMemberAsync)
         {
             var auth = await _authenticateAsync(parameters);
-            
+
             using var gangMember = await getMemberAsync(auth);
 
             if (auth?.Id == null)

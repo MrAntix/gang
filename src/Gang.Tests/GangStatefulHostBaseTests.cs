@@ -1,10 +1,10 @@
+using Antix.Handlers;
 using Gang.Commands;
 using Gang.Contracts;
 using Gang.Management;
 using Gang.Members;
 using Gang.Tests.StatefulHost;
 using Gang.WebSockets.Serialization;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Threading.Tasks;
@@ -71,15 +71,14 @@ namespace Gang.Tests
             var member = new FakeGangMember("Member");
             await handler.ManageAsync(_gangParameters, member);
 
-            await member.Controller.SendCommandAsync(
-                "increment",
-                new IncrementCommand());
+            await member.Controller
+                .SendCommandAsync(new Increment());
 
             Assert.Equal(2, host.State.Count);
         }
 
         [Fact]
-        public async Task send_command_with_class_handler()
+        public async Task send_command_with_provided_class_handler()
         {
             var host = GetHost();
 
@@ -89,27 +88,8 @@ namespace Gang.Tests
             var member = new FakeGangMember("Member");
             await handler.ManageAsync(_gangParameters, member);
 
-            await member.Controller.SendCommandAsync(
-                "decrement",
-                new DecrementCommand());
-
-            Assert.Equal(0, host.State.Count);
-        }
-
-        [Fact]
-        public async Task send_command_with_injected_class_handler()
-        {
-            var host = GetHost();
-
-            var handler = GetGangHandler();
-            await handler.ManageAsync(_gangParameters, host);
-
-            var member = new FakeGangMember("Member");
-            await handler.ManageAsync(_gangParameters, member);
-
-            await member.Controller.SendCommandAsync(
-                "set",
-                new SetCommand(1));
+            await member.Controller
+                .SendCommandAsync(new SetCount(1));
 
             Assert.Equal(1, host.State.Count);
         }
@@ -117,7 +97,8 @@ namespace Gang.Tests
         static FakeGangStatefulHost GetHost()
         {
             var commandExecutor = GetGangCommandExecutor()
-                .RegisterHandlerProvider(() => new SetCommandHandler());
+                .RegisterHandlerProvider(() => new DecrementHandler())
+                .RegisterHandlerProvider(() => new SetHandler());
 
             return new FakeGangStatefulHost(commandExecutor);
         }
@@ -125,7 +106,9 @@ namespace Gang.Tests
         static IGangCommandExecutor<FakeGangStatefulHost> GetGangCommandExecutor()
         {
             var serializer = new WebSocketGangJsonSerializationService();
-            return new GangCommandExecutor<FakeGangStatefulHost>(serializer);
+            return new GangCommandExecutor<FakeGangStatefulHost>(
+                serializer,
+                new Executor<IGangCommand, FakeGangStatefulHost>());
         }
 
         static IGangManager GetGangHandler(

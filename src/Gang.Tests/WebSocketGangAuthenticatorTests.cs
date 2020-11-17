@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Gang.Tests
 {
-    public sealed class WebSocketGangAuthenticatorTests
+    public sealed class WebSocketGangAuthenticationenticatorTests
     {
         readonly string MEMBER_ID = "MEMBER_ID";
         readonly GangParameters parmeters = new("GANG_ID", "TOKEN");
@@ -63,7 +63,7 @@ namespace Gang.Tests
 
             Assert.True(member.Disconnected);
             Assert.Equal(
-                WebSocketGangAuthenticator.RESULT_DENIED,
+                WebSocketGangAuthenticationenticator.RESULT_DENIED,
                 member.DisconnectedReason);
         }
 
@@ -80,14 +80,14 @@ namespace Gang.Tests
 
             Assert.True(member.Disconnected);
             Assert.Equal(
-                WebSocketGangAuthenticator.RESULT_DENIED,
+                WebSocketGangAuthenticationenticator.RESULT_DENIED,
                 member.DisconnectedReason);
         }
 
-        static IWebSocketGangAutherticator GetService(
+        static IWebSocketGangAuthenticationerticator GetService(
            GangAuthenticationFunc authenticateAsync)
         {
-            return new WebSocketGangAuthenticator(
+            return new WebSocketGangAuthenticationenticator(
                 authenticateAsync,
                 new FakeGangManager()
             );

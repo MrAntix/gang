@@ -1,27 +1,27 @@
-using Gang.Auth.Contracts;
+using Gang.Authentication.Contracts;
 using Gang.Contracts;
 using Gang.Management;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace Gang.Auth
+namespace Gang.Authentication.Services
 {
-    public class GangAuthService :
-        IGangAuthService
+    public class GangAuthenticationService :
+        IGangAuthenticationService
     {
-        private readonly ILogger<GangAuthService> _logger;
-        private readonly GangAuthSettings _settings;
+        private readonly ILogger<GangAuthenticationService> _logger;
+        private readonly GangAuthenticationSettings _settings;
         readonly IGangTokenService _tokens;
         readonly IGangManager _manager;
-        readonly IGangAuthUserStore _users;
+        readonly IGangAuthenticationUserStore _users;
 
-        public GangAuthService(
-            ILogger<GangAuthService> logger,
-            GangAuthSettings settings,
+        public GangAuthenticationService(
+            ILogger<GangAuthenticationService> logger,
+            GangAuthenticationSettings settings,
             IGangTokenService tokens,
             IGangManager manager,
-            IGangAuthUserStore users)
+            IGangAuthenticationUserStore users)
         {
             _logger = logger;
             _settings = settings;
@@ -30,7 +30,7 @@ namespace Gang.Auth
             _users = users;
         }
 
-        async Task IGangAuthService
+        async Task IGangAuthenticationService
             .RequestLink(string emailAddress, object data)
         {
             _logger.LogDebug($"Requesting link for {emailAddress}");
@@ -57,7 +57,7 @@ namespace Gang.Auth
                 );
         }
 
-        async Task<string> IGangAuthService
+        async Task<string> IGangAuthenticationService
             .Link(string token)
         {
             var user = await _users.TryGetByLinkTokenAsync(token);
@@ -76,7 +76,7 @@ namespace Gang.Auth
             return GetToken(user);
         }
 
-        async Task<GangAuth> IGangAuthService
+        async Task<GangAuth> IGangAuthenticationService
             .AuthenticateAsync(string token)
         {
             var auth = _tokens.TryDecode(token);

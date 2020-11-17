@@ -1,4 +1,5 @@
-using Gang.Auth;
+using Gang.Authentication;
+using Gang.Authentication.Services;
 using Gang.Management;
 using Gang.Web.Properties;
 using Gang.Web.Services;
@@ -29,11 +30,11 @@ namespace Gang.Web
                 .AddGangHost<WebGangHost>()
                 .AddGangManagerEventHandlers<WebGangAddedEventHandler>()
                 .AddGangAuthenticationHandler<WebGangAuthenticationHandler>()
-                .AddGangAuthServices(Settings.Auth)
+                .AddGangAuthenticationServices(Settings.Auth)
                 .AddSingleton(Settings.App)
                 .AddSingleton(Settings.Smtp)
                 .AddTransient<IWebGangSmtpService, WebGangSmtpService>()
-                .AddSingleton<IGangAuthUserStore, WebGangAuthUserStore>();
+                .AddSingleton<IGangAuthenticationUserStore, WebGangAuthenticationUserStore>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -48,7 +49,7 @@ namespace Gang.Web
                 .UseStaticFiles()
                 .UseWebSocketGangs("/ws")
                 .Map("/disconnect", HandleDisconnect)
-                .UseGangAuthApi();
+                .UseGangAuthenticationApi();
         }
 
         void HandleDisconnect(

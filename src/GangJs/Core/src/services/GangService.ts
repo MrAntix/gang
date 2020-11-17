@@ -11,6 +11,10 @@ import {
   RETRY_MAX,
   GangWebSocketFactory,
 } from '../models';
+import { GangStore } from './GangStore';
+
+const GANG_AUTHENTICATION_TOKEN = 'GANG.AUTHENTICATION.TOKEN';
+const GANG_STATE = 'GANG.STATE';
 
 export class GangService {
   private readonly rootUrl: string;
@@ -31,45 +35,34 @@ export class GangService {
   isHost: boolean;
 
   private memberConnectedSubject: Subject<string>;
-  private authenticatedSubject: Subject<string>;
+  private authenticateSubject: Subject<string>;
   private memberDisconnectedSubject: Subject<string>;
   private commandSubject: Subject<GangCommandWrapper<unknown>>;
   private stateSubject: BehaviorSubject<Record<string, unknown>>;
   private unsentCommands: GangCommandWrapper<unknown>[] = [];
 
   onConnection: Observable<GangConnectionState>;
-  onAuthenticated: Observable<string>;
+  onAuthenticate: Observable<string>;
   onMemberConnected: Observable<string>;
   onMemberDisconnected: Observable<string>;
   onCommand: Observable<GangCommandWrapper<unknown>>;
   onState: Observable<unknown>;
 
-  constructor(
-    private webSocketFactory: GangWebSocketFactory,
-    initialState: Record<string, unknown> = undefined
-  ) {
+  constructor(private webSocketFactory: GangWebSocketFactory, initialState: Record<string, unknown> = undefined) {
     if (!location) throw new Error('required location object not found');
 
     const protocol = location.protocol.replace('http', 'ws');
     const host = location.host;
     this.rootUrl = `${protocol}//${host}/`;
 
-    this.onConnection = this.connectionSubject = new BehaviorSubject(
-      GangConnectionState.disconnected
-    );
-    this.onAuthenticated = this.authenticatedSubject = new Subject<string>();
-    this.onMemberConnected = this.memberConnectedSubject = new Subject<
-      string
-    >();
-    this.onMemberDisconnected = this.memberDisconnectedSubject = new Subject<
-      string
-    >();
-    this.onCommand = this.commandSubject = new Subject<
-      GangCommandWrapper<Record<string, unknown>>
-    >();
-    this.onState = this.stateSubject = new BehaviorSubject<
-      Record<string, unknown>
-    >(initialState);
+    this.onConnection = this.connectionSubject = new BehaviorSubject(GangConnectionState.disconnected);
+    this.onAuthenticate = this.authenticateSubject = new BehaviorSubject<string>(GangStore.get(GANG_AUTHENTICATION_TOKEN));
+    this.onMemberConnected = this.memberConnectedSubject = new Subject<string>();
+    this.onMemberDisconnected = this.memberDisconnectedSubject = new Subject<string>();
+    this.onCommand = this.commandSubject = new Subject<GangCommandWrapper<Record<string, unknown>>>();
+
+    const state = GangStore.get(GANG_STATE);
+    this.onState = this.stateSubject = new BehaviorSubject<Record<string, unknown>>(!state ? initialState : JSON.parse(state));
   }
 
   async connect(url: string, gangId: string, token?: string): Promise<void> {
@@ -94,8 +87,7 @@ export class GangService {
           resolve();
 
           let wrapper: GangCommandWrapper<unknown>;
-          while ((wrapper = this.unsentCommands.shift()))
-            this.sendCommandWrapper(wrapper);
+          while ((wrapper = this.unsentCommands.shift())) this.sendCommandWrapper(wrapper);
 
           clearRetryConnect();
         },
@@ -137,7 +129,10 @@ export class GangService {
             break;
           }
           case 'A': {
-            this.authenticatedSubject.next(readString(data, 1));
+            const token = readString(data, 1);
+            GangStore.set(GANG_AUTHENTICATION_TOKEN, token)
+
+            this.authenticateSubject.next(token);
             break;
           }
           case '+': {
@@ -151,17 +146,18 @@ export class GangService {
             break;
           }
           case 'C': {
-            const commandWrapper =
-              data.byteLength > 9 ? JSON.parse(readString(data, 9)) : {};
+            const commandWrapper = data.byteLength > 9 ? JSON.parse(readString(data, 9)) : {};
             commandWrapper.sn = readUint32(data, 1);
             this.commandSubject.next(commandWrapper);
             break;
           }
           case 'S': {
-            const state = JSON.parse(readString(data, 1));
+            const state = readString(data, 1);
+            GangStore.set(GANG_STATE, state)
+
             this.stateSubject.next({
               ...this.stateSubject.value,
-              ...state,
+              ...JSON.parse(state),
             });
             break;
           }
@@ -169,12 +165,7 @@ export class GangService {
       });
 
       const retryConnect = (() => {
-        if (
-          this.retry === NO_RETRY ||
-          this.retrying ||
-          this.connectionState === GangConnectionState.connected
-        )
-          return;
+        if (this.retry === NO_RETRY || this.retrying || this.connectionState === GangConnectionState.connected) return;
 
         GangContext.logger('GangService.retryConnect in', this.retry);
         this.retryingIn = this.retry;
@@ -232,33 +223,20 @@ export class GangService {
   mapEvents<TState>(component: {
     disconnectedCallback?: () => void;
     onGangConnection?: (connectionState: GangConnectionState) => void;
-    onGangAuthenticated?: (token: string) => void;
+    onGangAuthenticate?: (token: string) => void;
     onGangState?: (state: TState) => void;
     onGangCommand?: (command: unknown) => void;
     onGangMemberConnected?: (memberId: string) => void;
     onGangMemberDisconnected?: (memberId: string) => void;
   }): void {
     const subs: { unsubscribe: () => undefined }[] = [];
-    [
-      'Connection',
-      'Authenticated',
-      'State',
-      'Command',
-      'MemberConnected',
-      'MemberDisconnected',
-    ].forEach((key) => {
+    ['Connection', 'Authenticate', 'State', 'Command', 'MemberConnected', 'MemberDisconnected'].forEach((key) => {
       const componentKey = `onGang${key}`;
       const serviceKey = `on${key}`;
 
-      if (component[componentKey])
-        subs.push(
-          this[serviceKey].subscribe((e: unknown) => component[componentKey](e))
-        );
+      if (component[componentKey]) subs.push(this[serviceKey].subscribe((e: unknown) => component[componentKey](e)));
       else if (component[serviceKey] !== undefined)
-        console.warn(
-          `${serviceKey} changed to ${componentKey}, please update your code`,
-          component
-        );
+        console.warn(`${serviceKey} changed to ${componentKey}, please update your code`, component);
     });
 
     const disconnectedCallback = component.disconnectedCallback;
@@ -274,10 +252,7 @@ export class GangService {
    * @param component the component to map to
    * @param actions a map of the executors e.g. { actionOne, actionTwo }
    */
-  mapActions<C extends { [K in keyof A]: unknown }, A>(
-    component: C,
-    actions: A
-  ): void {
+  mapActions<C extends { [K in keyof A]: unknown }, A>(component: C, actions: A): void {
     Object.keys(actions).forEach((key) => {
       component[key] = actions[key](this);
     });
@@ -287,10 +262,10 @@ export class GangService {
    * Executes a command locally no data is sent to the host
    *
    * @param type Command type name
-   * @param command Command
+   * @param data Command data
    */
-  executeCommand<T>(type: string, command: T): void {
-    const wrapper = new GangCommandWrapper(type, command);
+  executeCommand<T>(type: string, data: T): void {
+    const wrapper = new GangCommandWrapper(type, data);
     GangContext.logger('GangService.executeCommand', {
       wrapper,
       isConnected: this.isConnected,
@@ -304,7 +279,7 @@ export class GangService {
    * await this if you expect a reply command from the host
    *
    * @param type Command type name
-   * @param command Command
+   * @param data Command data
    *
    * @returns a promise which resolves if a reply command is
    * received from the host having the same sequence number
@@ -312,12 +287,12 @@ export class GangService {
    */
   async sendCommand<T>(
     type: string,
-    command: T,
+    data: T,
     options?: {
       timeout?: number;
     }
   ): Promise<GangCommandWrapper<unknown>> {
-    const wrapper = new GangCommandWrapper(type, command);
+    const wrapper = new GangCommandWrapper(type, data);
     GangContext.logger('GangService.sendCommand', {
       wrapper,
       isConnected: this.isConnected,
@@ -349,7 +324,7 @@ export class GangService {
 
     GangContext.logger('GangService.sendCommandWrapper', {
       type: wrapper.type,
-      command: wrapper.command,
+      data: wrapper.data,
       sn,
     });
 
@@ -395,9 +370,7 @@ export class GangService {
     }
   ): Promise<void> {
     const test: (c: GangCommandWrapper<unknown>) => boolean = (c) => {
-      return (
-        (!type || type === c.type) && (!predicate || predicate(c.command as T))
-      );
+      return (!type || type === c.type) && (!predicate || predicate(c.data as T));
     };
 
     return new Promise((resolve, reject) => {
@@ -440,9 +413,7 @@ export class GangService {
 function readString(buffer: ArrayBuffer, start = 0, length?: number): string {
   return String.fromCharCode.apply(
     null,
-    new Uint8Array(
-      length ? buffer.slice(start, start + length) : buffer.slice(start)
-    )
+    new Uint8Array(length ? buffer.slice(start, start + length) : buffer.slice(start))
   );
 }
 

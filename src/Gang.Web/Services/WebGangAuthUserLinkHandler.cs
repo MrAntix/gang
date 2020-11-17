@@ -1,5 +1,5 @@
 using Antix.Handlers;
-using Gang.Auth.Contracts;
+using Gang.Authentication.Contracts;
 using Gang.Management.Contracts;
 using Gang.Web.Properties;
 using Microsoft.AspNetCore.WebUtilities;
@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 
 namespace Gang.Web.Services
 {
-    public sealed class WebGangAuthUserLinkHandler :
+    public sealed class WebGangAuthenticationUserLinkHandler :
         IHandler<GangManagerEvent<GangUserLink>>
     {
         readonly AppSettings _app;
         readonly IWebGangSmtpService _smtp;
 
-        public WebGangAuthUserLinkHandler(
+        public WebGangAuthenticationUserLinkHandler(
             AppSettings app,
             IWebGangSmtpService smtp)
         {

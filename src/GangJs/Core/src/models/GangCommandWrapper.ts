@@ -1,10 +1,10 @@
-/** wraps a command */
+/** wraps command data */
 export class GangCommandWrapper<T> {
   constructor(
-    /** command type */
+    /** command data type */
     public readonly type: string,
-    /** command */
-    public readonly command: T,
+    /** command data */
+    public readonly data: T,
     /** sequence number */
     public readonly sn: number = undefined,
     /** in reply to sequence number */

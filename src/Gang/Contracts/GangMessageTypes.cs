@@ -4,7 +4,7 @@ namespace Gang.Contracts
     {
         Host = 'H',
         Member = 'M',
-        Authenticated = 'A',
+        Authenticate = 'A',
         State = 'S',
         Command = 'C',
         Connect = '+',

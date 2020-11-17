@@ -77,14 +77,15 @@ namespace Gang
             return Encoding.UTF8.GetBytes(value);
         }
 
-        public static Task SendCommandAsync<TCommand>(
+        public static Task SendCommandAsync<TData>(
             this IGangController controller,
-            TCommand command,
-            IEnumerable<byte[]> memberIds = null)
+            TData data,
+            IEnumerable<byte[]> memberIds = null,
+            uint? inReplyToSequenceNumber = null)
         {
             return controller.SendCommandAsync(
-                typeof(TCommand).GetCommandTypeName(), command,
-                memberIds);
+                typeof(TData).GetCommandTypeName(), data,
+                memberIds, inReplyToSequenceNumber);
         }
 
         public static Task DisconnectAsync(
@@ -120,6 +121,4 @@ namespace Gang
             return value.Substring(0, value.Length - trimBy);
         }
     }
-
-
 }

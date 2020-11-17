@@ -52,18 +52,18 @@ namespace Gang.Management
         }
 
         async Task IGangController.SendCommandAsync(
-            string type, object command, IEnumerable<byte[]> memberIds, uint? inReplyToSequenceNumber)
+            string type, object data, IEnumerable<byte[]> memberIds, uint? inReplyToSequenceNumber)
         {
-            var data = BitConverter.GetBytes(++_commandSequenceNumber)
+            var bytes = BitConverter.GetBytes(++_commandSequenceNumber)
                     .Concat(_serializer.Serialize(new
                     {
                         type,
-                        command,
+                        data,
                         rsn = inReplyToSequenceNumber
                     }))
                     .ToArray();
 
-            await _sendAsync(data, GangMessageTypes.Command, memberIds);
+            await _sendAsync(bytes, GangMessageTypes.Command, memberIds);
         }
 
         async Task IGangController.SendStateAsync<T>(

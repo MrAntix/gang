@@ -1,4 +1,3 @@
-using Gang.Commands;
 using Gang.Contracts;
 using Gang.Management;
 using System;
@@ -28,7 +27,7 @@ namespace Gang
             return Task.CompletedTask;
         }
 
-        protected virtual Task OnCommandAsync(byte[] data, GangAudit audit)
+        protected virtual Task OnCommandAsync(byte[] bytes, GangAudit audit)
         {
             return Task.CompletedTask;
         }
@@ -39,7 +38,6 @@ namespace Gang
         }
 
         Func<Task> _onDisconnectAsync;
-        Func<byte[], GangAudit, Task> _onCommandAsync;
 
         async Task IGangMember.ConnectAsync(
             IGangController controller, Func<Task> onDisconnectAsync)
@@ -68,22 +66,8 @@ namespace Gang
                     var audit = new GangAudit(Controller.GangId, memberId, sequenceNumber);
                     await OnCommandAsync(data, audit);
 
-                    if (_onCommandAsync != null)
-                        await _onCommandAsync(data, audit);
-
                     break;
             }
-        }
-
-        protected void Use<THost>(
-            IGangCommandExecutor<THost> executor)
-            where THost : GangHostBase
-        {
-            if (executor is null)
-                throw new ArgumentNullException(nameof(executor));
-
-            _onCommandAsync = (data, audit)
-                => executor.ExecuteAsync(this as THost, data, audit);
         }
 
         public async Task DisconnectAsync(string reason = null)

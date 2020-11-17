@@ -25,9 +25,11 @@ namespace Gang.Web.Services
             if (parameters.GangId == "demo"
                 && (gang?.Members.Count ?? 0) < MAX_USERS)
             {
+                var id = parameters.Token ?? $"{Guid.NewGuid():N}";
+
                 auth = new GangAuth(
-                    $"{Guid.NewGuid():N}",
-                    token: parameters.Token ?? $"{Guid.NewGuid():N}"
+                    id,
+                    token: id
                     );
             }
 

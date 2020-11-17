@@ -1,5 +1,5 @@
-using Gang.Auth;
-using Gang.Auth.Contracts;
+using Gang.Authentication.Contracts;
+using Gang.Authentication.Services;
 using System;
 using System.Collections.Immutable;
 using System.Linq;
@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace Gang.Web.Services.State
 {
-    public sealed class WebGangAuthUserStore :
-        IGangAuthUserStore
+    public sealed class WebGangAuthenticationUserStore :
+        IGangAuthenticationUserStore
     {
         IImmutableList<GangUser> _users
             = ImmutableList<GangUser>.Empty;

@@ -1,6 +1,6 @@
-namespace Gang.Auth
+namespace Gang.Authentication
 {
-    public sealed class GangAuthSettings
+    public sealed class GangAuthenticationSettings
     {
         /// <summary>
         /// Keep this safe, used for hashing and verifying tokens

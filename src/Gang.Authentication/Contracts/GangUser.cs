@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
-namespace Gang.Auth.Contracts
+namespace Gang.Authentication.Contracts
 {
     public class GangUser :
         IHasGangIdString

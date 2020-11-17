@@ -1,9 +1,9 @@
-using Gang.Auth.Contracts;
+using Gang.Authentication.Contracts;
 using System.Threading.Tasks;
 
-namespace Gang.Auth
+namespace Gang.Authentication.Services
 {
-    public interface IGangAuthUserStore
+    public interface IGangAuthenticationUserStore
     {
         Task<GangUser> TryGetAsync(string id);
         Task<GangUser> TryGetByEmailAddressAsync(string emailAddress);

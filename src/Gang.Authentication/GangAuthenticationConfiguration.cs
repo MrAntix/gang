@@ -1,42 +1,43 @@
-using Gang.Auth.Api;
+using Gang.Authentication.Api;
+using Gang.Authentication.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Gang.Auth
+namespace Gang.Authentication
 {
-    public static class GangAuthConfiguration
+    public static class GangAuthenticationConfiguration
     {
         /// <summary>
         /// Add Gang Authentication services
         ///
-        /// implementation of IGangAuthUserStore, TUserStore, is added as a singleton
+        /// implementation of IGangAuthenticationUserStore, TUserStore, is added as a singleton
         /// </summary>
         /// <typeparam name="TUserStore">User store type</typeparam>
         /// <param name="services">Serice collection</param>
         /// <param name="settings">Setting</param>
         /// <returns>Service collection</returns>
-        public static IServiceCollection AddGangAuthServices<TUserStore>(
+        public static IServiceCollection AddGangAuthenticationServices<TUserStore>(
             this IServiceCollection services,
-            GangAuthSettings settings
+            GangAuthenticationSettings settings
             )
-            where TUserStore : class, IGangAuthUserStore
+            where TUserStore : class, IGangAuthenticationUserStore
         {
             return services
-                .AddSingleton<IGangAuthUserStore, TUserStore>()
-                .AddGangAuthServices(settings);
+                .AddSingleton<IGangAuthenticationUserStore, TUserStore>()
+                .AddGangAuthenticationServices(settings);
         }
 
         /// <summary>
         /// Add Gang Authentication services
         ///
-        /// n.b. you will need to add an implementation of IGangAuthUserStore
+        /// n.b. you will need to add an implementation of IGangAuthenticationUserStore
         /// </summary>
         /// <param name="services">Serice collection</param>
         /// <param name="settings">Setting</param>
         /// <returns>Service collection</returns>
-        public static IServiceCollection AddGangAuthServices(
+        public static IServiceCollection AddGangAuthenticationServices(
             this IServiceCollection services,
-            GangAuthSettings settings
+            GangAuthenticationSettings settings
             )
         {
             services
@@ -44,12 +45,12 @@ namespace Gang.Auth
                 {
                     o.EnableEndpointRouting = false;
                 })
-                .AddApplicationPart(typeof(GangAuthController).Assembly)
+                .AddApplicationPart(typeof(GangAuthenticationController).Assembly)
                 .AddControllersAsServices();
 
             return services
                 .AddSingleton(settings)
-                .AddTransient<IGangAuthService, GangAuthService>()
+                .AddTransient<IGangAuthenticationService, GangAuthenticationService>()
                 .AddTransient<IGangTokenService, GangTokenService>();
         }
 
@@ -58,7 +59,7 @@ namespace Gang.Auth
         /// </summary>
         /// <param name="app">Applicatin builder</param>
         /// <returns>Applicatin builder</returns>
-        public static IApplicationBuilder UseGangAuthApi(
+        public static IApplicationBuilder UseGangAuthenticationApi(
             this IApplicationBuilder app)
         {
             return app

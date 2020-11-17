@@ -1,7 +1,7 @@
-using Gang.Contracts;
+using Gang.Authentication.Contracts;
 using System;
 
-namespace Gang.Auth
+namespace Gang.Authentication.Services
 {
     public interface IGangTokenService : IDisposable
     {

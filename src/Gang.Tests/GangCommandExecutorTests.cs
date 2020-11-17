@@ -1,3 +1,4 @@
+using Antix.Handlers;
 using Gang.Commands;
 using Gang.Contracts;
 using Gang.Serialization;
@@ -20,24 +21,6 @@ namespace Gang.Tests
             await Assert.ThrowsAsync<ArgumentNullException>(() =>
                executor.ExecuteAsync(null, _command_null_arg, _audit)
             );
-        }
-
-        [Fact]
-        public async Task handles_on_serialization_failure()
-        {
-            var handled = false;
-
-            var executor = GetExecutor()
-                .RegisterHandler<Command>(c => Task.CompletedTask)
-                .RegisterErrorHandler((d, a, ex) =>
-                {
-                    handled = true;
-                    return Task.CompletedTask;
-                });
-
-            await executor.ExecuteAsync(null, _command_null_arg, _audit);
-
-            Assert.True(handled);
         }
 
         class Command
@@ -66,7 +49,8 @@ namespace Gang.Tests
         static IGangCommandExecutor<FakeGangStatefulHost> GetExecutor()
         {
             return new GangCommandExecutor<FakeGangStatefulHost>(
-                _serializer
+                _serializer,
+                new Executor<IGangCommand, FakeGangStatefulHost>()
                 );
         }
     }

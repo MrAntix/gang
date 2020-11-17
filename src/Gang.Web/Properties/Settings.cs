@@ -1,4 +1,4 @@
-using Gang.Auth;
+using Gang.Authentication;
 
 namespace Gang.Web.Properties
 {
@@ -6,6 +6,6 @@ namespace Gang.Web.Properties
     {
         public AppSettings App { get; set; }
         public SmtpSettings Smtp { get; set; }
-        public GangAuthSettings Auth { get; set; }
+        public GangAuthenticationSettings Auth { get; set; }
     }
 }

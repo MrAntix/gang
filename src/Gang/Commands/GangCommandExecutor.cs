@@ -1,8 +1,9 @@
+using Antix.Handlers;
 using Gang.Contracts;
 using Gang.Serialization;
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Gang.Commands
@@ -11,108 +12,65 @@ namespace Gang.Commands
         IGangCommandExecutor<THost>
         where THost : GangHostBase
     {
-        readonly IGangSerializationService _serializer;
-        readonly IImmutableDictionary<string, GangCommandExecutorFunc<THost>> _handlerProviders;
-        readonly Func<byte[], GangAudit, Exception, Task> _errorHandler;
+        readonly IGangSerializationService _serialization;
+        readonly Executor<IGangCommand, THost> _executor;
+        readonly ImmutableDictionary<string, Type> _commandTypes;
 
         public GangCommandExecutor(
-            IGangSerializationService serializer,
-            IEnumerable<GangCommandExecutorFunc<THost>> handlerProviders = null,
-            Func<byte[], GangAudit, Exception, Task> errorHandler = null) :
-            this(serializer, handlerProviders?.ToImmutableDictionary(g => g.Name, g => g), errorHandler)
+            IGangSerializationService serialization,
+            Executor<IGangCommand, THost> executor
+            )
         {
+            _serialization = serialization;
+            _executor = executor;
+            _commandTypes = executor.DataTypes
+                .Select(t => t.GetGenericArguments()[0])
+                .ToImmutableDictionary(t => t.GetCommandTypeName());
         }
 
-        GangCommandExecutor(
-            IGangSerializationService serializer,
-            IEnumerable<KeyValuePair<string, GangCommandExecutorFunc<THost>>> handlerProviders,
-            Func<byte[], GangAudit, Exception, Task> errorHandler)
+        public async Task ExecuteAsync(
+            THost host, byte[] bytes, GangAudit audit)
         {
-            _serializer = serializer;
-            _handlerProviders = handlerProviders?.ToImmutableDictionary() ??
-                ImmutableDictionary<string, GangCommandExecutorFunc<THost>>.Empty;
-            _errorHandler = errorHandler;
+            var wrapper = _serialization.Deserialize<GangCommandWrapper>(bytes);
+            var type = _commandTypes[wrapper.Type];
+
+            var commandData = _serialization.Map(wrapper.Data, type);
+
+            await _executor
+                .ExecuteAsync(GangCommand.From(commandData, audit), host);
         }
 
-        async Task IGangCommandExecutor<THost>.ExecuteAsync(
-            THost host, byte[] data, GangAudit audit)
+        IGangCommandExecutor<THost> RegisterHandler<TData>(
+            Func<TData, GangAudit, Task> handler)
         {
-            if (data is null) throw new ArgumentNullException(nameof(data));
-            if (audit is null) throw new ArgumentNullException(nameof(audit));
-
-            try
-            {
-                var wrapper = _serializer.Deserialize<GangCommandWrapper>(data);
-                var func = _handlerProviders[wrapper.Type];
-
-                await func.ExecuteAsync(host, wrapper.Command, audit);
-            }
-            catch (Exception ex)
-            {
-                if (_errorHandler == null) throw;
-
-                await _errorHandler(data, audit, ex);
-            }
-        }
-
-        IGangCommandExecutor<THost> IGangCommandExecutor<THost>.RegisterHandler<TCommand>(
-            Func<TCommand, GangAudit, Task> handle, string typeName)
-        {
-
-            return RegisterHandler(handle, typeName);
-        }
-
-        IGangCommandExecutor<THost> IGangCommandExecutor<THost>.RegisterHandler<TCommand>(
-            Func<TCommand, Task> handle, string typeName)
-        {
-            if (handle is null) throw new ArgumentNullException(nameof(handle));
-
-            return RegisterHandler<TCommand>((c, _) => handle(c), typeName);
-        }
-
-        IGangCommandExecutor<THost> RegisterHandler<TCommand>(
-            Func<TCommand, GangAudit, Task> handle, string typeName)
-        {
-            if (handle is null) throw new ArgumentNullException(nameof(handle));
-
-            var func = GangCommandExecutorFunc<THost>.From(
-                () => (_, o, a) => handle((TCommand)o, a),
-                o => _serializer.Map<TCommand>(o),
-                typeName ?? typeof(TCommand).GetCommandTypeName()
+            return new GangCommandExecutor<THost>(
+                _serialization,
+                _executor.AddHandler<GangCommand<TData>>(
+                    (command, host) => handler(command.Data, command.Audit)
+                    )
                 );
-
-            return new GangCommandExecutor<THost>(
-                _serializer,
-                _handlerProviders.Add(func.Name, func),
-                _errorHandler);
         }
 
-        IGangCommandExecutor<THost> IGangCommandExecutor<THost>.RegisterHandlerProvider<TCommand>(
-            Func<IGangCommandHandler<THost, TCommand>> provider, string typeName)
+        IGangCommandExecutor<THost> IGangCommandExecutor<THost>
+            .RegisterHandler<TData>(Func<TData, GangAudit, Task> handler)
         {
-            if (provider is null) throw new ArgumentNullException(nameof(provider));
+            return RegisterHandler(handler);
+        }
 
-            var func = GangCommandExecutorFunc<THost>.From(
-                provider,
-                o => _serializer.Map<TCommand>(o),
-                typeName
+        IGangCommandExecutor<THost> IGangCommandExecutor<THost>
+            .RegisterHandler<TData>(Func<TData, Task> handler)
+        {
+            return RegisterHandler<TData>((data, _) => handler(data));
+        }
+
+        IGangCommandExecutor<THost> IGangCommandExecutor<THost>
+            .RegisterHandlerProvider<TData>(Func<IHandler<GangCommand<TData>, THost>> provider)
+        {
+            return new GangCommandExecutor<THost>(
+                _serialization,
+                _executor.AddHandler<GangCommand<TData>>(
+                    (command, host) => provider().HandleAsync(command, host))
                 );
-
-            return new GangCommandExecutor<THost>(
-                _serializer,
-                _handlerProviders.Add(func.Name, func),
-                _errorHandler);
-        }
-
-        IGangCommandExecutor<THost> IGangCommandExecutor<THost>.RegisterErrorHandler(
-            Func<byte[], GangAudit, Exception, Task> errorHandler)
-        {
-            if (errorHandler is null) throw new ArgumentNullException(nameof(errorHandler));
-
-            return new GangCommandExecutor<THost>(
-                _serializer,
-                _handlerProviders,
-                errorHandler);
         }
     }
 }

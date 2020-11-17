@@ -99,8 +99,8 @@ namespace Gang.Management
                 await gangMember.SendAsync(GangMessageTypes.Member, gangMember.Id);
             }
 
-            if (gangMember.Auth?.Token != null)
-                await gangMember.SendAsync(GangMessageTypes.Authenticated, gangMember.Auth.Token.GangToBytes());
+            if (gangMember.Auth != null)
+                await gangMember.SendAsync(GangMessageTypes.Authenticate, gangMember.Auth?.Token?.GangToBytes());
 
             RaiseEvent(new GangMemberAdded(), gangId, gangMember.Id);
             uint? commandSequenceNumber = 0;

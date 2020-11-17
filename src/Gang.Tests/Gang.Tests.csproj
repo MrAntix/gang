@@ -20,10 +20,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Gang.Auth\Gang.Auth.csproj" />
+    <ProjectReference Include="..\Gang.Authentication\Gang.Authentication.csproj" />
     <ProjectReference Include="..\Gang.WebSockets\Gang.WebSockets.csproj" />
     <ProjectReference Include="..\Gang.Web\Gang.Web.csproj" />
     <ProjectReference Include="..\Gang\Gang.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Authentication\" />
   </ItemGroup>
 
 </Project>

@@ -104,15 +104,15 @@ describe('GangService', () => {
 
   it('onCommand after execute', (done) => {
     const type = 'TYPE';
-    const command = {};
+    const data = {};
 
     gangService.onCommand.subscribe((c) => {
       expect(c.type).toEqual(type);
-      expect(c.command).toEqual(command);
+      expect(c.data).toEqual(data);
       done();
     });
 
-    gangService.executeCommand(type, command);
+    gangService.executeCommand(type, data);
   });
 
   it('onState current state on subscribe', (done) => {

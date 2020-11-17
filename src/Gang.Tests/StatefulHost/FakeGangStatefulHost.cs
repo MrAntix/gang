@@ -9,14 +9,22 @@ namespace Gang.Tests.StatefulHost
     public class FakeGangStatefulHost :
         GangStatefulHostBase<FakeGangStatefulHostState>
     {
+        readonly IGangCommandExecutor<FakeGangStatefulHost> _commandExecutor;
+
         public FakeGangStatefulHost(
             IGangCommandExecutor<FakeGangStatefulHost> commandExecutor) :
             base(FakeGangStatefulHostState.Initial)
         {
-            Use(commandExecutor
-                .RegisterHandler<IncrementCommand>(IncrementCommandHandler)
-                .RegisterHandlerProvider(() => new DecrementCommandHandler())
-                );
+            _commandExecutor = commandExecutor
+                .RegisterHandler<Increment>(IncrementCommandHandler);
+        }
+
+        protected override async Task OnCommandAsync(
+            byte[] bytes, GangAudit audit)
+        {
+            await base.OnCommandAsync(bytes, audit);
+
+            await _commandExecutor.ExecuteAsync(this, bytes, audit);
         }
 
         public async Task SetCount(int value, GangAudit audit)
@@ -32,7 +40,7 @@ namespace Gang.Tests.StatefulHost
             );
         }
 
-        async Task IncrementCommandHandler(IncrementCommand _, GangAudit a)
+        async Task IncrementCommandHandler(Increment _, GangAudit a)
         {
             if (a is null) throw new ArgumentNullException(nameof(a));
 

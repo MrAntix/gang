@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Gang.WebSockets
 {
-    public interface IWebSocketGangAutherticator
+    public interface IWebSocketGangAuthenticationerticator
     {
         Task ExecuteAsync(
             GangParameters parameters,

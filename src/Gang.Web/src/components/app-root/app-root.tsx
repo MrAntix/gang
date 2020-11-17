@@ -47,8 +47,8 @@ export class AppRoot {
     this.isConnected = connectionState === GangConnectionState.connected;
   }
 
-  onGangAuthenticated(token: string) {
-    this.logger('onGangAuthenticated', { token })
+  onGangAuthentication(token: string) {
+    this.logger('onGangAuthentication', { token })
 
     GangStore.set('token', token);
     GangStore.set('properties', atob(token.substr(0, token.indexOf('.'))))

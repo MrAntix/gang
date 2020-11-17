@@ -1,8 +1,8 @@
 namespace Gang.Web.Services.Commands
 {
-    public class UpdateUserNameCommand
+    public class UpdateUserName
     {
-        public UpdateUserNameCommand(
+        public UpdateUserName(
             string name)
         {
             Name = name;

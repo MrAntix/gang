@@ -1,10 +1,10 @@
-using Gang.Contracts;
+using Gang.Authentication.Contracts;
 using Gang.Serialization;
 using System;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Gang.Auth
+namespace Gang.Authentication.Services
 {
     public sealed class GangTokenService :
         IGangTokenService
@@ -13,7 +13,7 @@ namespace Gang.Auth
         readonly IGangSerializationService _serializationService;
 
         public GangTokenService(
-            GangAuthSettings settings,
+            GangAuthenticationSettings settings,
             IGangSerializationService serializationService)
         {
             _serializationService = serializationService;

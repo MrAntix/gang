@@ -1,6 +1,6 @@
-namespace Gang.Auth.Api
+namespace Gang.Authentication.Api
 {
-    public static class GangAuthRoutes
+    public static class GangAuthenticationRoutes
     {
         public const string ROOT = "api/gang/auth";
         public const string REQUEST_LINK = ROOT + "/request-link";

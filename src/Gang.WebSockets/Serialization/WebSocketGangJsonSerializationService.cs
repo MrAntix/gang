@@ -24,6 +24,8 @@ namespace Gang.WebSockets.Serialization
         object IGangSerializationService
             .Map(object json, Type type)
         {
+            if (json == null) return null;
+
             return ((JToken)json).ToObject(type);
         }
 

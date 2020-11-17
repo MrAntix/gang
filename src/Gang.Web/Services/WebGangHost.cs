@@ -15,13 +15,13 @@ namespace Gang.Web.Services
 {
     public class WebGangHost : GangStatefulHostBase<WebGangHostState>
     {
+        readonly IGangCommandExecutor<WebGangHost> _commandExecutor;
+
         public WebGangHost(
             IGangCommandExecutor<WebGangHost> commandExecutor
             )
         {
-            Use(commandExecutor
-                .RegisterErrorHandler(OnCommandErrorAsync)
-                );
+            _commandExecutor = commandExecutor;
         }
 
         protected override Task OnConnectAsync()
@@ -76,16 +76,26 @@ namespace Gang.Web.Services
                 );
         }
 
-        async Task OnCommandErrorAsync(
-            object command, GangAudit audit, Exception ex)
+        protected async override Task OnCommandAsync(
+            byte[] bytes, GangAudit audit)
         {
-            await NotifyAsync(
-                new NotifyCommand(
-                    "error", ex.Message
-                ),
-                new[] { audit.MemberId },
-                audit.SequenceNumber
-            );
+            try
+            {
+                await base.OnCommandAsync(bytes, audit);
+
+                await _commandExecutor
+                    .ExecuteAsync(this, bytes, audit);
+            }
+            catch (Exception ex)
+            {
+                await NotifyAsync(
+                    new Notify(
+                        "error", ex.Message
+                    ),
+                    new[] { audit.MemberId },
+                    audit.SequenceNumber
+                );
+            }
         }
 
         protected override async Task OnStateEventAsync(
@@ -138,7 +148,6 @@ namespace Gang.Web.Services
             }
             else
             {
-
                 var e = new WebGangUserCreatedEvent(
                     member.Auth.Id,
                     name,
@@ -197,21 +206,18 @@ namespace Gang.Web.Services
             {
                 await PrivateMessage($"Hello @{user.Id}, welcome to the gang", memberId);
 
-                await PrivateMessage(
-                    $"@{user.Id} joined",
-                    memberId
-                    );
+                await PrivateMessage($"@{user.Id} joined", GetMemberIds(memberId));
             }
         }
 
         public async Task NotifyAsync(
-            NotifyCommand command,
+            Notify command,
             byte[][] memberIds,
             uint? inReplyToSequenceNumber
             )
         {
             await Controller.SendCommandAsync(
-                NotifyCommand.TYPE_NAME,
+                typeof(Notify).GetCommandTypeName(),
                 command,
                 memberIds,
                 inReplyToSequenceNumber

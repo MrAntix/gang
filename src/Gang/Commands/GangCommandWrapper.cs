@@ -4,16 +4,16 @@ namespace Gang.Commands
     {
         public GangCommandWrapper(
             string type,
-            object command,
+            object data,
             uint? rsn)
         {
             Type = type;
-            Command = command;
+            Data = data;
             InReplyToSequenceNumber = rsn;
         }
 
         public string Type { get; }
-        public object Command { get; }
+        public object Data { get; }
         public uint? InReplyToSequenceNumber { get; }
     }
 }

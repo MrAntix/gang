@@ -1,26 +1,27 @@
+using Gang.Authentication.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace Gang.Auth.Api
+namespace Gang.Authentication.Api
 {
-    public class GangAuthController :
+    public class GangAuthenticationController :
         Controller
     {
-        readonly ILogger<GangAuthController> _logger;
-        readonly IGangAuthService _authService;
+        readonly ILogger<GangAuthenticationController> _logger;
+        readonly IGangAuthenticationService _authService;
 
-        public GangAuthController(
-            ILogger<GangAuthController> logger,
-            IGangAuthService authService)
+        public GangAuthenticationController(
+            ILogger<GangAuthenticationController> logger,
+            IGangAuthenticationService authService)
         {
             _logger = logger;
             _authService = authService;
         }
 
         [HttpPost]
-        [Route(GangAuthRoutes.REQUEST_LINK)]
+        [Route(GangAuthenticationRoutes.REQUEST_LINK)]
         public async Task<IActionResult> RequestLinkAsync(
             [FromBody] string identity)
         {
@@ -41,7 +42,7 @@ namespace Gang.Auth.Api
         }
 
         [HttpGet]
-        [Route(GangAuthRoutes.LINK)]
+        [Route(GangAuthenticationRoutes.LINK)]
         public async Task<IActionResult> LinkAsync(
             [FromRoute] string token)
         {
