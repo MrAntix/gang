@@ -10,7 +10,7 @@ namespace Gang.Auth.Contracts
     {
         public GangUser(
             string id,
-            string name, string emailAddress,
+            string name = "(new user)", string emailAddress = null,
             IEnumerable<string> roles = null,
             string secret = null,
             GangUserToken linkToken = null
