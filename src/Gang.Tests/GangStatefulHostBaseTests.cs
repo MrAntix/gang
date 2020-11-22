@@ -2,7 +2,7 @@ using Antix.Handlers;
 using Gang.Commands;
 using Gang.Contracts;
 using Gang.Management;
-using Gang.Members;
+using Gang.Serialization;
 using Gang.Tests.StatefulHost;
 using Gang.WebSockets.Serialization;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -15,6 +15,7 @@ namespace Gang.Tests
     public sealed class GangStatefulHostBaseTests
     {
         readonly GangParameters _gangParameters = new("gangId", null);
+        readonly IGangSerializationService _gangSerialize = new WebSocketGangJsonSerializationService();
 
         [Fact]
         public async Task apply_events()
@@ -71,8 +72,10 @@ namespace Gang.Tests
             var member = new FakeGangMember("Member");
             await handler.ManageAsync(_gangParameters, member);
 
-            await member.Controller
-                .SendCommandAsync(new Increment());
+            var bytes = _gangSerialize
+                .SerializeCommand(1, new Increment());
+
+            await member.Controller.ReceiveAsync(bytes);
 
             Assert.Equal(2, host.State.Count);
         }
@@ -88,8 +91,10 @@ namespace Gang.Tests
             var member = new FakeGangMember("Member");
             await handler.ManageAsync(_gangParameters, member);
 
-            await member.Controller
-                .SendCommandAsync(new SetCount(1));
+            var bytes = _gangSerialize
+                .SerializeCommand(1, new SetCount(1));
+
+            await member.Controller.ReceiveAsync(bytes);
 
             Assert.Equal(1, host.State.Count);
         }

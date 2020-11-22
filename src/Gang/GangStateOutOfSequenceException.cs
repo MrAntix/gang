@@ -1,6 +1,6 @@
 using System;
 
-namespace Gang.Members
+namespace Gang
 {
     [Serializable]
     public sealed class GangStateOutOfSequenceException :
@@ -15,5 +15,16 @@ namespace Gang.Members
 
         public uint CurrentSequenceNumber { get; }
         public uint? EventSequenceNumber { get; }
+    }
+
+
+    [Serializable]
+    public class GangException : Exception
+    {
+        public GangException(string message) : base(message) { }
+        public GangException(string message, Exception inner) : base(message, inner) { }
+        protected GangException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
 }

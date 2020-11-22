@@ -1,9 +1,6 @@
 using Gang.Contracts;
-using Gang.Members;
 using Gang.Serialization;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Gang.Management
@@ -12,6 +9,7 @@ namespace Gang.Management
     {
         readonly string _gangId;
         readonly IGangManager _manager;
+        readonly GangMemberReceiveAsync _receiveAsync;
         readonly GangMemberSendAsync _sendAsync;
         readonly IGangSerializationService _serializer;
         uint _commandSequenceNumber = uint.MaxValue - 10;
@@ -19,12 +17,14 @@ namespace Gang.Management
         public GangController(
             string gangId,
             IGangManager manager,
+            GangMemberReceiveAsync receiveAsync,
             GangMemberSendAsync sendAsync,
             IGangSerializationService serializer
             )
         {
             _gangId = gangId;
             _manager = manager;
+            _receiveAsync = receiveAsync;
             _sendAsync = sendAsync;
             _serializer = serializer;
         }
@@ -45,23 +45,26 @@ namespace Gang.Management
             await member.DisconnectAsync(reason);
         }
 
+        async Task IGangController.ReceiveAsync(
+            byte[] data)
+        {
+            await _receiveAsync(data);
+        }
+
         async Task IGangController.SendAsync(
-            byte[] data, GangMessageTypes? type, IEnumerable<byte[]> memberIds)
+            GangMessageTypes? type, byte[] data, IEnumerable<byte[]> memberIds)
         {
             await _sendAsync(data, type, memberIds);
         }
 
         async Task IGangController.SendCommandAsync(
-            string type, object data, IEnumerable<byte[]> memberIds, uint? inReplyToSequenceNumber)
+            string type, object data, IEnumerable<byte[]> memberIds, uint? replySequenceNumber)
         {
-            var bytes = BitConverter.GetBytes(++_commandSequenceNumber)
-                    .Concat(_serializer.Serialize(new
-                    {
-                        type,
-                        data,
-                        rsn = inReplyToSequenceNumber
-                    }))
-                    .ToArray();
+            var bytes = _serializer.SerializeCommand(
+                ++_commandSequenceNumber,
+                type, data,
+                replySequenceNumber
+                );
 
             await _sendAsync(bytes, GangMessageTypes.Command, memberIds);
         }

@@ -1,6 +1,5 @@
 using Gang.Commands;
 using Gang.Contracts;
-using Gang.Members;
 using System;
 using System.Threading.Tasks;
 

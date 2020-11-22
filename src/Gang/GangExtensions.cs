@@ -1,7 +1,5 @@
-using Gang.Commands;
 using Gang.Contracts;
 using Gang.Management;
-using Gang.Members;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,25 +73,6 @@ namespace Gang
             if (value == null) return null;
 
             return Encoding.UTF8.GetBytes(value);
-        }
-
-        public static Task SendCommandAsync<TData>(
-            this IGangController controller,
-            TData data,
-            IEnumerable<byte[]> memberIds = null,
-            uint? inReplyToSequenceNumber = null)
-        {
-            return controller.SendCommandAsync(
-                typeof(TData).GetCommandTypeName(), data,
-                memberIds, inReplyToSequenceNumber);
-        }
-
-        public static Task DisconnectAsync(
-            this IGangController controller,
-            string memberId,
-            string reason = null)
-        {
-            return controller.DisconnectAsync(memberId.GangToBytes(), reason);
         }
 
         public static string TryDecapitalize(

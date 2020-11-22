@@ -50,7 +50,8 @@ namespace Gang.WebSockets
 
                     } while (!result.EndOfMessage);
 
-                    await controller.SendAsync(data.ToArray());
+                    if (data.Length > 0)
+                        await controller.ReceiveAsync(data.ToArray());
 
                 } while (_webSocket.State == WebSocketState.Open);
 
@@ -66,7 +67,7 @@ namespace Gang.WebSockets
                     WebSocketCloseStatus.NormalClosure, reason, CancellationToken.None);
         }
 
-        async Task IGangMember.SendAsync(GangMessageTypes type, byte[] data, byte[] _, uint? sequenceNumber)
+        async Task IGangMember.HandleAsync(GangMessageTypes type, byte[] data, byte[] _, uint? sequenceNumber)
         {
             await _sendQueue.Enqueue(async () =>
             {

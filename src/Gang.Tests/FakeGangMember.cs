@@ -55,7 +55,7 @@ namespace Gang.Tests
             DisconnectedReason = reason;
         }
 
-        Task IGangMember.SendAsync(GangMessageTypes type,
+        Task IGangMember.HandleAsync(GangMessageTypes type,
             byte[] data, byte[] memberId, uint? sequenceNumber)
         {
             MessagesReceived.Add(new Message(type, data, sequenceNumber));

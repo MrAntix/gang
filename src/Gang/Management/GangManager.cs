@@ -1,7 +1,6 @@
 using Antix.Handlers;
 using Gang.Contracts;
 using Gang.Management.Contracts;
-using Gang.Members;
 using Gang.Serialization;
 using Microsoft.Extensions.Logging;
 using System;
@@ -91,54 +90,55 @@ namespace Gang.Management
 
             if (gang.HostMember == gangMember)
             {
-                await gangMember.SendAsync(GangMessageTypes.Host, gangMember.Id);
+                await gangMember.HandleAsync(GangMessageTypes.Host, gangMember.Id);
             }
             else
             {
-                await gang.HostMember.SendAsync(GangMessageTypes.Connect, gangMember.Id);
-                await gangMember.SendAsync(GangMessageTypes.Member, gangMember.Id);
+                await gang.HostMember.HandleAsync(GangMessageTypes.Connect, gangMember.Id);
+                await gangMember.HandleAsync(GangMessageTypes.Member, gangMember.Id);
             }
 
             if (gangMember.Auth != null)
-                await gangMember.SendAsync(GangMessageTypes.Authenticate, gangMember.Auth?.Token?.GangToBytes());
+                await gangMember.HandleAsync(GangMessageTypes.Authenticate, gangMember.Auth?.Token?.GangToBytes());
 
             RaiseEvent(new GangMemberAdded(), gangId, gangMember.Id);
             uint? commandSequenceNumber = 0;
 
             var controller = new GangController(
                 parameters.GangId, this,
-                async (data, type, memberIds) =>
+                async (data) =>
                 {
-                    if (data?.Length == 0) return;
-
-                    var gang = _gangs[parameters.GangId];
                     if (gangMember == gang.HostMember)
-                    {
-                        var members = memberIds == null
-                            ? gang.OtherMembers
-                            : gang.OtherMembers
-                                .Where(m => memberIds.Any(mId => mId.SequenceEqual(m.Id)));
+                        throw new GangException("host member should not receive data");
 
-                        var sequenceNumber = type == GangMessageTypes.Command
-                            ? ++commandSequenceNumber
-                            : null;
+                    var sequenceNumber = BitConverter.ToUInt32(data.AsSpan()[0..4]);
 
-                        var tasks = members
-                            .Select(member => member
-                                .SendAsync(type ?? GangMessageTypes.State, data, null, sequenceNumber))
-                            .ToArray();
-
-                        await Task.WhenAll(tasks);
-                    }
-                    else
-                    {
-                        var sequenceNumber = BitConverter.ToUInt32(data.AsSpan()[0..4]);
-
-                        await gang.HostMember
-                            .SendAsync(GangMessageTypes.Command, data[4..], gangMember.Id, sequenceNumber);
-                    }
+                    await gang.HostMember
+                        .HandleAsync(GangMessageTypes.Command, data[4..], gangMember.Id, sequenceNumber);
 
                     RaiseEvent(new GangMemberData(data), gangId, gangMember.Id);
+                },
+                async (data, type, memberIds) =>
+                {
+                    var gang = _gangs[parameters.GangId];
+                    if (gangMember != gang.HostMember)
+                        throw new GangException("Only host member can send data to members");
+
+                    var members = memberIds == null
+                        ? gang.OtherMembers
+                        : gang.OtherMembers
+                            .Where(m => memberIds.Any(mId => mId.SequenceEqual(m.Id)));
+
+                    var sequenceNumber = type == GangMessageTypes.Command
+                        ? ++commandSequenceNumber
+                        : null;
+
+                    var tasks = members
+                        .Select(member => member
+                            .HandleAsync(type ?? GangMessageTypes.State, data, null, sequenceNumber))
+                        .ToArray();
+
+                    await Task.WhenAll(tasks);
                 },
                 _serializer
                 );
@@ -151,7 +151,7 @@ namespace Gang.Management
                     gang = _gangs[parameters.GangId];
                     if (gang != null)
                         await gang.HostMember
-                        .SendAsync(GangMessageTypes.Disconnect, gangMember.Id);
+                        .HandleAsync(GangMessageTypes.Disconnect, gangMember.Id);
 
                     RaiseEvent(new GangMemberRemoved(), gangId, gangMember.Id);
 

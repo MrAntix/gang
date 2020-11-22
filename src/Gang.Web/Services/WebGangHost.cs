@@ -1,6 +1,6 @@
 using Gang.Commands;
 using Gang.Contracts;
-using Gang.Members;
+using Gang.Management;
 using Gang.Web.Services.Commands;
 using Gang.Web.Services.Events;
 using Gang.Web.Services.State;
@@ -217,7 +217,6 @@ namespace Gang.Web.Services
             )
         {
             await Controller.SendCommandAsync(
-                typeof(Notify).GetCommandTypeName(),
                 command,
                 memberIds,
                 inReplyToSequenceNumber

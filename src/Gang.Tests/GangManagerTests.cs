@@ -71,7 +71,7 @@ namespace Gang.Tests
             await handler.ManageAsync(_gangParameters, secondGangMember);
             await handler.ManageAsync(_gangParameters, thirdGangMember);
 
-            await firstGangMember.Controller.SendAsync(new[] { (byte)1 });
+            await firstGangMember.Controller.SendStateAsync(new object());
 
             Assert.Equal(GangMessageTypes.State, secondGangMember.MessagesReceived[1].Type);
             Assert.Equal(GangMessageTypes.State, thirdGangMember.MessagesReceived[1].Type);
@@ -89,7 +89,7 @@ namespace Gang.Tests
             await handler.ManageAsync(_gangParameters, otherMember);
 
             uint sequenceNumber = 266;
-            await otherMember.Controller.SendAsync(BitConverter.GetBytes(sequenceNumber));
+            await otherMember.Controller.ReceiveAsync(BitConverter.GetBytes(sequenceNumber));
 
             Assert.Equal(GangMessageTypes.Command, hostMember.MessagesReceived[2].Type);
             Assert.Equal(sequenceNumber, hostMember.MessagesReceived[2].SequenceNumber.Value);

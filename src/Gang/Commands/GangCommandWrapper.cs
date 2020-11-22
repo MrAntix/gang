@@ -9,11 +9,11 @@ namespace Gang.Commands
         {
             Type = type;
             Data = data;
-            InReplyToSequenceNumber = rsn;
+            Rsn = rsn;
         }
 
         public string Type { get; }
         public object Data { get; }
-        public uint? InReplyToSequenceNumber { get; }
+        public uint? Rsn { get; }
     }
 }

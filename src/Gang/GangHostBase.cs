@@ -48,7 +48,7 @@ namespace Gang
             await OnConnectAsync();
         }
 
-        async Task IGangMember.SendAsync(
+        async Task IGangMember.HandleAsync(
             GangMessageTypes type,
             byte[] data, byte[] memberId, uint? sequenceNumber)
         {

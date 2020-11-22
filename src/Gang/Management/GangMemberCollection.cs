@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace Gang.Members
+namespace Gang.Management
 {
     public class GangMemberCollection
     {

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Gang.Members
+namespace Gang
 {
     public abstract class GangStatefulHostBase<TState> :
         GangHostBase

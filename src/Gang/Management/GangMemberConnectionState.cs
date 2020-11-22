@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Gang.Members
+namespace Gang.Management
 {
     public sealed class GangMemberConnectionState
     {
