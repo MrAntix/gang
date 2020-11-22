@@ -1,4 +1,1 @@
-export type GangLogger = (
-  message?: unknown,
-  ...optionalParams: unknown[]
-) => void;
+export type GangLogger = (message?: unknown, ...optionalParams: unknown[]) => void;

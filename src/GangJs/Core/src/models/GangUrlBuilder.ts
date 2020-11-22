@@ -1,8 +1,7 @@
 export class GangUrlBuilder {
   constructor(urlString: string) {
     const protocolSplit = urlString.split(':');
-    if (protocolSplit.length < 2)
-      throw new Error(`GangUrlBuilder.ctor protocol not found ${urlString}`);
+    if (protocolSplit.length < 2) throw new Error(`GangUrlBuilder.ctor protocol not found ${urlString}`);
     this.protocol = protocolSplit[0];
 
     const path = protocolSplit.slice(1).join(':').split('?');

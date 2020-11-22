@@ -1,8 +1,4 @@
-import {
-  GangService,
-  createGangWebSocket,
-  IGangAuthSettings,
-} from './services';
+import { GangService, createGangWebSocket, IGangAuthSettings } from './services';
 import { GangLogger } from './GangLogger';
 import { GangAuthService } from './services/GangAuthService';
 
@@ -17,18 +13,11 @@ export class GangContext {
 
   public static get service(): GangService {
     return (
-      GangContext._service ||
-      (GangContext._service = new GangService(
-        createGangWebSocket,
-        GangContext.initialState
-      ))
+      GangContext._service || (GangContext._service = new GangService(createGangWebSocket, GangContext.initialState))
     );
   }
 
   public static get auth(): GangAuthService {
-    return (
-      GangContext._auth ||
-      (GangContext._auth = new GangAuthService(GangContext.authSettings))
-    );
+    return GangContext._auth || (GangContext._auth = new GangAuthService(GangContext.authSettings));
   }
 }

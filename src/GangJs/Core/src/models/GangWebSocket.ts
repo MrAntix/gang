@@ -7,11 +7,7 @@ export class GangWebSocket {
     public close?: (reason?: string) => void
   ) {}
 
-  subscribe(
-    onMessage: (e: MessageEvent) => void,
-    onError?: (e: Event) => void,
-    onComplete?: () => void
-  ): Subscription {
+  subscribe(onMessage: (e: MessageEvent) => void, onError?: (e: Event) => void, onComplete?: () => void): Subscription {
     return this.subject.subscribe(onMessage, onError, onComplete);
   }
 }

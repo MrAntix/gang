@@ -32,14 +32,10 @@ export function createGangWebSocket(
   });
 
   const observer = {
-    next: (
-      data: string | ArrayBuffer | SharedArrayBuffer | Blob | ArrayBufferView
-    ) => webSocket.send(data),
+    next: (data: string | ArrayBuffer | SharedArrayBuffer | Blob | ArrayBufferView) => webSocket.send(data),
   };
 
   const subject = Subject.create(observer, observable);
 
-  return new GangWebSocket(subject, observer.next, (reason: string) =>
-    webSocket.close(1000, reason)
-  );
+  return new GangWebSocket(subject, observer.next, (reason: string) => webSocket.close(1000, reason));
 }

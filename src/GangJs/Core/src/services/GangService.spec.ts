@@ -11,46 +11,42 @@ describe('GangService', () => {
 
   const sentMessages: ArrayBuffer[] = [];
 
+  function webSocketFactoryMock(
+    _url: string,
+    onOpen: (e: Event) => void,
+    _onError: (e: Event) => void,
+    onClose: (e: CloseEvent) => void
+  ): GangWebSocket {
+    const messageSubject = new Subject<MessageEvent>();
+
+    messageSubject.subscribe(() => undefined);
+
+    recieveMessage = (type, message, sn) => {
+      if (typeof message !== 'string') message = JSON.stringify(message);
+
+      const parts: BlobPart[] = [type];
+      if (sn != null) {
+        const snPart = new Uint32Array(2);
+        snPart[0] = sn;
+        parts.push(snPart);
+      }
+      parts.push(message);
+
+      const reader = new FileReader();
+      reader.onload = () => messageSubject.next(new MessageEvent('message', { data: reader.result }));
+
+      const blob = new Blob(parts);
+      reader.readAsArrayBuffer(blob);
+    };
+
+    receiveOpen = () => onOpen(null);
+    receiveClose = () => onClose(new CloseEvent('close', { reason: 'disconnected' }));
+
+    return new GangWebSocket(messageSubject, (data) => sentMessages.push(data));
+  }
+
   beforeEach(() => {
-    function webSocketFactoryMock(
-      _url: string,
-      onOpen: (e: Event) => void,
-      _onError: (e: Event) => void,
-      onClose: (e: CloseEvent) => void
-    ): GangWebSocket {
-      const messageSubject = new Subject<MessageEvent>();
-
-      messageSubject.subscribe(() => undefined);
-
-      recieveMessage = (type, message, sn) => {
-        if (typeof message !== 'string') message = JSON.stringify(message);
-
-        const parts: BlobPart[] = [type];
-        if (sn != null) {
-          const snPart = new Uint32Array(2);
-          snPart[0] = sn;
-          parts.push(snPart);
-        }
-        parts.push(message);
-
-        const reader = new FileReader();
-        reader.onload = () =>
-          messageSubject.next(
-            new MessageEvent('message', { data: reader.result })
-          );
-
-        const blob = new Blob(parts);
-        reader.readAsArrayBuffer(blob);
-      };
-
-      receiveOpen = () => onOpen(null);
-      receiveClose = () =>
-        onClose(new CloseEvent('close', { reason: 'disconnected' }));
-
-      return new GangWebSocket(messageSubject, (data) =>
-        sentMessages.push(data)
-      );
-    }
+    GangService.setState(null);
 
     gangService = new GangService(webSocketFactoryMock);
     gangService.connect('tests', 'gangId');
@@ -120,18 +116,18 @@ describe('GangService', () => {
     recieveMessage('S', JSON.stringify(currentState));
 
     gangService.onState.subscribe((state) => {
-      if (state === undefined) return;
+      if (state == null) return;
 
       expect(state).toEqual(currentState);
       done();
     });
   });
 
-  it('onState new state ', (done) => {
+  it('onState new state', (done) => {
     const newState = { new: true };
 
     gangService.onState.subscribe((state) => {
-      if (state === undefined) return;
+      if (state == null) return;
 
       expect(state).toEqual(newState);
       done();
@@ -165,9 +161,7 @@ describe('GangService', () => {
 
     recieveMessage('S', JSON.stringify(newState));
 
-    expect(
-      async () => await gangService.waitForState<typeof newState>((s) => s?.new)
-    ).resolves;
+    expect(async () => await gangService.waitForState<typeof newState>((s) => s?.new)).resolves;
   });
 
   it('waitForState timeout', () => {

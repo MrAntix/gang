@@ -56,13 +56,17 @@ export class GangService {
     this.rootUrl = `${protocol}//${host}/`;
 
     this.onConnection = this.connectionSubject = new BehaviorSubject(GangConnectionState.disconnected);
-    this.onAuthenticate = this.authenticateSubject = new BehaviorSubject<string>(GangStore.get(GANG_AUTHENTICATION_TOKEN));
+    this.onAuthenticate = this.authenticateSubject = new BehaviorSubject<string>(
+      GangStore.get(GANG_AUTHENTICATION_TOKEN)
+    );
     this.onMemberConnected = this.memberConnectedSubject = new Subject<string>();
     this.onMemberDisconnected = this.memberDisconnectedSubject = new Subject<string>();
     this.onCommand = this.commandSubject = new Subject<GangCommandWrapper<Record<string, unknown>>>();
 
     const state = GangStore.get(GANG_STATE);
-    this.onState = this.stateSubject = new BehaviorSubject<Record<string, unknown>>(!state ? initialState : JSON.parse(state));
+    this.onState = this.stateSubject = new BehaviorSubject<Record<string, unknown>>(
+      !state ? initialState : JSON.parse(state)
+    );
   }
 
   async connect(url: string, gangId: string, token?: string): Promise<void> {
@@ -130,7 +134,7 @@ export class GangService {
           }
           case 'A': {
             const token = readString(data, 1);
-            GangStore.set(GANG_AUTHENTICATION_TOKEN, token)
+            GangStore.set(GANG_AUTHENTICATION_TOKEN, token);
 
             this.authenticateSubject.next(token);
             break;
@@ -153,7 +157,7 @@ export class GangService {
           }
           case 'S': {
             const state = readString(data, 1);
-            GangStore.set(GANG_STATE, state)
+            GangStore.set(GANG_STATE, state);
 
             this.stateSubject.next({
               ...this.stateSubject.value,
@@ -407,6 +411,10 @@ export class GangService {
         reject();
       }, options?.timeout || 10000);
     });
+  }
+
+  static setState(value: string): void {
+    GangStore.set(GANG_STATE, value);
   }
 }
 

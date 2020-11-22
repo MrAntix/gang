@@ -12,8 +12,6 @@ export const getGangId = (function () {
     r[6] = (r[6] & 0x0f) | 0x40;
     r[8] = (r[8] & 0x3f) | 0x80;
 
-    return [...r.entries()]
-      .map((v, i) => `${map[v[1]]}${dash.includes(i) ? '-' : ''}`)
-      .join('');
+    return [...r.entries()].map((v, i) => `${map[v[1]]}${dash.includes(i) ? '-' : ''}`).join('');
   };
 })();
