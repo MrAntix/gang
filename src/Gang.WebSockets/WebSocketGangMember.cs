@@ -1,4 +1,4 @@
-using Gang.Contracts;
+using Gang.Authentication;
 using Gang.Management;
 using Gang.Tasks;
 using System;

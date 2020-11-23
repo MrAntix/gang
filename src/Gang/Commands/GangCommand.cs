@@ -1,4 +1,3 @@
-using Gang.Contracts;
 using System;
 
 namespace Gang.Commands

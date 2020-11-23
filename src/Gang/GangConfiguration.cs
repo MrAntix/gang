@@ -1,8 +1,8 @@
 using Antix.Handlers;
+using Gang.Authentication;
 using Gang.Commands;
-using Gang.Contracts;
 using Gang.Management;
-using Gang.Management.Contracts;
+using Gang.Management.Events;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;

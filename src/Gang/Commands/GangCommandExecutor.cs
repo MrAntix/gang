@@ -1,5 +1,4 @@
 using Antix.Handlers;
-using Gang.Contracts;
 using Gang.Serialization;
 using System;
 using System.Collections.Immutable;

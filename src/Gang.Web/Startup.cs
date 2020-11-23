@@ -1,5 +1,5 @@
 using Gang.Authentication;
-using Gang.Authentication.Services;
+using Gang.Authentication.Users;
 using Gang.Management;
 using Gang.Web.Properties;
 using Gang.Web.Services;

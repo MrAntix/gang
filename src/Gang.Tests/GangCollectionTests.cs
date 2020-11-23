@@ -1,4 +1,4 @@
-using Gang.Contracts;
+using Gang.Management;
 using Xunit;
 
 namespace Gang.Tests

@@ -1,5 +1,5 @@
 using Gang.Commands;
-using Gang.Contracts;
+using Gang.Events;
 using System;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
@@ -27,11 +27,12 @@ namespace Gang.Tests.StatefulHost
             await _commandExecutor.ExecuteAsync(this, bytes, audit);
         }
 
-        protected override async Task OnStateEventAsync(object data, GangAudit a)
+        protected override async Task OnEventAsync(
+            object data, GangAudit a)
         {
-            await base.OnStateEventAsync(data, a);
+            await base.OnEventAsync(data, a);
 
-            Events = Events.Add(new GangEvent(data, a));
+            Events = Events.Add(GangEvent.From(data, a));
         }
 
         public IImmutableList<IGangEvent> Events { get; private set; } = ImmutableList<IGangEvent>.Empty;

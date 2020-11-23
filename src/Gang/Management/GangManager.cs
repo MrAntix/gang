@@ -1,6 +1,5 @@
 using Antix.Handlers;
-using Gang.Contracts;
-using Gang.Management.Contracts;
+using Gang.Management.Events;
 using Gang.Serialization;
 using Microsoft.Extensions.Logging;
 using System;
@@ -113,7 +112,7 @@ namespace Gang.Management
 
                     var sequenceNumber = BitConverter.ToUInt32(data.AsSpan()[0..4]);
 
-                    var audit = new GangAudit(parameters.GangId, gangMember.Id,sequenceNumber, gangMember.Auth?.Id)
+                    var audit = new GangAudit(parameters.GangId, gangMember.Id, sequenceNumber, gangMember.Auth?.Id)
 ;
                     await gang.HostMember
                         .HandleAsync(GangMessageTypes.Command, data[4..], audit);

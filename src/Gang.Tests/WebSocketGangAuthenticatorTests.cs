@@ -1,5 +1,4 @@
-using Gang.Contracts;
-using Gang.Management;
+using Gang.Authentication;
 using Gang.WebSockets;
 using System;
 using System.Threading.Tasks;
@@ -84,7 +83,7 @@ namespace Gang.Tests
                 member.DisconnectedReason);
         }
 
-        static IWebSocketGangAuthenticationerticator GetService(
+        static IWebSocketGangAuthenticationService GetService(
            GangAuthenticationFunc authenticateAsync)
         {
             return new WebSocketGangAuthenticationenticator(

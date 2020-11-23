@@ -1,5 +1,4 @@
-using Gang.Contracts;
-using Gang.Management.Contracts;
+using Gang.Management.Events;
 using System;
 using System.Threading.Tasks;
 

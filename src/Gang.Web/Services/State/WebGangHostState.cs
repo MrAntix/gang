@@ -1,4 +1,3 @@
-using Gang.Contracts;
 using Gang.Web.Services.Events;
 using System;
 using System.Collections.Generic;

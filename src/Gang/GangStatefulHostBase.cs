@@ -1,4 +1,4 @@
-using Gang.Contracts;
+using Gang.Events;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -21,7 +21,7 @@ namespace Gang
             _state = initialState;
         }
 
-        protected virtual Task OnStateEventAsync(
+        protected virtual Task OnEventAsync(
             object e, GangAudit a)
         {
             return Task.CompletedTask;
@@ -29,7 +29,7 @@ namespace Gang
 
         public TState State => _state;
         public uint StateVersion => _stateVersion;
-        IImmutableDictionary<Type, Func<TState, GangEvent, TState>> _stateApplyMethods;
+        IImmutableDictionary<Type, Func<TState, IGangEvent, TState>> _stateApplyMethods;
 
         public void SetState(
             TState state, uint version = 0
@@ -40,7 +40,7 @@ namespace Gang
         }
 
         public void ApplyStateEvents(
-            IEnumerable<GangEvent> events)
+            IEnumerable<IGangEvent> events)
         {
             if (_stateApplyMethods == null)
                 _stateApplyMethods = typeof(TState)
@@ -54,7 +54,7 @@ namespace Gang
                 (s, w) =>
                 {
                     if (_stateVersion >= w.Audit.SequenceNumber)
-                        throw new GangStateOutOfSequenceException(
+                        throw new GangEventSequenceException(
                             _stateVersion, w.Audit.SequenceNumber
                             );
 
@@ -78,7 +78,7 @@ namespace Gang
 
             _state = apply(e, a);
 
-            await OnStateEventAsync(e, a);
+            await OnEventAsync(e, a);
         }
 
         public async Task RaiseStateEventAsync<TEventData>(
@@ -89,7 +89,7 @@ namespace Gang
                 (e, _) => apply(e));
         }
 
-        static Tuple<Type, Func<TState, GangEvent, TState>> NormaliseMethod(MethodInfo m)
+        static Tuple<Type, Func<TState, IGangEvent, TState>> NormaliseMethod(MethodInfo m)
         {
             if (m.ReturnType != typeof(TState)) return null;
 
@@ -98,7 +98,7 @@ namespace Gang
             if (p.Length == 2 && p[1].ParameterType != typeof(GangAudit)) return null;
 
             return Tuple
-                .Create<Type, Func<TState, GangEvent, TState>>(
+                .Create<Type, Func<TState, IGangEvent, TState>>(
                     p[0].ParameterType,
                     (s, w) => (TState)m
                          .Invoke(s, p.Length == 1

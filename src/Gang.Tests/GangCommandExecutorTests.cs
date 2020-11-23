@@ -1,6 +1,5 @@
 using Antix.Handlers;
 using Gang.Commands;
-using Gang.Contracts;
 using Gang.Serialization;
 using Gang.Tests.StatefulHost;
 using Gang.WebSockets.Serialization;

@@ -1,7 +1,9 @@
 using Antix.Handlers;
+using Gang.Authentication;
 using Gang.Commands;
-using Gang.Contracts;
+using Gang.Events;
 using Gang.Management;
+using Gang.Management.Events;
 using Gang.Serialization;
 using Gang.Tests.StatefulHost;
 using Gang.WebSockets.Serialization;
@@ -25,7 +27,7 @@ namespace Gang.Tests
             await handler.ManageAsync(_gangParameters, host);
 
             var events = new[] {
-                new GangEvent(
+                GangEvent.From(
                     new CountSet(1),
                     new GangAudit(_gangParameters.GangId, host.Id, 10)
                     )
@@ -45,17 +47,17 @@ namespace Gang.Tests
             await handler.ManageAsync(_gangParameters, host);
 
             var events = new[] {
-                new GangEvent(
+                GangEvent.From(
                     new CountSet(0),
                     new GangAudit(_gangParameters.GangId, host.Id, 10)
                     ),
-                new GangEvent(
+                GangEvent.From(
                     new CountSet(1),
                     new GangAudit(_gangParameters.GangId, host.Id, 1)
                     )
             };
 
-            Assert.Throws<GangStateOutOfSequenceException>(
+            Assert.Throws<GangEventSequenceException>(
                 () => host.ApplyStateEvents(events)
                 );
         }

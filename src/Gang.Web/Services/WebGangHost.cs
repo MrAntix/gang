@@ -1,5 +1,5 @@
 using Gang.Commands;
-using Gang.Contracts;
+using Gang.Events;
 using Gang.Management;
 using Gang.Web.Services.Commands;
 using Gang.Web.Services.Events;
@@ -33,7 +33,7 @@ namespace Gang.Web.Services
 
             ApplyStateEvents(
                 new[]{
-                    new GangEvent(
+                     GangEvent.From(
                         new WebGangMessageAdded("Welcome", "Gang Chat Started"),
                         new GangAudit(Controller.GangId, Id, 1)
                         )
@@ -98,7 +98,7 @@ namespace Gang.Web.Services
             }
         }
 
-        protected override async Task OnStateEventAsync(
+        protected override async Task OnEventAsync(
             object e, GangAudit a)
         {
             Console.WriteLine(

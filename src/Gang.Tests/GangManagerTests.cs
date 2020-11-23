@@ -1,7 +1,6 @@
 using Antix.Handlers;
-using Gang.Contracts;
 using Gang.Management;
-using Gang.Management.Contracts;
+using Gang.Management.Events;
 using Gang.WebSockets.Serialization;
 using Microsoft.Extensions.Logging.Abstractions;
 using System;

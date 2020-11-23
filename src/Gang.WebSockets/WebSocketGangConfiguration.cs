@@ -1,4 +1,4 @@
-using Gang.Contracts;
+using Gang.Authentication;
 using Gang.Management;
 using Gang.Serialization;
 using Gang.WebSockets.Serialization;
@@ -18,7 +18,7 @@ namespace Gang.WebSockets
             this IServiceCollection services)
         {
             services.AddGangs();
-            services.AddSingleton<IWebSocketGangAuthenticationerticator, WebSocketGangAuthenticationenticator>();
+            services.AddSingleton<IWebSocketGangAuthenticationService, WebSocketGangAuthenticationenticator>();
             services.AddSingleton<IGangSerializationService, WebSocketGangJsonSerializationService>();
 
             return services;
@@ -29,7 +29,7 @@ namespace Gang.WebSockets
             string path
             )
         {
-            var authenticator = app.ApplicationServices.GetRequiredService<IWebSocketGangAuthenticationerticator>();
+            var authenticator = app.ApplicationServices.GetRequiredService<IWebSocketGangAuthenticationService>();
             var manager = app.ApplicationServices.GetRequiredService<IGangManager>();
 
             app.UseWebSockets();

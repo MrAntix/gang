@@ -1,5 +1,3 @@
-using Gang.Contracts;
-
 namespace Gang.Commands
 {
     public interface IGangCommand

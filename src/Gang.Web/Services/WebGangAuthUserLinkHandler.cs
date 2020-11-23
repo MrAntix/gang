@@ -1,6 +1,6 @@
 using Antix.Handlers;
-using Gang.Authentication.Contracts;
-using Gang.Management.Contracts;
+using Gang.Authentication.Users;
+using Gang.Management.Events;
 using Gang.Web.Properties;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Collections.Generic;

@@ -1,4 +1,3 @@
-using Gang.Authentication.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;

@@ -1,5 +1,4 @@
-using Gang.Authentication.Contracts;
-using Gang.Authentication.Services;
+using Gang.Authentication.Users;
 using System;
 using System.Collections.Immutable;
 using System.Linq;

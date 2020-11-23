@@ -1,4 +1,4 @@
-using Gang.Contracts;
+using Gang.Authentication;
 using Gang.Management;
 using System;
 using System.Threading.Tasks;
@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Gang.WebSockets
 {
     public sealed class WebSocketGangAuthenticationenticator :
-        IWebSocketGangAuthenticationerticator
+        IWebSocketGangAuthenticationService
     {
         public const string RESULT_DENIED = "denied";
 
@@ -21,7 +21,7 @@ namespace Gang.WebSockets
             _manager = manager;
         }
 
-        async Task IWebSocketGangAuthenticationerticator.ExecuteAsync(
+        async Task IWebSocketGangAuthenticationService.ExecuteAsync(
             GangParameters parameters,
             Func<GangAuth, Task<IGangMember>> getMemberAsync)
         {
