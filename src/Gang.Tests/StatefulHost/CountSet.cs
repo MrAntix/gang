@@ -1,8 +1,8 @@
 ﻿namespace Gang.Tests.StatefulHost
 {
-    public class CountSetEvent
+    public class CountSet
     {
-        public CountSetEvent(int value)
+        public CountSet(int value)
         {
             Value = value;
         }

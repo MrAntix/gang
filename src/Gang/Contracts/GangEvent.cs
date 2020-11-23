@@ -1,6 +1,6 @@
 namespace Gang.Contracts
 {
-    public sealed class GangEvent
+    public sealed class GangEvent : IGangEvent
     {
         public GangEvent(
             object data, GangAudit audit)

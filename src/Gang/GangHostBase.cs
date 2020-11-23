@@ -50,7 +50,7 @@ namespace Gang
 
         async Task IGangMember.HandleAsync(
             GangMessageTypes type,
-            byte[] data, byte[] memberId, uint? sequenceNumber)
+            byte[] data, GangAudit audit)
         {
             switch (type)
             {
@@ -63,7 +63,6 @@ namespace Gang
 
                     break;
                 case GangMessageTypes.Command:
-                    var audit = new GangAudit(Controller.GangId, memberId, sequenceNumber);
                     await OnCommandAsync(data, audit);
 
                     break;

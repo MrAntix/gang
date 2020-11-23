@@ -54,7 +54,7 @@ namespace Gang.Management
         async Task IGangController.SendAsync(
             GangMessageTypes? type, byte[] data, IEnumerable<byte[]> memberIds)
         {
-            await _sendAsync(data, type, memberIds);
+            await _sendAsync(type, data, memberIds);
         }
 
         async Task IGangController.SendCommandAsync(
@@ -66,15 +66,15 @@ namespace Gang.Management
                 replySequenceNumber
                 );
 
-            await _sendAsync(bytes, GangMessageTypes.Command, memberIds);
+            await _sendAsync(GangMessageTypes.Command, bytes, memberIds);
         }
 
         async Task IGangController.SendStateAsync<T>(
             T state, IEnumerable<byte[]> memberIds)
         {
             await _sendAsync(
-                 _serializer.Serialize(state),
                  GangMessageTypes.State,
+                 _serializer.Serialize(state),
                  memberIds);
         }
     }

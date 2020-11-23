@@ -4,10 +4,10 @@ using System.Collections.Immutable;
 
 namespace Gang.Web.Services.Events
 {
-    public class WebGangUserMemberIdsUpdatedEvent :
+    public class WebGangUserMemberIdsUpdated :
         IWebGangUserMemberIdsUpdatedEvent
     {
-        public WebGangUserMemberIdsUpdatedEvent(
+        public WebGangUserMemberIdsUpdated(
             string userId,
             IEnumerable<string> memberIds
             )

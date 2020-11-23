@@ -67,7 +67,7 @@ namespace Gang.WebSockets
                     WebSocketCloseStatus.NormalClosure, reason, CancellationToken.None);
         }
 
-        async Task IGangMember.HandleAsync(GangMessageTypes type, byte[] data, byte[] _, uint? sequenceNumber)
+        async Task IGangMember.HandleAsync(GangMessageTypes type, byte[] data, GangAudit audit)
         {
             await _sendQueue.Enqueue(async () =>
             {
@@ -77,9 +77,9 @@ namespace Gang.WebSockets
                         new[] { (byte)type },
                         WebSocketMessageType.Binary, data == null, CancellationToken.None);
 
-                    if (sequenceNumber != null)
+                    if (audit?.SequenceNumber != null)
                         await _webSocket.SendAsync(
-                            BitConverter.GetBytes(sequenceNumber.Value),
+                            BitConverter.GetBytes(audit.SequenceNumber.Value),
                             WebSocketMessageType.Binary, data == null, CancellationToken.None);
 
                     if (data != null)

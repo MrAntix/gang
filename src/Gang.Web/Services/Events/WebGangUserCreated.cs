@@ -3,9 +3,9 @@ using System.Collections.Immutable;
 
 namespace Gang.Web.Services.Events
 {
-    public class WebGangUserCreatedEvent
+    public class WebGangUserCreated
     {
-        public WebGangUserCreatedEvent(
+        public WebGangUserCreated(
             string userId,
             string name,
             byte[] memberId,

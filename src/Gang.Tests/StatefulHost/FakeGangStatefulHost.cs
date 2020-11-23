@@ -1,6 +1,7 @@
 using Gang.Commands;
 using Gang.Contracts;
 using System;
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 
 namespace Gang.Tests.StatefulHost
@@ -26,6 +27,15 @@ namespace Gang.Tests.StatefulHost
             await _commandExecutor.ExecuteAsync(this, bytes, audit);
         }
 
+        protected override async Task OnStateEventAsync(object data, GangAudit a)
+        {
+            await base.OnStateEventAsync(data, a);
+
+            Events = Events.Add(new GangEvent(data, a));
+        }
+
+        public IImmutableList<IGangEvent> Events { get; private set; } = ImmutableList<IGangEvent>.Empty;
+
         public async Task SetCount(int value, GangAudit audit)
         {
             if (audit is null) throw new ArgumentNullException(nameof(audit));
@@ -34,8 +44,8 @@ namespace Gang.Tests.StatefulHost
             if (State.Count < 0) throw new Exception("Too Small");
 
             await RaiseStateEventAsync(
-                new CountSetEvent(value),
-                audit.MemberId, FakeGangStatefulHostState.Apply
+                new CountSet(value),
+                audit, FakeGangStatefulHostState.Apply
             );
         }
 

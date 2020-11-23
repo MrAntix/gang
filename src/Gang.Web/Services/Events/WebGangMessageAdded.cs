@@ -1,8 +1,8 @@
 namespace Gang.Web.Services.Events
 {
-    public class WebGangMessageAddedEvent
+    public class WebGangMessageAdded
     {
-        public WebGangMessageAddedEvent(
+        public WebGangMessageAdded(
             string messageId,
             string text
             )

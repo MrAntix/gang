@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace Gang.Management
 {
     public delegate Task GangMemberSendAsync(
+        GangMessageTypes? type,
         byte[] data,
-        GangMessageTypes? type = null,
         IEnumerable<byte[]> memberIds = null);
 }

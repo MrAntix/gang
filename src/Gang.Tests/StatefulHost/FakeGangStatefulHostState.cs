@@ -12,7 +12,7 @@ namespace Gang.Tests.StatefulHost
 
         public int Count { get; }
 
-        public static FakeGangStatefulHostState Apply(CountSetEvent e)
+        public static FakeGangStatefulHostState Apply(CountSet e)
         {
             if (e is null) throw new ArgumentNullException(nameof(e));
 

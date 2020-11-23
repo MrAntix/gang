@@ -6,7 +6,6 @@ using Gang.Serialization;
 using Gang.Tests.StatefulHost;
 using Gang.WebSockets.Serialization;
 using Microsoft.Extensions.Logging.Abstractions;
-using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -27,8 +26,8 @@ namespace Gang.Tests
 
             var events = new[] {
                 new GangEvent(
-                    new CountSetEvent(1),
-                    new GangAudit(_gangParameters.GangId, host.Id, 10, DateTimeOffset.Now)
+                    new CountSet(1),
+                    new GangAudit(_gangParameters.GangId, host.Id, 10)
                     )
             };
 
@@ -47,12 +46,12 @@ namespace Gang.Tests
 
             var events = new[] {
                 new GangEvent(
-                    new CountSetEvent(0),
-                    new GangAudit(_gangParameters.GangId, host.Id,  10, DateTimeOffset.Now)
+                    new CountSet(0),
+                    new GangAudit(_gangParameters.GangId, host.Id, 10)
                     ),
                 new GangEvent(
-                    new CountSetEvent(1),
-                    new GangAudit(_gangParameters.GangId, host.Id, 1, DateTimeOffset.Now)
+                    new CountSet(1),
+                    new GangAudit(_gangParameters.GangId, host.Id, 1)
                     )
             };
 
@@ -97,6 +96,27 @@ namespace Gang.Tests
             await member.Controller.ReceiveAsync(bytes);
 
             Assert.Equal(1, host.State.Count);
+        }
+
+        [Fact]
+        public async Task events_raised()
+        {
+            var host = GetHost();
+
+            var handler = GetGangHandler();
+            await handler.ManageAsync(_gangParameters, host);
+
+            var auth = new GangAuth("User");
+            var member = new FakeGangMember("Member", auth);
+            await handler.ManageAsync(_gangParameters, member);
+
+            var bytes = _gangSerialize
+                .SerializeCommand(1, new SetCount(1));
+
+            await member.Controller.ReceiveAsync(bytes);
+
+            Assert.Equal(1, host.Events.Count);
+            Assert.Equal(auth.Id, host.Events[0].Audit.UserId);
         }
 
         static FakeGangStatefulHost GetHost()

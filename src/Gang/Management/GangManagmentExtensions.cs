@@ -21,6 +21,14 @@ namespace Gang.Management
                 memberIds, replySequenceNumber);
         }
 
+        public static IGangMember GetMember(
+            this IGangController controller,
+            byte[] memberId
+            )
+        {
+            return controller.GetGang().MemberById(memberId);
+        }
+
         public static Task DisconnectAsync(
             this IGangController controller,
             string memberId,

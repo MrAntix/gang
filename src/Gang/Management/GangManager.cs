@@ -113,12 +113,14 @@ namespace Gang.Management
 
                     var sequenceNumber = BitConverter.ToUInt32(data.AsSpan()[0..4]);
 
+                    var audit = new GangAudit(parameters.GangId, gangMember.Id,sequenceNumber, gangMember.Auth?.Id)
+;
                     await gang.HostMember
-                        .HandleAsync(GangMessageTypes.Command, data[4..], gangMember.Id, sequenceNumber);
+                        .HandleAsync(GangMessageTypes.Command, data[4..], audit);
 
                     RaiseEvent(new GangMemberData(data), gangId, gangMember.Id);
                 },
-                async (data, type, memberIds) =>
+                async (type, data, memberIds) =>
                 {
                     var gang = _gangs[parameters.GangId];
                     if (gangMember != gang.HostMember)
@@ -133,9 +135,11 @@ namespace Gang.Management
                         ? ++commandSequenceNumber
                         : null;
 
+                    var audit = new GangAudit(parameters.GangId, gangMember.Id, sequenceNumber);
+
                     var tasks = members
                         .Select(member => member
-                            .HandleAsync(type ?? GangMessageTypes.State, data, null, sequenceNumber))
+                            .HandleAsync(type ?? GangMessageTypes.State, data, audit))
                         .ToArray();
 
                     await Task.WhenAll(tasks);

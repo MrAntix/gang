@@ -9,17 +9,11 @@ namespace Gang.Tests
 
     public class FakeGangMember : IGangMember
     {
-
         public FakeGangMember(
-            string id) : this(id.GangToBytes(), null)
+             string id,
+             GangAuth auth = null)
         {
-        }
-
-        public FakeGangMember(
-             byte[] id,
-             GangAuth auth)
-        {
-            Id = id;
+            Id = id.GangToBytes();
             Auth = auth;
             MessagesReceived = new List<Message>();
         }
@@ -56,9 +50,9 @@ namespace Gang.Tests
         }
 
         Task IGangMember.HandleAsync(GangMessageTypes type,
-            byte[] data, byte[] memberId, uint? sequenceNumber)
+            byte[] data, GangAudit audit)
         {
-            MessagesReceived.Add(new Message(type, data, sequenceNumber));
+            MessagesReceived.Add(new Message(type, data, audit?.SequenceNumber));
             return Task.CompletedTask;
         }
 

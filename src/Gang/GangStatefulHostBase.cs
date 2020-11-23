@@ -63,27 +63,29 @@ namespace Gang
                 });
         }
 
-        protected async Task RaiseStateEventAsync<TEvent>(
-            TEvent e, byte[] memberId,
-            Func<TEvent, GangAudit, TState> apply)
+        protected async Task RaiseStateEventAsync<TEventData>(
+            TEventData e, GangAudit a,
+            Func<TEventData, GangAudit, TState> apply)
         {
             _stateVersion++;
 
-            var a = new GangAudit(
+            a = new GangAudit(
                 Controller.GangId,
-                memberId,
-                _stateVersion, DateTimeOffset.UtcNow);
+                a.MemberId,
+                _stateVersion,
+                a.UserId
+                );
 
             _state = apply(e, a);
 
             await OnStateEventAsync(e, a);
         }
 
-        public async Task RaiseStateEventAsync<TEvent>(
-            TEvent e, byte[] memberId,
-            Func<TEvent, TState> apply)
+        public async Task RaiseStateEventAsync<TEventData>(
+            TEventData e, GangAudit a,
+            Func<TEventData, TState> apply)
         {
-            await RaiseStateEventAsync(e, memberId,
+            await RaiseStateEventAsync(e, a,
                 (e, _) => apply(e));
         }
 
