@@ -1,17 +1,24 @@
+using System;
+
 namespace Gang.Web.Services.Events
 {
     public class WebGangMessageAdded
     {
         public WebGangMessageAdded(
-            string messageId,
-            string text
+            string id, string text,
+            string userId,
+            DateTimeOffset on
             )
         {
-            MessageId = messageId;
+            Id = id;
             Text = text;
+            UserId = userId;
+            On = on;
         }
 
-        public string MessageId { get; }
+        public string Id { get; }
         public string Text { get; }
+        public string UserId { get; }
+        public DateTimeOffset On { get; }
     }
 }

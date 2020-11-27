@@ -1,24 +1,22 @@
-﻿using System;
+using System;
 
 namespace Gang.Web.Services.State
 {
     public class WebGangMessage
     {
         public WebGangMessage(
-            string id,
-            DateTimeOffset on,
-            string userId,
-            string text)
+            string id, string text,
+            string userId, DateTimeOffset on)
         {
             Id = id;
-            On = on;
-            UserId = userId;
             Text = text;
+            UserId = userId;
+            On = on;
         }
 
         public string Id { get; }
-        public DateTimeOffset On { get; }
-        public string UserId { get; }
         public string Text { get; }
+        public string UserId { get; }
+        public DateTimeOffset On { get; }
     }
 }

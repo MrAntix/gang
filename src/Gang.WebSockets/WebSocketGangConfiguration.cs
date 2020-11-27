@@ -5,6 +5,7 @@ using Gang.WebSockets.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.Linq;
 using System.Reactive.Linq;
@@ -18,11 +19,18 @@ namespace Gang.WebSockets
             this IServiceCollection services)
         {
             services.AddGangs();
-            services.AddSingleton<IWebSocketGangAuthenticationService, WebSocketGangAuthenticationenticator>();
-            services.AddSingleton<IGangSerializationService, WebSocketGangJsonSerializationService>();
+            services.TryAddSingleton<IWebSocketGangAuthenticationService, WebSocketGangAuthenticationenticator>();
+            services.TryAddSingleton<IGangSerializationService, WebSocketGangJsonSerializationService>();
 
             return services;
         }
+
+        public static IServiceCollection AddWebSocketGangsSerialization(
+            this IServiceCollection services)
+        {
+            return services.AddSingleton<IGangSerializationService, WebSocketGangJsonSerializationService>();
+        }
+
 
         public static IApplicationBuilder UseWebSocketGangs(
             this IApplicationBuilder app,

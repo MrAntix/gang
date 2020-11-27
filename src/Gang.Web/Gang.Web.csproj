@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Gang.Authentication\Gang.Authentication.csproj" />
+    <ProjectReference Include="..\Gang.State\Gang.State.csproj" />
     <ProjectReference Include="..\Gang.WebSockets\Gang.WebSockets.csproj" />
   </ItemGroup>
 

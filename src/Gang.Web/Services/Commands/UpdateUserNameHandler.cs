@@ -1,27 +1,21 @@
-using Antix.Handlers;
-using Gang.Commands;
+using Gang.State.Commands;
 using Gang.Web.Services.Commands;
+using Gang.Web.Services.State;
 using System.Threading.Tasks;
 
 namespace Gang.Web.Services
 {
     public class UpdateUserNameHandler :
-        IHandler<GangCommand<UpdateUserName>, WebGangHost>
+        IGangCommandHandler<UpdateUserName, WebGangAggregate>
     {
-        async Task IHandler<GangCommand<UpdateUserName>, WebGangHost>
-              .HandleAsync(GangCommand<UpdateUserName> command, WebGangHost host)
+        async Task<WebGangAggregate> IGangCommandHandler<UpdateUserName, WebGangAggregate>
+            .HandleAsync(
+                WebGangAggregate aggregate,
+                GangCommand<UpdateUserName> command)
         {
-            await host.UpdateUser(
-                command.Data.Name,
-                command.Audit);
-
-            await host.NotifyAsync(
-                new Notify(
-                    "success", null
-                ),
-                new[] { command.Audit.MemberId },
-                command.Audit.SequenceNumber
-            );
+            return aggregate.SetUserName(
+                command.Audit.UserId, command.Data.Name
+                );
         }
     }
 }

@@ -48,7 +48,7 @@ namespace Gang.Management
             {
                 var e = new GangManagerEvent<TEventData>(
                     data,
-                    new GangAudit(gangId, memberId, _eventSequenceNumber.Next())
+                    new GangAudit(gangId, _eventSequenceNumber.Next(), memberId)
                     );
 
                 _events.OnNext(e);
@@ -112,7 +112,7 @@ namespace Gang.Management
 
                     var sequenceNumber = BitConverter.ToUInt32(data.AsSpan()[0..4]);
 
-                    var audit = new GangAudit(parameters.GangId, gangMember.Id, sequenceNumber, gangMember.Auth?.Id)
+                    var audit = new GangAudit(parameters.GangId, sequenceNumber, gangMember.Id, gangMember.Auth?.Id)
 ;
                     await gang.HostMember
                         .HandleAsync(GangMessageTypes.Command, data[4..], audit);
@@ -134,7 +134,7 @@ namespace Gang.Management
                         ? ++commandSequenceNumber
                         : null;
 
-                    var audit = new GangAudit(parameters.GangId, gangMember.Id, sequenceNumber);
+                    var audit = new GangAudit(parameters.GangId, sequenceNumber, gangMember.Id);
 
                     var tasks = members
                         .Select(member => member

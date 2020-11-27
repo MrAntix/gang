@@ -21,13 +21,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Gang.Authentication\Gang.Authentication.csproj" />
+    <ProjectReference Include="..\Gang.State\Gang.State.csproj" />
     <ProjectReference Include="..\Gang.WebSockets\Gang.WebSockets.csproj" />
-    <ProjectReference Include="..\Gang.Web\Gang.Web.csproj" />
     <ProjectReference Include="..\Gang\Gang.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Authentication\" />
   </ItemGroup>
 
 </Project>

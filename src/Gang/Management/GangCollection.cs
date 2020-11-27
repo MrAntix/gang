@@ -7,7 +7,7 @@ namespace Gang.Management
 {
     public class GangCollection : IEnumerable<GangMemberCollection>
     {
-        static readonly object _lockObject = new object();
+        static readonly object _lockObject = new();
 
         IImmutableDictionary<string, GangMemberCollection> _gangs;
 

@@ -1,6 +1,7 @@
 using Gang.Authentication;
 using Gang.Authentication.Users;
 using Gang.Management;
+using Gang.State;
 using Gang.Web.Properties;
 using Gang.Web.Services;
 using Gang.Web.Services.State;
@@ -28,6 +29,7 @@ namespace Gang.Web
         {
             services.AddWebSocketGangs()
                 .AddGangHost<WebGangHost>()
+                .AddGangCommmands<WebGangAggregate>()
                 .AddGangManagerEventHandlers<WebGangAddedEventHandler>()
                 .AddGangAuthenticationHandler<WebGangAuthenticationHandler>()
                 .AddGangAuthenticationServices(Settings.Auth)

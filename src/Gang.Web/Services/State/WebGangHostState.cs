@@ -9,8 +9,8 @@ namespace Gang.Web.Services.State
     public class WebGangHostState
     {
         public WebGangHostState(
-            IEnumerable<WebGangUser> users,
-            IEnumerable<WebGangMessage> messages)
+            IEnumerable<WebGangUser> users = null,
+            IEnumerable<WebGangMessage> messages = null)
         {
             if (users != null
                 && users.GroupBy(u => u.Id).Any(g => g.Count() > 2))
@@ -20,15 +20,16 @@ namespace Gang.Web.Services.State
             Messages = messages?.ToImmutableList();
         }
 
+        public WebGangHostState() : this(null, null) { }
+
         public IImmutableList<WebGangUser> Users { get; }
         public IImmutableList<WebGangMessage> Messages { get; }
 
         public WebGangHostState Apply(WebGangUserCreated e)
         {
             var user = new WebGangUser(
-                e.UserId, e.Name,
-                new[] { e.MemberId.GangToString() },
-                e.Properties);
+                e.UserId, e.Name
+                );
 
             return new WebGangHostState(
                     Users.Add(user),
@@ -36,34 +37,22 @@ namespace Gang.Web.Services.State
                 );
         }
 
-        public WebGangHostState Apply(WebGangUserNameUpdated e)
+        public WebGangHostState Apply(WebGangUserNameUpdated data)
         {
-            var user = Users.First(u => u.Id == e.UserId);
+            var user = Users.First(u => u.Id == data.UserId);
 
             return new WebGangHostState(
-                    Users.Replace(user, user.Update(e)),
+                    Users.Replace(user, user.SetName(data.Name)),
                     Messages
                 );
         }
 
-        public WebGangHostState Apply(WebGangUserMemberIdsUpdated e)
+        public WebGangHostState Apply(WebGangMessageAdded data)
         {
-            var user = Users.First(u => u.Id == e.UserId);
-
-            return new WebGangHostState(
-                    Users.Replace(user, user.Update(e)),
-                    Messages
-                );
-        }
-
-        public WebGangHostState Apply(WebGangMessageAdded e, GangAudit a)
-        {
-            var user = Users.TryGetByMemberId(a.MemberId);
 
             var message = new WebGangMessage(
-                e.MessageId,
-                a.On, user?.Id,
-                e.Text);
+                data.Id, data.Text,
+                data.UserId, data.On);
 
             return new WebGangHostState(
                     Users,

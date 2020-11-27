@@ -1,6 +1,5 @@
 using Antix.Handlers;
 using Gang.Authentication;
-using Gang.Commands;
 using Gang.Management;
 using Gang.Management.Events;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,9 +39,7 @@ namespace Gang
             this IServiceCollection services)
             where THost : GangHostBase
         {
-            return services.AddGangFactory<THost>()
-                .AddTransient<IGangCommandExecutor<THost>, GangCommandExecutor<THost>>()
-                .AddHandlersInAssembly<IGangCommand, THost, THost>();
+            return services.AddGangFactory<THost>();
         }
 
         public static IServiceCollection AddGangAuthenticationHandler<T>(

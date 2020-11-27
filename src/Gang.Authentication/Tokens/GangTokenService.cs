@@ -93,7 +93,7 @@ namespace Gang.Authentication.Tokens
         /// </summary>
         /// <param name="arg">The argument.</param>
         /// <returns></returns>
-        /// <exception cref="System.Exception">Illegal base64url string!</exception>
+        /// <exception cref="Exception">Illegal base64url string!</exception>
         public static byte[] Base64Decode(string arg)
         {
             var s = arg;
