@@ -1,7 +1,7 @@
 namespace Gang.Web.Services.State
 {
 
-    public class WebGangUser : IHasGangIdString
+    public sealed class WebGangUser : IHasGangIdString
     {
         public WebGangUser(
             string id,

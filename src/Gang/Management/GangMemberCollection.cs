@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Gang.Management
 {
-    public class GangMemberCollection
+    public sealed class GangMemberCollection
     {
         public GangMemberCollection(
             IGangMember hostMember = null,

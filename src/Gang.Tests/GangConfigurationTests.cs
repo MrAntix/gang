@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Gang.Tests
 {
-    public class GangConfigurationTests
+    public sealed class GangConfigurationTests
     {
         [Fact]
         public void when_gang_id_is_null()

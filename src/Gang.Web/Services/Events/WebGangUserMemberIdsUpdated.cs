@@ -4,7 +4,7 @@ using System.Collections.Immutable;
 
 namespace Gang.Web.Services.Events
 {
-    public class WebGangUserMemberIdsUpdated :
+    public sealed class WebGangUserMemberIdsUpdated :
         IWebGangUserMemberIdsUpdatedEvent
     {
         public WebGangUserMemberIdsUpdated(

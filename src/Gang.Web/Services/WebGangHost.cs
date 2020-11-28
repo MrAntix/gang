@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Gang.Web.Services
 {
-    public class WebGangHost :
+    public sealed class WebGangHost :
         GangStateHost<WebGangAggregate, WebGangHostState>
     {
         public WebGangHost(

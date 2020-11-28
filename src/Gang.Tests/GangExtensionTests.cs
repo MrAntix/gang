@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Gang.Tests
 {
-    public class GangExtensionTests
+    public sealed class GangExtensionTests
     {
         [Theory]
         [InlineData(typeof(ACommand), "a")]

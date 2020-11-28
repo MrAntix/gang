@@ -8,7 +8,7 @@ namespace Gang.Tests.Management.Fakes
 {
     public sealed class FakeGangManager : IGangManager
     {
-        uint _lastEventSequenceNumber;
+        uint _version;
         readonly Subject<IGangManagerEvent> _events = new();
         public IObservable<IGangManagerEvent> Events => _events;
 
@@ -21,9 +21,10 @@ namespace Gang.Tests.Management.Fakes
 
             lock (_events)
             {
-                _events.OnNext(new GangManagerEvent<TEventData>(
-                    data,
-                    new GangAudit(gangId, ++_lastEventSequenceNumber, memberId)
+                _events.OnNext(
+                    new GangManagerEvent<TEventData>(
+                        data,
+                        new GangAudit(gangId, ++_version, memberId)
                     ));
             }
         }
@@ -42,7 +43,7 @@ namespace Gang.Tests.Management.Fakes
 
             gangMember.ConnectAsync(
                 new GangController(
-                    parameters.GangId,
+                    parameters.GangId, gangMember,
                     this,
                     null, null,
                     null

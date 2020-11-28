@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Gang.State.Commands
 {
-    public class GangCommandExecutor<TStateData> :
+    public sealed class GangCommandExecutor<TStateData> :
         IGangCommandExecutor<TStateData>
         where TStateData : class, new()
     {

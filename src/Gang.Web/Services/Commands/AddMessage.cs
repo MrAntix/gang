@@ -2,7 +2,7 @@ using System;
 
 namespace Gang.Web.Services.Commands
 {
-    public class AddMessage
+    public sealed class AddMessage
     {
         public AddMessage(
           string id,

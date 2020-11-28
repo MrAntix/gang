@@ -1,6 +1,6 @@
 namespace Gang.Management.Events
 {
-    public class GangMemberData
+    public sealed class GangMemberData
     {
         public GangMemberData(
             byte[] data

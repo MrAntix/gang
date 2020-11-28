@@ -1,6 +1,6 @@
 namespace Gang.Authentication.Users
 {
-    public class GangUserLink
+    public sealed class GangUserLink
     {
         public GangUserLink(
             string name, string emailAddress,

@@ -15,7 +15,7 @@ namespace Gang
         {
             services.AddSingleton<IGangManager, GangManager>();
             services.AddTransient<GangCollection>();
-            services.AddSingleton<IGangManagerEventSequenceNumberProvider, GangManagerInMemoryEventSequenceNumberProvider>();
+            services.AddSingleton<IGangManagerSequenceProvider, GangManagerInMemorySequenceProvider>();
 
             // default auth func, just uses the token as the member id
             services.AddSingleton<GangAuthenticationFunc>(

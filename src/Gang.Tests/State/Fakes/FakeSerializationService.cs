@@ -26,7 +26,7 @@ namespace Gang.Tests.State.Fakes
             return _deserialize[type];
         }
         public IImmutableList<DeserializeCall> DeserializeCalls { get; private set; } = ImmutableList<DeserializeCall>.Empty;
-        public class DeserializeCall
+        public sealed class DeserializeCall
         {
             public DeserializeCall(
                 byte[] value, Type type)
@@ -54,7 +54,7 @@ namespace Gang.Tests.State.Fakes
             return value;
         }
         public IImmutableList<MapCall> MapCalls { get; private set; } = ImmutableList<MapCall>.Empty;
-        public class MapCall
+        public sealed class MapCall
         {
             public MapCall(
                 object value, Type type)
@@ -74,7 +74,7 @@ namespace Gang.Tests.State.Fakes
             return Array.Empty<byte>();
         }
         public IImmutableList<SerializeCall> SerializeCalls { get; private set; } = ImmutableList<SerializeCall>.Empty;
-        public class SerializeCall
+        public sealed class SerializeCall
         {
             public SerializeCall(
                 object value)

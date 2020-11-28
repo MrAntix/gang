@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Gang.Web.Services
 {
-    public class WebGangAuthenticationHandler :
+    public sealed class WebGangAuthenticationHandler :
         IGangAuthenticationHandler
     {
         const int MAX_USERS = 10;

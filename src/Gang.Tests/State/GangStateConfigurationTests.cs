@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Gang.Tests.State
 {
-    public class GangStateConfigurationTests
+    public sealed class GangStateConfigurationTests
     {
         const string GANG_ID = "GANG_ID";
         const string USER_ID = "USER_ID";

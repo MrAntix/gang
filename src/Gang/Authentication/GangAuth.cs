@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 
 namespace Gang.Authentication
 {
-    public class GangAuth
+    public sealed class GangAuth
     {
         public GangAuth(
             string id,

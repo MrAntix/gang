@@ -1,6 +1,6 @@
 namespace Gang.Web.Services.Commands
 {
-    public class Notify
+    public sealed class Notify
     {
         public Notify(
             string type,

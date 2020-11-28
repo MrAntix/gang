@@ -40,7 +40,7 @@ namespace Gang.Tests.State.Fakes
         }
 
         public IImmutableList<ExecuteCall> ExecuteCalls { get; private set; } = ImmutableList<ExecuteCall>.Empty;
-        public class ExecuteCall
+        public sealed class ExecuteCall
         {
             public ExecuteCall(GangState<TodosState> state, byte[] bytes, GangAudit audit)
             {

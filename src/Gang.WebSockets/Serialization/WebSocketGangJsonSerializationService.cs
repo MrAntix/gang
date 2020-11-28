@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Gang.WebSockets.Serialization
 {
-    public class WebSocketGangJsonSerializationService :
+    public sealed class WebSocketGangJsonSerializationService :
         IGangSerializationService
     {
         readonly JsonSerializerSettings _jsonSerializerSettings;

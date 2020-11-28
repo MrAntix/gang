@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Gang.Tests.State
 {
-    public class GangStateHostTests
+    public sealed class GangStateHostTests
     {
         const string TODO_ID = "TODO_ID";
         const string GANG_ID = "GANG_ID";
@@ -94,7 +94,7 @@ namespace Gang.Tests.State
 
         async Task<GangStateHost<TodosState>> GetManagedHostAsync(
             IGangCommandExecutor<TodosState> executor = null,
-            IGangStateStore<TodosState> store = null)
+            IGangStateStore store = null)
         {
             var host = new GangStateHost<TodosState>(
                 executor ?? GetExecutor(),

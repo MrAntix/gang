@@ -2,7 +2,7 @@ using System;
 
 namespace Gang.Web.Services.Events
 {
-    public class WebGangMessageAdded
+    public sealed class WebGangMessageAdded
     {
         public WebGangMessageAdded(
             string id, string text,

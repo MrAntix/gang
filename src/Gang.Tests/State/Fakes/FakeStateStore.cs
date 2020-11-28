@@ -1,24 +1,34 @@
 using Gang.State;
+using Gang.State.Events;
 using Gang.State.Storage;
 using Gang.Tests.State.Todos;
+using System;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
 
 namespace Gang.Tests.State.Fakes
 {
     public sealed class FakeStateStore :
-        IGangStateStore<TodosState>
+        IGangStateStore
     {
-        public Task CommitAsync(
-            string gangId, GangState<TodosState> state, GangAudit audit)
+        public Task<GangState<TStateData>> CommitAsync<TStateData>(
+            string gangId, GangState<TStateData> state, GangAudit audit)
+            where TStateData : class, new()
         {
-            CommitCalls = CommitCalls.Add(new CommitCall(gangId, state, audit));
+            var typedState = state as GangState<TodosState>;
+            CommitCalls = CommitCalls.Add(
+                new CommitCall(gangId, typedState, audit));
 
-            return Task.CompletedTask;
+            return Task.FromResult(
+                new GangState<TStateData>(
+                    typedState.Data as TStateData,
+                    typedState.Version
+                    )
+                );
         }
 
         public IImmutableList<CommitCall> CommitCalls { get; private set; } = ImmutableList<CommitCall>.Empty;
-        public class CommitCall
+        public sealed class CommitCall
         {
             public CommitCall(
                 string gangId, GangState<TodosState> state, GangAudit audit)
@@ -34,18 +44,18 @@ namespace Gang.Tests.State.Fakes
         }
 
 
-        public Task<GangState<TodosState>> RestoreAsync(
+        Task<GangState<TStateData>> IGangStateStore.RestoreAsync<TStateData>(
             string gangId)
         {
             RestoreCalls = RestoreCalls.Add(new RestoreCall(gangId));
 
             return Task.FromResult(
-                new GangState<TodosState>()
+                new GangState<TStateData>()
                 );
         }
 
         public IImmutableList<RestoreCall> RestoreCalls { get; private set; } = ImmutableList<RestoreCall>.Empty;
-        public class RestoreCall
+        public sealed class RestoreCall
         {
             public RestoreCall(
                 string gangId)
@@ -54,6 +64,11 @@ namespace Gang.Tests.State.Fakes
             }
 
             public string GangId { get; }
+        }
+
+        IDisposable IGangStateStore.Subscribe(Func<IGangEvent, Task> observer, uint? startSequenceNumber)
+        {
+            throw new NotImplementedException();
         }
     }
 }

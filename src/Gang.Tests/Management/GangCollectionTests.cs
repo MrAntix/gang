@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Gang.Tests.Management
 {
-    public class GangCollectionTests
+    public sealed class GangCollectionTests
     {
         const string GANG_ID = "GANG_ID";
 

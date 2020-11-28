@@ -5,7 +5,7 @@ using System.Collections.Immutable;
 
 namespace Gang.Authentication.Users
 {
-    public class GangUser :
+    public sealed class GangUser :
         IHasGangIdString
     {
         public GangUser(

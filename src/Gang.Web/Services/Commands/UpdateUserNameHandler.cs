@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Gang.Web.Services
 {
-    public class UpdateUserNameHandler :
+    public sealed class UpdateUserNameHandler :
         IGangCommandHandler<UpdateUserName, WebGangAggregate>
     {
         async Task<WebGangAggregate> IGangCommandHandler<UpdateUserName, WebGangAggregate>

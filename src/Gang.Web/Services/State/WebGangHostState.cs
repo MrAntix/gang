@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Gang.Web.Services.State
 {
-    public class WebGangHostState
+    public sealed class WebGangHostState
     {
         public WebGangHostState(
             IEnumerable<WebGangUser> users = null,

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Gang.Authentication
 {
-    public class GangAuthenticationService :
+    public sealed class GangAuthenticationService :
         IGangAuthenticationService
     {
         private readonly ILogger<GangAuthenticationService> _logger;

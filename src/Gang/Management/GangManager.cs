@@ -15,7 +15,7 @@ namespace Gang.Management
         readonly ILogger<GangManager> _logger;
         readonly GangCollection _gangs;
         readonly IGangSerializationService _serializer;
-        readonly IGangManagerEventSequenceNumberProvider _eventSequenceNumber;
+        readonly IGangManagerSequenceProvider _sequence;
         readonly Executor<IGangManagerEvent> _eventExecutor;
         readonly Subject<IGangManagerEvent> _events;
 
@@ -23,14 +23,14 @@ namespace Gang.Management
             ILogger<GangManager> logger,
             GangCollection gangs,
             IGangSerializationService serializer,
-            IGangManagerEventSequenceNumberProvider eventSequenceNumber,
+            IGangManagerSequenceProvider sequence,
             Executor<IGangManagerEvent> eventExecutor = null
             )
         {
             _logger = logger;
             _gangs = gangs;
             _serializer = serializer;
-            _eventSequenceNumber = eventSequenceNumber;
+            _sequence = sequence;
             _eventExecutor = eventExecutor;
             _events = new Subject<IGangManagerEvent>();
         }
@@ -48,7 +48,7 @@ namespace Gang.Management
             {
                 var e = new GangManagerEvent<TEventData>(
                     data,
-                    new GangAudit(gangId, _eventSequenceNumber.Next(), memberId)
+                    new GangAudit(gangId, _sequence.Next(), memberId)
                     );
 
                 _events.OnNext(e);
@@ -101,10 +101,9 @@ namespace Gang.Management
                 await gangMember.HandleAsync(GangMessageTypes.Authenticate, gangMember.Auth?.Token?.GangToBytes());
 
             RaiseEvent(new GangMemberAdded(), gangId, gangMember.Id);
-            uint? commandSequenceNumber = 0;
 
             var controller = new GangController(
-                parameters.GangId, this,
+                parameters.GangId, gangMember, this,
                 async (data) =>
                 {
                     if (gangMember == gang.HostMember)
@@ -119,7 +118,7 @@ namespace Gang.Management
 
                     RaiseEvent(new GangMemberData(data), gangId, gangMember.Id);
                 },
-                async (type, data, memberIds) =>
+                async (type, data, audit, memberIds) =>
                 {
                     var gang = _gangs[parameters.GangId];
                     if (gangMember != gang.HostMember)
@@ -129,12 +128,6 @@ namespace Gang.Management
                         ? gang.OtherMembers
                         : gang.OtherMembers
                             .Where(m => memberIds.Any(mId => mId.SequenceEqual(m.Id)));
-
-                    var sequenceNumber = type == GangMessageTypes.Command
-                        ? ++commandSequenceNumber
-                        : null;
-
-                    var audit = new GangAudit(parameters.GangId, sequenceNumber, gangMember.Id);
 
                     var tasks = members
                         .Select(member => member

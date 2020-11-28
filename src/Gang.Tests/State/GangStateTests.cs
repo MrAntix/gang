@@ -4,18 +4,17 @@ using Gang.Tests.State.Todos;
 using Gang.Tests.State.Todos.Add;
 using Gang.Tests.State.Todos.Complete;
 using System;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Gang.Tests.State
 {
-    public class GangStateTests
+    public sealed class GangStateTests
     {
         const string TODO_ID = "TODO_ID";
         const string GANG_ID = "GANG_ID";
 
         [Fact]
-        public async Task generates_events()
+        public void generates_events()
         {
             var state = new GangState<TodosState>()
                 .AddTodo(TODO_ID)
@@ -27,7 +26,7 @@ namespace Gang.Tests.State
         }
 
         [Fact]
-        public async Task uncommitted_as_sequence()
+        public void uncommitted_as_sequence()
         {
             var state = new GangState<TodosState>()
                 .AddTodo(TODO_ID)
@@ -39,12 +38,12 @@ namespace Gang.Tests.State
                 );
 
             Assert.Equal(2, events.Count);
-            Assert.Equal(11U, events[0].Audit.SequenceNumber);
-            Assert.Equal(12U, events[1].Audit.SequenceNumber);
+            Assert.Equal(11U, events[0].Audit.Sequence);
+            Assert.Equal(12U, events[1].Audit.Sequence);
         }
 
         [Fact]
-        public async Task apply_events()
+        public void apply_events()
         {
             var events = GangEvent.SequenceFrom(
                     new object[]

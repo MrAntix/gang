@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Gang.Authentication.Api
 {
-    public class GangAuthenticationController :
+    public sealed class GangAuthenticationController :
         Controller
     {
         readonly ILogger<GangAuthenticationController> _logger;

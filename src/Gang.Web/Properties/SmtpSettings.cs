@@ -1,6 +1,6 @@
 namespace Gang.Web.Properties
 {
-    public class SmtpSettings
+    public sealed class SmtpSettings
     {
         public string Host { get; set; }
         public int Port { get; set; }

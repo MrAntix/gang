@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Gang.Tests.Management.Fakes
 {
 
-    public class FakeGangMember : IGangMember
+    public sealed class FakeGangMember : IGangMember
     {
         public FakeGangMember(
              string id,
@@ -52,7 +52,7 @@ namespace Gang.Tests.Management.Fakes
         Task IGangMember.HandleAsync(GangMessageTypes type,
             byte[] data, GangAudit audit)
         {
-            MessagesReceived.Add(new Message(type, data, audit?.SequenceNumber));
+            MessagesReceived.Add(new Message(type, data, audit?.Sequence));
             return Task.CompletedTask;
         }
 
@@ -63,19 +63,19 @@ namespace Gang.Tests.Management.Fakes
             GC.SuppressFinalize(this);
         }
 
-        public class Message
+        public sealed class Message
         {
             public Message(
-                GangMessageTypes type, byte[] data, uint? sequenceNumber)
+                GangMessageTypes type, byte[] data, uint? version)
             {
                 Type = type;
                 Data = data;
-                SequenceNumber = sequenceNumber;
+                Version = version;
             }
 
             public GangMessageTypes Type { get; }
             public byte[] Data { get; }
-            public uint? SequenceNumber { get; }
+            public uint? Version { get; }
         }
     }
 }

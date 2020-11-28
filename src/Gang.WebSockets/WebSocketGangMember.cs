@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Gang.WebSockets
 {
-    public class WebSocketGangMember : IGangMember
+    public sealed class WebSocketGangMember : IGangMember
     {
         readonly TaskQueue _sendQueue;
         readonly WebSocket _webSocket;
@@ -77,9 +77,9 @@ namespace Gang.WebSockets
                         new[] { (byte)type },
                         WebSocketMessageType.Binary, data == null, CancellationToken.None);
 
-                    if (audit?.SequenceNumber != null)
+                    if (audit?.Sequence != null)
                         await _webSocket.SendAsync(
-                            BitConverter.GetBytes(audit.SequenceNumber.Value),
+                            BitConverter.GetBytes(audit.Sequence.Value),
                             WebSocketMessageType.Binary, data == null, CancellationToken.None);
 
                     if (data != null)

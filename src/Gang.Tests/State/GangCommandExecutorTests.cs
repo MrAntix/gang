@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Gang.Tests.State
 {
-    public class GangCommandExecutorTests
+    public sealed class GangCommandExecutorTests
     {
         const string GANG_ID = "GANG_ID";
         const string TYPE_NAME = "object";
@@ -66,7 +66,7 @@ namespace Gang.Tests.State
             return new FakeSerializationService();
         }
 
-        IGangCommandExecutor<TodosState> GetExecutor(
+        static IGangCommandExecutor<TodosState> GetExecutor(
             IGangSerializationService serialization = null)
         {
             return new GangCommandExecutor<TodosState>(

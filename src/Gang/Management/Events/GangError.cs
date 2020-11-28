@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 
 namespace Gang.Management.Events
 {
-    public class GangError
+    public sealed class GangError
     {
         public GangError(
             object eventData,

@@ -2,7 +2,7 @@ using System;
 
 namespace Gang.Web.Services.State
 {
-    public class WebGangMessage
+    public sealed class WebGangMessage
     {
         public WebGangMessage(
             string id, string text,

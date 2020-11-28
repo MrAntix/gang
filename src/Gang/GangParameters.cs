@@ -1,6 +1,6 @@
 namespace Gang
 {
-    public class GangParameters
+    public sealed class GangParameters
     {
         public GangParameters(
             string gangId,

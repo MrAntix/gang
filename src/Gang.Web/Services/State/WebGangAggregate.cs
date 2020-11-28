@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Gang.Web.Services.State
 {
-    public class WebGangAggregate :
+    public sealed class WebGangAggregate :
         GangAggregateBase<WebGangAggregate, WebGangHostState>
     {
         public WebGangAggregate(

@@ -28,7 +28,7 @@ namespace Gang.Tests.State.Fakes
         }
 
         public IImmutableList<HandleCall> HandleCalls { get; private set; } = ImmutableList<HandleCall>.Empty;
-        public class HandleCall
+        public sealed class HandleCall
         {
             public HandleCall(
                 GangState<TodosState> state, GangCommand<object> command)

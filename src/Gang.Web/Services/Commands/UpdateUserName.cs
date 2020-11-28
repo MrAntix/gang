@@ -1,6 +1,6 @@
 namespace Gang.Web.Services.Commands
 {
-    public class UpdateUserName
+    public sealed class UpdateUserName
     {
         public UpdateUserName(
             string name)

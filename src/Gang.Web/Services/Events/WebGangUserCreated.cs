@@ -1,6 +1,6 @@
 namespace Gang.Web.Services.Events
 {
-    public class WebGangUserCreated
+    public sealed class WebGangUserCreated
     {
         public WebGangUserCreated(
             string userId,

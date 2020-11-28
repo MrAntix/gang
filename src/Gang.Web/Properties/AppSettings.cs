@@ -1,6 +1,6 @@
-﻿namespace Gang.Web.Properties
+namespace Gang.Web.Properties
 {
-    public class AppSettings
+    public sealed class AppSettings
     {
         public string RootUrl { get; set; }
     }

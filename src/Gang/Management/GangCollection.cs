@@ -5,7 +5,7 @@ using System.Collections.Immutable;
 
 namespace Gang.Management
 {
-    public class GangCollection : IEnumerable<GangMemberCollection>
+    public sealed class GangCollection : IEnumerable<GangMemberCollection>
     {
         static readonly object _lockObject = new();
 

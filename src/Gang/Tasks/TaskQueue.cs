@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gang.Tasks
 {
-    public class TaskQueue
+    public sealed class TaskQueue
     {
         readonly SemaphoreSlim _semaphore;
 

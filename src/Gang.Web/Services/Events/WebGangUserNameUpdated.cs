@@ -2,7 +2,7 @@ using Gang.Web.Services.State;
 
 namespace Gang.Web.Services.Events
 {
-    public class WebGangUserNameUpdated :
+    public sealed class WebGangUserNameUpdated :
         IWebGangUserChangeName
     {
         public WebGangUserNameUpdated(

@@ -4,7 +4,7 @@ using System.Collections.Immutable;
 
 namespace Gang.Authentication.Tokens
 {
-    public class GangTokenData
+    public sealed class GangTokenData
     {
         public GangTokenData(
             string id, DateTimeOffset expires,

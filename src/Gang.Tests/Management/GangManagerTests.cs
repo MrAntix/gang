@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Gang.Tests.Management
 {
-    public class GangManagerTests
+    public sealed class GangManagerTests
     {
         readonly GangParameters _gangParameters = new("gangId", null);
 
@@ -92,7 +92,7 @@ namespace Gang.Tests.Management
             await otherMember.Controller.ReceiveAsync(BitConverter.GetBytes(sequenceNumber));
 
             Assert.Equal(GangMessageTypes.Command, hostMember.MessagesReceived[2].Type);
-            Assert.Equal(sequenceNumber, hostMember.MessagesReceived[2].SequenceNumber.Value);
+            Assert.Equal(sequenceNumber, hostMember.MessagesReceived[2].Version.Value);
         }
 
         [Fact]
@@ -173,7 +173,7 @@ namespace Gang.Tests.Management
                 NullLogger<GangManager>.Instance,
                 gangs ?? new GangCollection(),
                 new WebSocketGangJsonSerializationService(),
-                new GangManagerInMemoryEventSequenceNumberProvider(),
+                new GangManagerInMemorySequenceProvider(),
                 executor
                 );
         }

@@ -1,6 +1,6 @@
 namespace Gang.Management.Events
 {
-    public class GangMemberAdded
+    public sealed class GangMemberAdded
     {
     }
 }

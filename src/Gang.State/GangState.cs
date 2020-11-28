@@ -67,10 +67,8 @@ namespace Gang.State
                 (s, e) =>
                 {
                     version++;
-                    if (version != e.Audit.SequenceNumber)
-                        throw new GangEventSequenceException(
-                            version, e.Audit.SequenceNumber
-                            );
+                    if (version != e.Audit.Sequence)
+                        throw new GangStateVersionException(version, e.Audit);
 
                     return _applyMethods[e.Data.GetType()](s, e.Data);
                 });

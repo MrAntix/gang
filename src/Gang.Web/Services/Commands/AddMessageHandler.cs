@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Gang.Web.Services
 {
-    public class AddMessageHandler :
+    public sealed class AddMessageHandler :
         IGangCommandHandler<AddMessage, WebGangAggregate>
     {
         async Task<WebGangAggregate> IGangCommandHandler<AddMessage, WebGangAggregate>

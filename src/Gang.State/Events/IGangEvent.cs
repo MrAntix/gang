@@ -4,5 +4,6 @@ namespace Gang.State.Events
     {
         object Data { get; }
         GangAudit Audit { get; }
+        uint Sequence { get; }
     }
 }

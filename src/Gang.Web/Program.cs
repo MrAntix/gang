@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Gang.Web
 {
-    public class Program
+    public sealed class Program
     {
         public static void Main(string[] args)
         {

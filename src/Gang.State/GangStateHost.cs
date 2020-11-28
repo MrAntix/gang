@@ -11,12 +11,12 @@ namespace Gang.State
         where TStateData : class, new()
     {
         readonly IGangCommandExecutor<TStateData> _executor;
-        readonly IGangStateStore<TStateData> _store;
+        readonly IGangStateStore _store;
         readonly TaskQueue _tasks = new();
 
         public GangStateHost(
             IGangCommandExecutor<TStateData> executor,
-            IGangStateStore<TStateData> store
+            IGangStateStore store
            )
         {
             _executor = executor;
@@ -28,7 +28,7 @@ namespace Gang.State
         protected override async Task OnConnectAsync()
         {
             State = await _store
-                .RestoreAsync(Controller.GangId);
+                .RestoreAsync<TStateData>(Controller.GangId);
         }
 
         protected override async Task OnCommandAsync(

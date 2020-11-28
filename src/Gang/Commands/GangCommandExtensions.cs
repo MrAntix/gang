@@ -21,20 +21,20 @@ namespace Gang.Commands
             this IGangController controller,
             object data,
             IEnumerable<byte[]> memberIds = null,
-            uint? replySequenceNumber = null)
+            uint? replySequence = null)
         {
             if (data is null)
                 throw new ArgumentNullException(nameof(data));
 
             return controller.SendCommandAsync(
                 data.GetType().GetCommandTypeName(), data,
-                memberIds, replySequenceNumber);
+                memberIds, replySequence);
         }
 
         public static byte[] SerializeCommandData(
             this IGangSerializationService service,
             string type, object data,
-            uint? replySequenceNumber = null)
+            uint? replySequence = null)
         {
             if (data is null)
                 throw new ArgumentNullException(nameof(data));
@@ -42,38 +42,38 @@ namespace Gang.Commands
             return service.Serialize(new GangCommandWrapper(
                         type,
                         data,
-                        replySequenceNumber
+                        replySequence
                     ));
         }
 
         public static byte[] SerializeCommandData(
             this IGangSerializationService service,
             object data,
-            uint? replySequenceNumber = null)
+            uint? replySequence = null)
         {
             if (data is null)
                 throw new ArgumentNullException(nameof(data));
 
             return service.SerializeCommandData(
                         data.GetType().GetCommandTypeName(), data,
-                        replySequenceNumber
+                        replySequence
                     );
         }
 
         public static byte[] SerializeCommand(
             this IGangSerializationService service,
-            uint sequenceNumber,
+            uint sequence,
             string type, object data,
-            uint? replySequenceNumber = null)
+            uint? replySequence = null)
         {
             if (data is null)
                 throw new ArgumentNullException(nameof(data));
 
-            return BitConverter.GetBytes(sequenceNumber)
+            return BitConverter.GetBytes(sequence)
                     .Concat(service.SerializeCommandData(
                         type,
                         data,
-                        replySequenceNumber
+                        replySequence
                     ))
                     .ToArray();
         }
@@ -82,7 +82,7 @@ namespace Gang.Commands
             this IGangSerializationService service,
             uint sequenceNumber,
             object data,
-            uint? replySequenceNumber = null)
+            uint? replySequence = null)
         {
             if (data is null)
                 throw new ArgumentNullException(nameof(data));
@@ -90,7 +90,7 @@ namespace Gang.Commands
             return service.SerializeCommand(
                   sequenceNumber,
                   data.GetType().GetCommandTypeName(), data,
-                  replySequenceNumber
+                  replySequence
                   );
         }
     }
