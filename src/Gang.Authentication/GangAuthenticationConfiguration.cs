@@ -51,6 +51,7 @@ namespace Gang.Authentication
 
             return services
                 .AddSingleton(settings)
+                .AddGangAuthenticationHandler<GangAuthenticationHandler>()
                 .AddTransient<IGangAuthenticationService, GangAuthenticationService>()
                 .AddTransient<IGangTokenService, GangTokenService>();
         }

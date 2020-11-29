@@ -31,11 +31,31 @@ namespace Gang.State
         public IImmutableList<object> Uncommitted { get; }
         public IImmutableList<string> Errors { get; }
 
+        public GangState<TData> Assert(
+            string nullOrFailMessage,
+            string overrideFailMessage = null)
+        {
+            return nullOrFailMessage == null
+                ? this
+                : RaiseErrors(overrideFailMessage ?? nullOrFailMessage);
+        }
+
+        public GangState<TData> Assert(
+            bool assertion,
+            string failMessage = null)
+        {
+            return assertion
+                ? this
+                : RaiseErrors(failMessage);
+        }
+
         public GangState<TData> RaiseEvent<TEventData>(
             TEventData eventData,
             Func<TEventData, TData> apply)
         {
-            return new GangState<TData>(
+            return Errors?.Any() ?? false
+                ? this
+                : new GangState<TData>(
                     apply(eventData),
                     Version + 1,
                     Uncommitted.Append(eventData),
@@ -48,7 +68,7 @@ namespace Gang.State
         {
             return new GangState<TData>(
                 Data, Version, Uncommitted,
-                errors
+                Errors?.Concat(errors) ?? errors
                 );
         }
 

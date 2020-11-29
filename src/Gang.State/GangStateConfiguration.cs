@@ -1,4 +1,5 @@
 using Gang.State.Commands;
+using Gang.State.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Linq;
@@ -24,9 +25,31 @@ namespace Gang.State
             )
             where TStateData : class, new()
         {
+            services.TryAddSingleton<IGangCommandExecutor<TStateData>, GangCommandExecutor<TStateData>>();
+
             return services
-                .AddGangCommandExecutor<TStateData>()
                 .AddGangCommandHandlers<TStateData>();
+        }
+
+        /// <summary>
+        /// Adds services for TStateData, including;
+        ///
+        /// Command Executor
+        /// Command handlers in same assembly as TStateData
+        /// 
+        /// </summary>
+        /// <typeparam name="TStateData">State</typeparam>
+        /// <param name="services">Services collection</param>
+        /// <returns>Services collection</returns>
+        public static IServiceCollection AddGangStateInMemory<TStateData>(
+            this IServiceCollection services
+            )
+            where TStateData : class, new()
+        {
+
+            return services
+                .AddSingleton<IGangStateStore, InMemoryGangStateStore>()
+                .AddGangState<TStateData>();
         }
 
         public static IServiceCollection AddGangCommandExecutor<TStateData>(
@@ -34,9 +57,8 @@ namespace Gang.State
             )
             where TStateData : class, new()
         {
-            services.TryAddSingleton<IGangCommandExecutor<TStateData>, GangCommandExecutor<TStateData>>();
-
-            return services;
+            return services
+                .AddSingleton<IGangCommandExecutor<TStateData>, GangCommandExecutor<TStateData>>();
         }
 
         public static IServiceCollection AddGangCommandHandlers<TStateData, TAssemblyOf>(

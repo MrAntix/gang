@@ -17,12 +17,12 @@ namespace Gang
             return Task.CompletedTask;
         }
 
-        protected virtual Task OnMemberConnectAsync(byte[] memberId)
+        protected virtual Task OnMemberConnectAsync(GangAudit audit)
         {
             return Task.CompletedTask;
         }
 
-        protected virtual Task OnMemberDisconnectAsync(byte[] memberId)
+        protected virtual Task OnMemberDisconnectAsync(GangAudit audit)
         {
             return Task.CompletedTask;
         }
@@ -55,11 +55,11 @@ namespace Gang
             switch (type)
             {
                 case GangMessageTypes.Connect:
-                    await OnMemberConnectAsync(data);
+                    await OnMemberConnectAsync(audit);
 
                     break;
                 case GangMessageTypes.Disconnect:
-                    await OnMemberDisconnectAsync(data);
+                    await OnMemberDisconnectAsync(audit);
 
                     break;
                 case GangMessageTypes.Command:

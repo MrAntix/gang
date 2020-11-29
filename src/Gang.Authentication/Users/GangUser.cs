@@ -127,10 +127,10 @@ namespace Gang.Authentication.Users
     {
         public GangUserToken(
             string value,
-            DateTimeOffset? expiry)
+            DateTimeOffset? expiry = null)
         {
             Value = value;
-            Expires = expiry;
+            Expires = expiry ?? DateTimeOffset.Now.AddMinutes(5);
         }
 
         public string Value { get; }

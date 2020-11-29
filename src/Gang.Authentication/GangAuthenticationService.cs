@@ -83,7 +83,8 @@ namespace Gang.Authentication
             if (auth == null
                 || auth.Expires < DateTimeOffset.Now) return null;
 
-            var user = await _users.TryGetByEmailAddressAsync(auth.EmailAddress);
+            var user = await _users.TryGetAsync(auth.Id);
+            //var user = await _users.TryGetByEmailAddressAsync(auth.EmailAddress);
             if (user == null) return null;
 
             if (!_tokens.Verify(token, user.Secret)) return null;

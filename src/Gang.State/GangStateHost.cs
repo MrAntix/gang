@@ -24,11 +24,35 @@ namespace Gang.State
         }
 
         public GangState<TStateData> State { get; private set; }
+        public async Task SetState(
+            GangState<TStateData> result, GangAudit audit = null)
+        {
+            if (result.Errors == null)
+            {
+                State = await OnStateAsync(result);
+
+                State = await _store
+                    .CommitAsync(Controller.GangId, State, audit);
+            }
+            else
+            {
+                await OnCommandErrorAsync(result, audit);
+            }
+        }
+
+        protected virtual Task<GangState<TStateData>> OnStateAsync(
+            GangState<TStateData> state)
+        {
+            return Task.FromResult(
+                    state
+                );
+        }
 
         protected override async Task OnConnectAsync()
         {
             State = await _store
-                .RestoreAsync<TStateData>(Controller.GangId);
+                    .RestoreAsync<TStateData>(Controller.GangId)
+                ?? new GangState<TStateData>();
         }
 
         protected override async Task OnCommandAsync(
@@ -39,21 +63,12 @@ namespace Gang.State
                 var result = await _executor
                     .ExecuteAsync(State, bytes, audit);
 
-                if (result.Errors == null)
-                {
-                    State = result;
-
-                    await _store
-                        .CommitAsync(Controller.GangId, State, audit);
-                }
-                else
-                {
-                    await OnCommandErrorAsync(result);
-                }
+                await SetState(result, audit);
             });
         }
 
-        protected virtual Task OnCommandErrorAsync(GangState<TStateData> result)
+        protected virtual Task OnCommandErrorAsync(
+            GangState<TStateData> result, GangAudit audit)
         {
             Debug.WriteLine("Command Errors");
 

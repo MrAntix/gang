@@ -20,6 +20,7 @@ namespace Gang.State.Commands
 
         public static GangCommandHandler<TStateData> From<TCommandData>(
             IGangCommandHandler<TStateData, TCommandData> handler)
+            where TCommandData : class
         {
             return new GangCommandHandler<TStateData>(
                 typeof(TCommandData),
@@ -30,6 +31,7 @@ namespace Gang.State.Commands
 
         public static GangCommandHandler<TStateData> From<TCommandData>(
             Func<GangCommand<TCommandData>, GangState<TStateData>> action)
+            where TCommandData : class
         {
             return new GangCommandHandler<TStateData>(
                 typeof(TCommandData),
@@ -41,6 +43,7 @@ namespace Gang.State.Commands
 
         public static GangCommandHandler<TStateData> From<TCommandData>(
             Func<GangCommand<TCommandData>, Task<GangState<TStateData>>> action)
+            where TCommandData : class
         {
             return new GangCommandHandler<TStateData>(
                 typeof(TCommandData),
@@ -51,6 +54,7 @@ namespace Gang.State.Commands
 
         public static GangCommandHandler<TStateData> From<TCommandData>(
             Func<GangState<TStateData>, GangCommand<TCommandData>, GangState<TStateData>> action)
+            where TCommandData : class
         {
             return new GangCommandHandler<TStateData>(
                 typeof(TCommandData),
@@ -62,6 +66,7 @@ namespace Gang.State.Commands
 
         public static GangCommandHandler<TStateData> From<TCommandData>(
             Func<GangState<TStateData>, GangCommand<TCommandData>, Task<GangState<TStateData>>> action)
+            where TCommandData : class
         {
             return new GangCommandHandler<TStateData>(
                 typeof(TCommandData),

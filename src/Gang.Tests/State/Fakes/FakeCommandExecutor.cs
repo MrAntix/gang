@@ -55,11 +55,13 @@ namespace Gang.Tests.State.Fakes
         }
 
         public IGangCommandExecutor<TodosState> RegisterHandler<TCommandData>(GangCommandHandler<TodosState> handler)
+            where TCommandData : class
         {
             throw new NotImplementedException();
         }
 
         public IGangCommandExecutor<TodosState> RegisterHandlerProvider<TCommandData>(Func<IGangCommandHandler<TodosState, TCommandData>> provider)
+            where TCommandData : class
         {
             throw new NotImplementedException();
         }

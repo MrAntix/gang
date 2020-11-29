@@ -7,7 +7,9 @@ namespace Gang.State.Commands
         where TStateData : class, new()
     {
         Task<GangState<TStateData>> ExecuteAsync(GangState<TStateData> state, byte[] bytes, GangAudit audit);
-        IGangCommandExecutor<TStateData> RegisterHandler<TCommandData>(GangCommandHandler<TStateData> handler);
-        IGangCommandExecutor<TStateData> RegisterHandlerProvider<TCommandData>(Func<IGangCommandHandler<TStateData, TCommandData>> provider);
+        IGangCommandExecutor<TStateData> RegisterHandler<TCommandData>(GangCommandHandler<TStateData> handler)
+            where TCommandData : class;
+        IGangCommandExecutor<TStateData> RegisterHandlerProvider<TCommandData>(Func<IGangCommandHandler<TStateData, TCommandData>> provider)
+            where TCommandData : class;
     }
 }

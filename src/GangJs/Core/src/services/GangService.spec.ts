@@ -26,7 +26,7 @@ describe('GangService', () => {
 
       const parts: BlobPart[] = [type];
       if (sn != null) {
-        const snPart = new Uint32Array(2);
+        const snPart = new Uint32Array(1);
         snPart[0] = sn;
         parts.push(snPart);
       }

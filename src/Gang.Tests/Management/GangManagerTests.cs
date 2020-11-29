@@ -1,4 +1,4 @@
-using Antix.Handlers;
+using Gang.Events;
 using Gang.Management;
 using Gang.Management.Events;
 using Gang.Tests.Management.Fakes;
@@ -144,7 +144,7 @@ namespace Gang.Tests.Management
             var ex = default(Exception);
             var a = new AutoResetEvent(false);
 
-            var executor = new Executor<IGangManagerEvent>()
+            var executor = new GangEventExecutor<IGangManagerEvent>()
                 .AddHandler<GangManagerEvent<GangAdded>>(async e =>
                 {
                     await Task.Delay(500);
@@ -167,7 +167,7 @@ namespace Gang.Tests.Management
 
         static IGangManager GetGangManager(
             GangCollection gangs = null,
-            Executor<IGangManagerEvent> executor = null)
+            GangEventExecutor<IGangManagerEvent> executor = null)
         {
             return new GangManager(
                 NullLogger<GangManager>.Instance,

@@ -1,4 +1,4 @@
-using Antix.Handlers;
+using Gang.Events;
 using Gang.Management.Events;
 using Gang.Serialization;
 using Microsoft.Extensions.Logging;
@@ -16,7 +16,7 @@ namespace Gang.Management
         readonly GangCollection _gangs;
         readonly IGangSerializationService _serializer;
         readonly IGangManagerSequenceProvider _sequence;
-        readonly Executor<IGangManagerEvent> _eventExecutor;
+        readonly GangEventExecutor<IGangManagerEvent> _eventExecutor;
         readonly Subject<IGangManagerEvent> _events;
 
         public GangManager(
@@ -24,7 +24,7 @@ namespace Gang.Management
             GangCollection gangs,
             IGangSerializationService serializer,
             IGangManagerSequenceProvider sequence,
-            Executor<IGangManagerEvent> eventExecutor = null
+            GangEventExecutor<IGangManagerEvent> eventExecutor = null
             )
         {
             _logger = logger;
@@ -81,22 +81,19 @@ namespace Gang.Management
                 throw new ArgumentNullException(nameof(gangMember));
 
             var gangId = parameters.GangId;
-            var gang = _gangs[gangId];
-
-            gang = _gangs.AddMemberToGang(
-               parameters.GangId, gangMember,
+            var gang = _gangs.AddMemberToGang(parameters.GangId, gangMember,
                _ => RaiseEvent(new GangAdded(), gangId));
 
+            var audit = new GangAudit(parameters.GangId, null, gangMember.Id, gangMember.Auth?.Id);
             if (gang.HostMember == gangMember)
             {
-                await gangMember.HandleAsync(GangMessageTypes.Host, gangMember.Id);
+                await gangMember.HandleAsync(GangMessageTypes.Host, gangMember.Id, audit);
             }
             else
             {
-                await gang.HostMember.HandleAsync(GangMessageTypes.Connect, gangMember.Id);
-                await gangMember.HandleAsync(GangMessageTypes.Member, gangMember.Id);
+                await gang.HostMember.HandleAsync(GangMessageTypes.Connect, null, audit);
+                await gangMember.HandleAsync(GangMessageTypes.Member, gangMember.Id, audit);
             }
-
             if (gangMember.Auth != null)
                 await gangMember.HandleAsync(GangMessageTypes.Authenticate, gangMember.Auth?.Token?.GangToBytes());
 

@@ -1,5 +1,5 @@
-using Antix.Handlers;
 using Gang.Authentication;
+using Gang.Events;
 using Gang.Management;
 using Gang.Management.Events;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,7 +43,7 @@ namespace Gang
         }
 
         public static IServiceCollection AddGangAuthenticationHandler<T>(
-                        this IServiceCollection services)
+            this IServiceCollection services)
             where T : class, IGangAuthenticationHandler
         {
             services.AddTransient<T>();

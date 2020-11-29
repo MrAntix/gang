@@ -39,7 +39,9 @@ namespace Gang.State.Storage
             .RestoreAsync<TStateData>(string gangId)
         {
             return Task.FromResult(
-                    _states[gangId] as GangState<TStateData>
+                    _states.TryGetValue(gangId, out var state)
+                    ? state as GangState<TStateData>
+                    : null
                 );
         }
 

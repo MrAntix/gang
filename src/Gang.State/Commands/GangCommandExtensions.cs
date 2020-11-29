@@ -9,6 +9,7 @@ namespace Gang.State.Commands
             this IGangCommandExecutor<TStateData> executor,
             Func<GangState<TStateData>, GangCommand<TCommandData>, Task<GangState<TStateData>>> action)
             where TStateData : class, new()
+            where TCommandData : class
         {
             return executor.RegisterHandler<TCommandData>(
                     GangCommandHandler<TStateData>.From(action)
@@ -19,6 +20,7 @@ namespace Gang.State.Commands
             this IGangCommandExecutor<TStateData> executor,
             Func<GangState<TStateData>, GangCommand<TCommandData>, GangState<TStateData>> action)
             where TStateData : class, new()
+            where TCommandData : class
         {
             return executor.RegisterHandler<TCommandData>(
                     GangCommandHandler<TStateData>.From(action)
@@ -29,6 +31,7 @@ namespace Gang.State.Commands
             this IGangCommandExecutor<TStateData> executor,
             Func<GangCommand<TCommandData>, Task<GangState<TStateData>>> action)
             where TStateData : class, new()
+            where TCommandData : class
         {
             return executor.RegisterHandler<TCommandData>(
                     GangCommandHandler<TStateData>.From(action)
@@ -39,6 +42,7 @@ namespace Gang.State.Commands
             this IGangCommandExecutor<TStateData> executor,
             Func<GangCommand<TCommandData>, GangState<TStateData>> action)
             where TStateData : class, new()
+            where TCommandData : class
         {
             return executor.RegisterHandler<TCommandData>(
                     GangCommandHandler<TStateData>.From(action)

@@ -34,14 +34,16 @@ export class GangService {
   memberId: string;
   isHost: boolean;
 
+  private connectionRetrySubject: Subject<number>;
+  private authenticateSubject: BehaviorSubject<string>;
   private memberConnectedSubject: Subject<string>;
-  private authenticateSubject: Subject<string>;
   private memberDisconnectedSubject: Subject<string>;
   private commandSubject: Subject<GangCommandWrapper<unknown>>;
   private stateSubject: BehaviorSubject<Record<string, unknown>>;
   private unsentCommands: GangCommandWrapper<unknown>[] = [];
 
   onConnection: Observable<GangConnectionState>;
+  onConnectionRetry: Observable<number>;
   onAuthenticate: Observable<string>;
   onMemberConnected: Observable<string>;
   onMemberDisconnected: Observable<string>;
@@ -56,9 +58,8 @@ export class GangService {
     this.rootUrl = `${protocol}//${host}/`;
 
     this.onConnection = this.connectionSubject = new BehaviorSubject(GangConnectionState.disconnected);
-    this.onAuthenticate = this.authenticateSubject = new BehaviorSubject<string>(
-      GangStore.get(GANG_AUTHENTICATION_TOKEN)
-    );
+    this.onConnectionRetry = this.connectionRetrySubject = new Subject<number>();
+    this.onAuthenticate = this.authenticateSubject = new BehaviorSubject<string>(GangStore.get(GANG_AUTHENTICATION_TOKEN));
     this.onMemberConnected = this.memberConnectedSubject = new Subject<string>();
     this.onMemberDisconnected = this.memberDisconnectedSubject = new Subject<string>();
     this.onCommand = this.commandSubject = new Subject<GangCommandWrapper<Record<string, unknown>>>();
@@ -150,7 +151,7 @@ export class GangService {
             break;
           }
           case 'C': {
-            const commandWrapper = data.byteLength > 9 ? JSON.parse(readString(data, 9)) : {};
+            const commandWrapper = data.byteLength > 5 ? JSON.parse(readString(data, 5)) : {};
             commandWrapper.sn = readUint32(data, 1);
             this.commandSubject.next(commandWrapper);
             break;
@@ -172,9 +173,12 @@ export class GangService {
         if (this.retry === NO_RETRY || this.retrying || this.connectionState === GangConnectionState.connected) return;
 
         GangContext.logger('GangService.retryConnect in', this.retry);
+
         this.retryingIn = this.retry;
         this.retrying = window.setInterval(() => {
           this.retryingIn--;
+          this.connectionRetrySubject.next(this.retryingIn);
+
           if (this.retryingIn === 0) {
             clearRetryConnect();
             this.connect(url, gangId, token);
@@ -192,6 +196,20 @@ export class GangService {
       }).bind(this);
 
       retryConnect();
+    });
+  }
+
+  /** Set the local current state, ie not sent to the server
+   * 
+   * @param state the passed state will be shallow merged with the current state
+   */
+  setState(state: Record<string, unknown>) {
+
+    GangStore.set(GANG_STATE, JSON.stringify(state));
+
+    this.stateSubject.next({
+      ...this.stateSubject.value,
+      ...state,
     });
   }
 
@@ -227,6 +245,7 @@ export class GangService {
   mapEvents<TState>(component: {
     disconnectedCallback?: () => void;
     onGangConnection?: (connectionState: GangConnectionState) => void;
+    onGangConnectionRetry?: (seconds: number) => void;
     onGangAuthenticate?: (token: string) => void;
     onGangState?: (state: TState) => void;
     onGangCommand?: (command: unknown) => void;
@@ -234,7 +253,7 @@ export class GangService {
     onGangMemberDisconnected?: (memberId: string) => void;
   }): void {
     const subs: { unsubscribe: () => undefined }[] = [];
-    ['Connection', 'Authenticate', 'State', 'Command', 'MemberConnected', 'MemberDisconnected'].forEach((key) => {
+    ['Connection', 'Authenticate', 'State', 'Command', 'MemberConnected', 'MemberDisconnected', 'ConnectionRetry'].forEach((key) => {
       const componentKey = `onGang${key}`;
       const serviceKey = `on${key}`;
 
