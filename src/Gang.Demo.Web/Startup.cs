@@ -1,3 +1,4 @@
+using Gang.Authentication;
 using Gang.Demo.Web.Properties;
 using Gang.Demo.Web.Services;
 using Gang.Demo.Web.Services.Events;
@@ -26,15 +27,26 @@ namespace Gang.Demo.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddWebSocketGangs()
+            services
+                .AddSingleton(Settings.App)
+                .AddSingleton(Settings.Auth)
+                .AddSingleton(Settings.Smtp)
+                .AddWebSocketGangs()
                 .AddGangManagerEventHandlers<GangAddedHandler>()
-                //.AddGangAuthenticationServices<UserStore>(Settings.Auth)
-                .AddGangAuthenticationHandler<AuthenticationHandler>()
                 .AddGangHost<HostMember>()
                 .AddGangStateInMemory<HostState>()
-                .AddSingleton(Settings.App)
-                .AddSingleton(Settings.Smtp)
                 .AddTransient<ISmtpService, SmtpService>();
+
+            if (Settings.Auth.Enabled)
+            {
+                services
+                    .AddGangAuthenticationServices<UserStore>(Settings.Auth);
+            }
+            else
+            {
+                services
+                    .AddGangAuthenticationHandler<AuthenticationHandler>();
+            }
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

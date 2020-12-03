@@ -66,6 +66,14 @@ export class AppRoot {
     this.logger('onGangCommand', command)
 
     switch (command.type) {
+      case CommandTypes.setSettings:
+
+        this.gang.setState({
+
+          settings: command.data
+        });
+
+        break;
       case CommandTypes.notify:
 
         switch (command.data.type) {

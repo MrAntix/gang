@@ -1,4 +1,5 @@
 using Gang.Commands;
+using Gang.Demo.Web.Properties;
 using Gang.Demo.Web.Services.Commands;
 using Gang.Demo.Web.Services.State;
 using Gang.State;
@@ -15,17 +16,25 @@ namespace Gang.Demo.Web.Services
     public sealed class HostMember :
         GangStateHost<HostState>
     {
+        readonly SetSettings _setSettings;
+
         public HostMember(
+            AuthSettings authSettings,
             IGangCommandExecutor<HostState> executor,
             IGangStateStore store) :
             base(executor, store)
         {
+            _setSettings = new SetSettings(authSettings.Enabled);
         }
 
         protected override async Task OnMemberConnectAsync(
             GangAudit audit)
         {
             await SetState(State, audit);
+            await Controller.SendCommandAsync(
+                _setSettings,
+                memberIds: new[] { audit.MemberId }
+                );
         }
 
         protected override async Task OnMemberDisconnectAsync(
@@ -53,7 +62,8 @@ namespace Gang.Demo.Web.Services
                         {
                             messages = new[]
                             {
-                                new Message("Welcome", "Enter your name to join the chat")
+                                new Message("Welcome", "Enter your name to join the chat"),
+                                new Message("About-Data", "Data is held in memory and will clear down after a period of inactivity")
                             },
                             users = Array.Empty<object>()
                         },

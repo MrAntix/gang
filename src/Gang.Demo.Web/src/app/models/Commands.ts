@@ -1,7 +1,8 @@
 
-export type Commands = INotify;
+export type Commands = INotify | ISetSettings;
 export enum CommandTypes {
-  notify = 'notify'
+  notify = 'notify',
+  setSettings = 'setSettings'
 }
 
 export interface INotify {
@@ -12,4 +13,11 @@ export interface INotify {
     message: string;
   };
   rsn: number;
+}
+
+export interface ISetSettings {
+  type: CommandTypes.setSettings;
+  data: {
+    authEnabled: boolean;
+  };
 }
