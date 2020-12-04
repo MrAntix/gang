@@ -94,6 +94,9 @@ export class GangService {
           let wrapper: GangCommandWrapper<unknown>;
           while ((wrapper = this.unsentCommands.shift())) this.sendCommandWrapper(wrapper);
 
+          this.onOffline = () => this.isConnected && this.disconnect(null);
+          window.addEventListener('offline', this.onOffline);
+
           clearRetryConnect();
         },
         (e: Event) => {
@@ -107,6 +110,8 @@ export class GangService {
 
           this.connectionSubject.next(GangConnectionState.disconnected);
           this.memberDisconnectedSubject.next(this.memberId);
+
+          window.removeEventListener('offline', this.onOffline)
 
           if (!e.reason) retryConnect();
         }
@@ -200,6 +205,8 @@ export class GangService {
     });
   }
 
+  private onOffline: () => void;
+
   /** Set the local current state, ie not sent to the server
    *
    * @param state the passed state will be shallow merged with the current state
@@ -292,7 +299,7 @@ export class GangService {
     const wrapper = new GangCommandWrapper(type, data);
     GangContext.logger('GangService.executeCommand', {
       wrapper,
-      isConnected: this.isConnected,
+      isConnected: this.isConnected
     });
 
     this.commandSubject.next(wrapper);
@@ -319,7 +326,7 @@ export class GangService {
     const wrapper = new GangCommandWrapper(type, data);
     GangContext.logger('GangService.sendCommand', {
       wrapper,
-      isConnected: this.isConnected,
+      isConnected: this.isConnected
     });
 
     if (!this.isConnected) {
