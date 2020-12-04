@@ -1,5 +1,4 @@
-import { IGangTokenData, GangUrlBuilder } from '../models';
-import { IGangAuthSettings } from './IGangAuthSettings';
+import { GangUrlBuilder, IGangAuthSettings, IGangTokenData } from '../models';
 
 export class GangAuthService {
   constructor(

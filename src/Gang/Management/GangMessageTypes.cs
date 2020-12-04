@@ -7,6 +7,7 @@ namespace Gang.Management
         Authenticate = 'A',
         State = 'S',
         Command = 'C',
+        Receipt = 'R',
         Connect = '+',
         Disconnect = '-'
     }

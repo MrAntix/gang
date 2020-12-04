@@ -9,7 +9,7 @@ export function provideSendCommand(services: {
     timeout?: number;
   }) => new Promise(async (resolve, reject) => {
 
-    const result = await services.gang.sendCommand(type, data, options);
+    const result = await services.gang.sendCommand(type, data).wait(options);
     const error = result && getErrorMessage(result);
 
     if (!error)

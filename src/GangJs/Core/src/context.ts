@@ -1,6 +1,6 @@
-import { GangService, createGangWebSocket, IGangAuthSettings } from './services';
+import { GangService, createGangWebSocket, GangAuthService } from './services';
 import { GangLogger } from './GangLogger';
-import { GangAuthService } from './services/GangAuthService';
+import { IGangAuthSettings } from './models';
 
 export class GangContext {
   private static _service: GangService;

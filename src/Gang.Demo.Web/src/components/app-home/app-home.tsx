@@ -216,16 +216,6 @@ export class AppHome {
     }
   }
 
-  replaceUserIds(text: string): string {
-    if (!text) return;
-
-    return this.state.users.reduce((text, user) => {
-
-      return text.replace(`@${user.id}`, user.name);
-
-    }, text);
-  }
-
   async addMessage(e: Event, text: string) {
 
     e.preventDefault();
@@ -257,6 +247,16 @@ export class AppHome {
 
     this.logger('addMessage.done', { text })
     this.newMessageText = '';
+  }
+
+  replaceUserIds(text: string): string {
+    if (!text) return;
+
+    return this.state.users.reduce((text, user) => {
+
+      return text.replace(`@${user.id}`, user.name);
+
+    }, text);
   }
 
   scrollToLastMessage() {

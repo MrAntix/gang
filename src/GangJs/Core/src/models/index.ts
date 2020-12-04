@@ -10,4 +10,7 @@ export * from './GangMessage';
 export * from './GangUrlBuilder';
 export * from './GangWebSocket';
 export * from './GangWebSocketFactory';
+export * from './IGangAuthSettings';
+export * from './IGangCommandSent';
+export * from './IGangCommandWaitOptions';
 export * from './IGangTokenData';

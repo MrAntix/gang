@@ -7,4 +7,3 @@ export * from './GangAuthService';
 export * from './GangService';
 export * from './GangStore';
 export * from './getGangId';
-export * from './IGangAuthSettings';

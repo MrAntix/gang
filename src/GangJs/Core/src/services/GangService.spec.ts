@@ -220,7 +220,7 @@ describe('GangService', () => {
 
   it('send and wait for returning sequence number', (done) => {
     gangService.onMemberConnected.subscribe(() => {
-      gangService.sendCommand('do-it', {}).then(() => done());
+      gangService.sendCommand('do-it', {}).wait().then(() => done());
 
       recieveMessage('C', '{"rsn":1}', 1);
     });

@@ -9,6 +9,8 @@ using Gang.Tests.State.Fakes;
 using Gang.Tests.State.Todos;
 using Gang.Tests.State.Todos.Complete;
 using Gang.WebSockets.Serialization;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -70,15 +72,35 @@ namespace Gang.Tests.State
             Assert.NotNull(call.Audit);
         }
 
+
+        [Fact]
+        public async Task receipt_on_command()
+        {
+            var manager = GetManager();
+            var host = await GetManagedHostAsync(manager: manager);
+            var sequence = 99U;
+
+            await HandleCommandAsync(
+                host,
+                new CompleteTodo(TODO_ID),
+                sequence: sequence
+                );
+
+            var args = Assert.Single(manager.Sent);
+            Assert.Equal(GangMessageTypes.Receipt, args.Type);
+            Assert.Equal(sequence, BitConverter.ToUInt32(args.Data.ToArray()));
+        }
+
         static readonly IGangSerializationService _serialization = new WebSocketGangJsonSerializationService();
 
         static Task HandleCommandAsync<TCommandData>(
             IGangMember member, TCommandData data,
-            string userId = null)
+            string userId = null,
+            uint sequence = 1)
         {
             return member.HandleAsync(GangMessageTypes.Command,
                 _serialization.SerializeCommandData(data),
-                new GangAudit(GANG_ID, null, null, userId)
+                new GangAudit(GANG_ID, sequence, null, userId)
                 );
         }
 
@@ -92,16 +114,24 @@ namespace Gang.Tests.State
             return new FakeStateStore();
         }
 
+        static FakeGangManager GetManager()
+        {
+            return new FakeGangManager();
+        }
+
         async Task<GangStateHost<TodosState>> GetManagedHostAsync(
             IGangCommandExecutor<TodosState> executor = null,
-            IGangStateStore store = null)
+            IGangStateStore store = null,
+            IGangManager manager = null)
         {
             var host = new GangStateHost<TodosState>(
                 executor ?? GetExecutor(),
                 store ?? GetStore()
                 );
 
-            await new FakeGangManager()
+            manager ??= GetManager();
+
+            await manager
                 .ManageAsync(_parameters, host);
 
             return host;

@@ -10,6 +10,8 @@ import {
   RETRY_INIT,
   RETRY_MAX,
   GangWebSocketFactory,
+  IGangCommandSent,
+  IGangCommandWaitOptions,
 } from '../models';
 import { GangStore } from './GangStore';
 
@@ -39,6 +41,7 @@ export class GangService {
   private memberConnectedSubject: Subject<string>;
   private memberDisconnectedSubject: Subject<string>;
   private commandSubject: Subject<GangCommandWrapper<unknown>>;
+  private receiptSubject: Subject<number>;
   private stateSubject: BehaviorSubject<Record<string, unknown>>;
   private unsentCommands: GangCommandWrapper<unknown>[] = [];
 
@@ -48,6 +51,7 @@ export class GangService {
   onMemberConnected: Observable<string>;
   onMemberDisconnected: Observable<string>;
   onCommand: Observable<GangCommandWrapper<unknown>>;
+  onReceipt: Observable<number>;
   onState: Observable<unknown>;
 
   constructor(private webSocketFactory: GangWebSocketFactory, initialState: Record<string, unknown> = undefined) {
@@ -63,6 +67,7 @@ export class GangService {
     this.onMemberConnected = this.memberConnectedSubject = new Subject<string>();
     this.onMemberDisconnected = this.memberDisconnectedSubject = new Subject<string>();
     this.onCommand = this.commandSubject = new Subject<GangCommandWrapper<Record<string, unknown>>>();
+    this.onReceipt = this.receiptSubject = new Subject<number>();
 
     const state = GangStore.get(GANG_STATE);
     this.onState = this.stateSubject = new BehaviorSubject<Record<string, unknown>>(
@@ -135,7 +140,10 @@ export class GangService {
         const data = e.data as ArrayBuffer;
         const messageType = readString(data, 0, 1);
 
-        GangContext.logger('GangService.onmessage:', readString(data));
+        GangContext.logger('GangService.onmessage:', {
+          data: readString(data),
+          unsentCommands: this.unsentCommands
+        });
 
         switch (messageType) {
           default:
@@ -173,6 +181,12 @@ export class GangService {
             const commandWrapper = data.byteLength > 5 ? JSON.parse(readString(data, 5)) : {};
             commandWrapper.sn = readUint32(data, 1);
             this.commandSubject.next(commandWrapper);
+            break;
+          }
+          case 'R': {
+            const rsn = readUint32(data, 1);
+            this.receiptSubject.next(rsn);
+            this.unsentCommands = this.unsentCommands.filter(w => w.sn !== rsn);
             break;
           }
           case 'S': {
@@ -320,6 +334,8 @@ export class GangService {
     this.commandSubject.next(wrapper);
   }
 
+  private sn = 0;
+
   /**
    * Sends a command to the host member
    * await this if you expect a reply command from the host
@@ -327,66 +343,61 @@ export class GangService {
    * @param type Command type name
    * @param data Command data
    *
-   * @returns a promise which resolves if a reply command is
-   * received from the host having the same sequence number
-   * or after 10s (promise is not rejected)
+   * @returns a IGangCommandSent
    */
-  async sendCommand<T>(
+  sendCommand<T>(
     type: string,
-    data: T,
-    options?: {
-      timeout?: number;
-    }
-  ): Promise<GangCommandWrapper<unknown>> {
-    const wrapper = new GangCommandWrapper(type, data);
+    data: T
+  ): IGangCommandSent {
+
+    const sn = ++this.sn;
+    const wrapper = new GangCommandWrapper(type, data, sn);
     GangContext.logger('GangService.sendCommand', {
       wrapper,
       isConnected: this.isConnected
     });
 
-    if (!this.isConnected) {
-      this.commandSubject.next(wrapper);
-      this.unsentCommands.push(wrapper);
-      return;
-    }
+    this.unsentCommands = [...this.unsentCommands, wrapper];
+
+    if (!this.isConnected) return;
 
     if (this.isHost) {
       this.commandSubject.next(wrapper);
       return;
     }
 
-    return await this.sendCommandWrapper(wrapper, options);
+    return this.sendCommandWrapper(wrapper);
   }
 
-  private sn = 0;
   private sendCommandWrapper<T>(
-    wrapper: GangCommandWrapper<T>,
-    options?: {
-      timeout?: number;
-    }
-  ): Promise<GangCommandWrapper<unknown>> {
-    const sn = ++this.sn;
-    this.send(JSON.stringify(wrapper), sn);
+    wrapper: GangCommandWrapper<T>
+  ): IGangCommandSent {
 
-    GangContext.logger('GangService.sendCommandWrapper', {
+    this.send(JSON.stringify({
       type: wrapper.type,
-      data: wrapper.data,
-      sn,
-    });
+      data: wrapper.data
+    }), wrapper.sn);
 
-    return new Promise((resolve) => {
-      const sub = this.onCommand.subscribe((w) => {
-        if (w.rsn == sn) {
-          sub.unsubscribe();
-          resolve(w);
-        }
-      });
+    GangContext.logger('GangService.sendCommandWrapper', wrapper);
 
-      setTimeout(() => {
-        sub.unsubscribe();
-        resolve(null);
-      }, options?.timeout || 10000);
-    });
+    return {
+      sn: wrapper.sn,
+      wait: (options: IGangCommandWaitOptions) =>
+        new Promise((resolve) => {
+
+          const sub = this.onCommand.subscribe((w) => {
+            if (w.rsn == wrapper.sn) {
+              sub.unsubscribe();
+              resolve(w);
+            }
+          });
+
+          setTimeout(() => {
+            sub.unsubscribe();
+            resolve(null);
+          }, options?.timeout || 30000);
+        })
+    };
   }
 
   sendState(state: Record<string, unknown>): void {
@@ -405,7 +416,12 @@ export class GangService {
       a = new Uint8Array([...new Uint8Array(sna.buffer), ...a]);
     }
 
-    this.webSocket.send(a.buffer);
+    try {
+      this.webSocket.send(a.buffer);
+    } catch (err) {
+
+      GangContext.logger('GangService.send error', err);
+    }
   }
 
   waitForCommand<T>(

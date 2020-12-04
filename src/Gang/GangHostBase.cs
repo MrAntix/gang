@@ -64,6 +64,11 @@ namespace Gang
                     break;
                 case GangMessageTypes.Command:
                     await OnCommandAsync(data, audit);
+                    await Controller.SendAsync(
+                        GangMessageTypes.Receipt,
+                        BitConverter.GetBytes(audit.Sequence.Value),
+                        new[] { audit.MemberId }
+                        );
 
                     break;
             }
