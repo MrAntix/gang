@@ -13,7 +13,7 @@ export function createGangWebSocket(
   const webSocket = new WebSocket(url);
   webSocket.binaryType = 'arraybuffer';
 
-  const observable = Observable.create((o: Observer<MessageEvent>) => {
+  const observable = new Observable((o: Observer<MessageEvent>) => {
     webSocket.onopen = onOpen;
     webSocket.onmessage = o.next.bind(o);
     webSocket.onerror = (e: Event) => {
@@ -28,14 +28,17 @@ export function createGangWebSocket(
       webSocket.onmessage = null;
       webSocket.onerror = null;
       webSocket.onclose = null;
+
+      subscription.unsubscribe();
     };
   });
 
-  const observer = {
-    next: (data: string | ArrayBuffer | SharedArrayBuffer | Blob | ArrayBufferView) => webSocket.send(data),
-  };
+  const subject = new Subject<MessageEvent<any>>();
+  const subscription = observable.subscribe(subject)
 
-  const subject = Subject.create(observer, observable);
+  const send = (data: string | ArrayBuffer | SharedArrayBuffer | Blob | ArrayBufferView) => webSocket.send(data);
 
-  return new GangWebSocket(subject, observer.next, (reason: string) => webSocket.close(1000, reason));
+  const close = (reason: string) =>     webSocket.close(1000, reason);
+
+  return new GangWebSocket(subject, send, close);
 }

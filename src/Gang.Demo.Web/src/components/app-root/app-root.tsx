@@ -15,7 +15,6 @@ export class AppRoot {
   logger = GangContext.logger;
 
   @State() token: string;
-
   @State() isConnected: boolean = false
 
   @Listen('resize', { target: 'window' })
@@ -25,20 +24,21 @@ export class AppRoot {
   }
 
   @Listen('visibilitychange', { target: 'document' })
-  connect() {
+  async connect() {
     this.logger('connect', { token: this.token })
 
     if (document.hidden)
-      this.gang.disconnect();
+      await this.gang.disconnect();
     else if (!this.gang.isConnected)
-      this.gang.connect('ws', 'demo', this.token);
+      await this.gang.connect('ws', 'demo', this.token)
+        .catch(_ => { });
   }
 
   async componentWillLoad() {
     this.logger('componentWillLoad', { token: this.token })
 
     if (this.token = await this.auth.tryLinkInUrl())
-      this.connect();
+      await this.connect();
 
     this.gang.mapEvents(this);
   }
@@ -48,8 +48,8 @@ export class AppRoot {
     this.isConnected = connectionState === GangConnectionState.connected;
   }
 
-  onGangAuthenticate(token: string) {
-    this.logger('onGangAuthenticate', { token })
+  onGangAuthenticated(token: string) {
+    this.logger('onGangAuthenticated', { token })
 
     GangStore.set('properties', atob(token.substr(0, token.indexOf('.'))))
     this.token = token;
@@ -58,8 +58,8 @@ export class AppRoot {
   async componentDidLoad() {
     this.logger('componentDidLoad', { token: this.token })
 
-    this.connect();
     this.onResize();
+    await this.connect();
   }
 
   onGangCommand(command: Commands) {
@@ -78,7 +78,6 @@ export class AppRoot {
 
         switch (command.data.type) {
           default:
-            console.log(command.data);
 
             this.gang.setState({
 
@@ -103,7 +102,7 @@ export class AppRoot {
 
             break;
           case 'received':
-            console.log(`command was received ${command.rsn}`);
+            this.logger(`command was received ${command.rsn}`);
             break;
         }
 
@@ -140,7 +139,7 @@ export class AppRoot {
 
       <section class="foot">
         <div>
-          <p>Demo app built on a state sharing algorithm using websockets, written in c# on net5.0 and JS client</p>
+          <p>A state sharing algorithm using websockets, written in c# on net5.0 and JS client</p>
         </div>
       </section>
     </Fragment>;

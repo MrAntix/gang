@@ -37,20 +37,34 @@ export class AppHome {
     this.gang.mapEvents(this);
   }
 
+  onGangAuthenticated(token: string) {
+
+    this.logger('onGangAuthenticated', {
+      token,
+      isConnected: this.gang.isConnected,
+      name: GangStore.get('name')
+    });
+
+    if (!!token
+      && this.gang.isConnected
+      && !!GangStore.get('name'))
+      this.updatetUserName(GangStore.get('name'));
+  }
+
   onGangState(state: Partial<IAppState>) {
     this.logger('onGangState', { state });
 
     state = {
       ...this.state,
       ...state
-    }
+    };
 
     this.state = {
       messages: [],
       notifications: {},
       ...state,
       users: sortUsers(state.users || [])
-    }
+    };
 
     this.messageGroups = sortAndGroupMessages(
       (state.messages || [])
@@ -64,31 +78,6 @@ export class AppHome {
 
     this.currentUser = this.state
       .users.find(user => user.isCurrent);
-
-    if (!this.currentUser?.name
-      && !!GangStore.get('name'))
-      this.updatetUserName(GangStore.get('name'));
-  }
-
-  onGangMemberDisconnected(memberId: string) {
-    this.logger('onGangMemberDisconnected', { memberId })
-
-    this.currentUser = null;
-
-    const message = {
-      id: 'Disconnected',
-      on: new Date().toISOString(),
-      text: 'Connection was lost'
-    };
-
-    if (this.state.messages.some(m => m.id === message.id)) return
-
-    this.onGangState({
-      messages: [
-        ...this.state.messages,
-        message
-      ]
-    });
   }
 
   onGangConnectionRetry(seconds: number) {
@@ -97,7 +86,7 @@ export class AppHome {
     const message = {
       id: 'Disconnected',
       on: new Date().toISOString(),
-      text: seconds === 0
+      text: seconds !== 0
         ? `Connection was lost, retrying in ${seconds}s`
         : 'Connection was lost, click connect to try again'
     };
@@ -108,7 +97,6 @@ export class AppHome {
         message
       ]
     });
-    this.currentUser = null;
   }
 
   render() {
@@ -116,7 +104,7 @@ export class AppHome {
     return <Host>
       <div class="section messages">
         <ol class="messages-list" ref={el => this.messagesList = el}>
-          {this.messageGroups?.map(group => <li class={{
+          {this.messageGroups?.map(group => <li key={group.time} class={{
             "message": true,
             "current-user": !!group.byId && group.byId === this.currentUser?.id,
             "host-bot": !this.userNames[group.byId]
@@ -125,7 +113,7 @@ export class AppHome {
               <span class="text user-name">{this.userNames[group.byId] || 'Host Bot'}</span>
               <ol class="text message-text-list">
                 {group.items.map(message =>
-                  <li class={`message-text-list-item ${message.class}`}>
+                  <li key={message.id} class={`message-text-list-item ${message.class}`}>
                     <span class="text message-text">{this.replaceUserIds(message.text)}</span>
                   </li>
                 )}
@@ -244,6 +232,22 @@ export class AppHome {
 
     this.logger('addMessage', { text })
     if (!text) return;
+
+    const message: IAppMessage = {
+      id: getGangId(),
+      text,
+      on: new Date(),
+      byId: this.currentUser.id,
+      class: 'pending'
+    }
+
+    this.gang.setState({
+      ...this.state,
+      messages: [
+        ...this.state.messages,
+        message
+      ]
+    })
 
     await this.gang
       .sendCommand('addMessage', {

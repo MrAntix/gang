@@ -131,11 +131,30 @@ li {
 }
 
 .message-text-list-item {
+  position: relative;
   padding: 0 0 calc(.25 * var(--callout-size));
 }
 
 .message-text-list-item.error {
   --host-bot-color: var(--error-color);
+}
+
+.message-text-list-item.pending::before {
+  content: '…';
+  max-width: 1em;
+  overflow: hidden;
+  display: inline-block;
+  position: absolute;
+  bottom: -.5em;
+  right: 0;
+
+  animation: pending steps(4, end) 1s infinite;
+}
+
+@keyframes pending {
+  to {
+    max-width: 0;
+  }
 }
 
 .messages-list .message.host-bot .message-text {

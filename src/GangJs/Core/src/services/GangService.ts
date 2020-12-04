@@ -35,7 +35,7 @@ export class GangService {
   isHost: boolean;
 
   private connectionRetrySubject: Subject<number>;
-  private authenticateSubject: BehaviorSubject<string>;
+  private authenticatedSubject: BehaviorSubject<string>;
   private memberConnectedSubject: Subject<string>;
   private memberDisconnectedSubject: Subject<string>;
   private commandSubject: Subject<GangCommandWrapper<unknown>>;
@@ -44,7 +44,7 @@ export class GangService {
 
   onConnection: Observable<GangConnectionState>;
   onConnectionRetry: Observable<number>;
-  onAuthenticate: Observable<string>;
+  onAuthenticated: Observable<string>;
   onMemberConnected: Observable<string>;
   onMemberDisconnected: Observable<string>;
   onCommand: Observable<GangCommandWrapper<unknown>>;
@@ -59,7 +59,7 @@ export class GangService {
 
     this.onConnection = this.connectionSubject = new BehaviorSubject(GangConnectionState.disconnected);
     this.onConnectionRetry = this.connectionRetrySubject = new Subject<number>();
-    this.onAuthenticate = this.authenticateSubject = new BehaviorSubject<string>(GangStore.get(GANG_AUTHENTICATION_TOKEN));
+    this.onAuthenticated = this.authenticatedSubject = new BehaviorSubject<string>(GangStore.get(GANG_AUTHENTICATION_TOKEN));
     this.onMemberConnected = this.memberConnectedSubject = new Subject<string>();
     this.onMemberDisconnected = this.memberDisconnectedSubject = new Subject<string>();
     this.onCommand = this.commandSubject = new Subject<GangCommandWrapper<Record<string, unknown>>>();
@@ -137,7 +137,7 @@ export class GangService {
             const token = readString(data, 1);
             GangStore.set(GANG_AUTHENTICATION_TOKEN, token);
 
-            this.authenticateSubject.next(token);
+            this.authenticatedSubject.next(token);
             break;
           }
           case '+': {
@@ -181,7 +181,8 @@ export class GangService {
 
           if (this.retryingIn === 0) {
             clearRetryConnect();
-            this.connect(url, gangId, token);
+            this.connect(url, gangId, token)
+              .catch(_ => { });
           }
         }, 1000);
 
@@ -200,7 +201,7 @@ export class GangService {
   }
 
   /** Set the local current state, ie not sent to the server
-   * 
+   *
    * @param state the passed state will be shallow merged with the current state
    */
   setState(state: Record<string, unknown>) {
@@ -246,14 +247,14 @@ export class GangService {
     disconnectedCallback?: () => void;
     onGangConnection?: (connectionState: GangConnectionState) => void;
     onGangConnectionRetry?: (seconds: number) => void;
-    onGangAuthenticate?: (token: string) => void;
+    onGangAuthenticated?: (token: string) => void;
     onGangState?: (state: TState) => void;
     onGangCommand?: (command: unknown) => void;
     onGangMemberConnected?: (memberId: string) => void;
     onGangMemberDisconnected?: (memberId: string) => void;
   }): void {
     const subs: { unsubscribe: () => undefined }[] = [];
-    ['Connection', 'Authenticate', 'State', 'Command', 'MemberConnected', 'MemberDisconnected', 'ConnectionRetry'].forEach((key) => {
+    ['Connection', 'Authenticated', 'State', 'Command', 'MemberConnected', 'MemberDisconnected', 'ConnectionRetry'].forEach((key) => {
       const componentKey = `onGang${key}`;
       const serviceKey = `on${key}`;
 

@@ -1,4 +1,4 @@
-import { Build } from '@stencil/core';
+//import { Build } from '@stencil/core';
 import { GangContext } from '@gang-js/core';
 
 export default async () => {
@@ -8,7 +8,8 @@ export default async () => {
    * is wrapped in the function() that is exported.
    */
 
-  GangContext.logger = Build.isDev ? console.debug : () => { };
+  //GangContext.logger = Build.isDev ? console.debug : () => { };
+  GangContext.logger = console.debug;
   GangContext.initialState = {
     users: [],
     messages: []
