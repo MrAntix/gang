@@ -60,11 +60,11 @@ export class AppHome {
     };
 
     this.state = {
-      messages: [],
       notifications: {},
       ...state,
+      messages: state.messages || [],
       users: sortUsers(state.users || [])
-    };
+    }
 
     this.messageGroups = sortAndGroupMessages(
       (state.messages || [])
@@ -110,11 +110,11 @@ export class AppHome {
             "host-bot": !this.userNames[group.byId]
           }}>
             <div class="row detail">
-              <span class="text user-name">{this.userNames[group.byId] || 'Host Bot'}</span>
+              <span class="text user-name">{unescapeText(this.userNames[group.byId] || 'Host Bot')}</span>
               <ol class="text message-text-list">
                 {group.items.map(message =>
                   <li key={message.id} class={`message-text-list-item ${message.class}`}>
-                    <span class="text message-text">{this.replaceUserIds(message.text)}</span>
+                    <span class="text message-text">{unescapeText(this.replaceUserIds(message.text))}</span>
                   </li>
                 )}
               </ol>
@@ -144,14 +144,14 @@ export class AppHome {
 
         {!!this.currentUser?.name &&
           <form class="row"
-            onSubmit={e => this.addMessage(e, this.newMessageText)}
+            onSubmit={e => this.addMessage(e, escapeText(this.newMessageText))}
           >
             <textarea class="input message"
               autoFocus
               rows={2} placeholder="(type the message to send here)"
               value={this.newMessageText}
               onInput={(e: any) => this.newMessageText = e.target.value}
-              onKeyPress={e => e.key === 'Enter' && !e.shiftKey && this.addMessage(e, this.newMessageText)}
+              onKeyPress={e => e.key === 'Enter' && !e.shiftKey && this.addMessage(e, escapeText(this.newMessageText))}
             />
             <button class="button"
               disabled={!this.newMessageText}
@@ -168,8 +168,8 @@ export class AppHome {
               <input class="input user-name"
                 autoFocus
                 placeholder="(set your name)"
-                onChange={(e: any) => this.updatetUserName(e.target.value)}
-                value={this.currentUser?.name}
+                onChange={(e: any) => this.updatetUserName(escapeText(e.target.value))}
+                value={unescapeText(this.currentUser?.name)}
               />
             </li>
 
@@ -180,7 +180,7 @@ export class AppHome {
                   "user-name other text": true,
                   "is-online": user.isOnline
                 }}
-                >{user.name}</li>)}
+                >{unescapeText(user.name)}</li>)}
             </Fragment>
             }
           </ol>
@@ -197,6 +197,7 @@ export class AppHome {
   }
 
   async updatetUserName(name: string) {
+
     this.logger('updatetUserName', { name });
 
     try {
@@ -307,12 +308,13 @@ function sortAndGroupMessages(items: IAppMessage[]): IAppMessageGroup[] {
   return sortMessages(items)
     .reduce<IAppMessageGroup[]>((groups, item) => {
       const time = new Date(item.on).getTime();
-      let group = groups.find(g =>
-        g.byId === item.byId
-        && Math.abs(g.time - time) < 10000
-      );
+      let group = groups[groups.length - 1];
 
-      if (!group) {
+      if (
+        !group
+        || group.byId !== item.byId
+        || Math.abs(group.time - time) > 30000
+      ) {
 
         groups = [...groups, {
           time,
@@ -324,8 +326,13 @@ function sortAndGroupMessages(items: IAppMessage[]): IAppMessageGroup[] {
 
         groups = groups.map(
           g => g === group
-            ? { ...group, items: [...group.items, item] }
+            ? {
+              ...group,
+              time,
+              items: [...group.items, item]
+            }
             : g);
+
       }
 
       return groups;
@@ -336,4 +343,16 @@ function mapToArray<T>(map: Record<string, T>) {
   if (map == null) return null;
 
   return Object.keys(map).map(k => map[k]).filter(v => v != null);
+}
+
+function escapeText(value: string): string {
+  return encodeURI(value);
+}
+
+function unescapeText(value: string): string {
+  try {
+    return decodeURI(value);
+  } catch {
+    return value;
+  }
 }
