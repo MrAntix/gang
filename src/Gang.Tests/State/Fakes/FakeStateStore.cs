@@ -13,7 +13,7 @@ namespace Gang.Tests.State.Fakes
     {
         public Task<GangState<TStateData>> CommitAsync<TStateData>(
             string gangId, GangState<TStateData> state, GangAudit audit)
-            where TStateData : class, new()
+            where TStateData : class
         {
             var typedState = state as GangState<TodosState>;
             CommitCalls = CommitCalls.Add(
@@ -45,12 +45,13 @@ namespace Gang.Tests.State.Fakes
 
 
         Task<GangState<TStateData>> IGangStateStore.RestoreAsync<TStateData>(
-            string gangId)
+            string gangId, TStateData initial
+            )
         {
             RestoreCalls = RestoreCalls.Add(new RestoreCall(gangId));
 
             return Task.FromResult(
-                new GangState<TStateData>()
+                new GangState<TStateData>(initial)
                 );
         }
 
@@ -66,7 +67,7 @@ namespace Gang.Tests.State.Fakes
             public string GangId { get; }
         }
 
-        IDisposable IGangStateStore.Subscribe(Func<IGangEvent, Task> observer, uint? startSequenceNumber)
+        IDisposable IGangStateStore.Subscribe(Func<IGangStateEvent, Task> observer, uint? startSequenceNumber)
         {
             throw new NotImplementedException();
         }

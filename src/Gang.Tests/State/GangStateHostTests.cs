@@ -126,7 +126,8 @@ namespace Gang.Tests.State
         {
             var host = new GangStateHost<TodosState>(
                 executor ?? GetExecutor(),
-                store ?? GetStore()
+                store ?? GetStore(),
+                new TodosState()
                 );
 
             manager ??= GetManager();

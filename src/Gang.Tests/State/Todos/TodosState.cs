@@ -17,7 +17,7 @@ namespace Gang.Tests.State.Todos
                 ?? ImmutableDictionary<string, Todo>.Empty;
         }
 
-        public TodosState() : this(null) { }
+        public static readonly TodosState Initial = new();
 
         public IImmutableDictionary<string, Todo> Todos { get; }
 

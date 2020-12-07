@@ -8,7 +8,7 @@ namespace Gang
     public abstract class GangHostBase : IGangMember
     {
         public byte[] Id { get; } = "HOST".GangToBytes();
-        public GangAuth Auth { get; } = null;
+        public GangSession Session { get; } = GangSession.Default;
 
         protected IGangController Controller { get; private set; }
 
@@ -40,7 +40,8 @@ namespace Gang
         Func<Task> _onDisconnectAsync;
 
         async Task IGangMember.ConnectAsync(
-            IGangController controller, Func<Task> onDisconnectAsync)
+            IGangController controller,
+            Func<Task> onDisconnectAsync)
         {
             _onDisconnectAsync = onDisconnectAsync;
             Controller = controller;
@@ -66,7 +67,7 @@ namespace Gang
                     await OnCommandAsync(data, audit);
                     await Controller.SendAsync(
                         GangMessageTypes.Receipt,
-                        BitConverter.GetBytes(audit.Sequence.Value),
+                        BitConverter.GetBytes(audit.Version.Value),
                         new[] { audit.MemberId }
                         );
 

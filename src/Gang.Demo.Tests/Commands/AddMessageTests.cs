@@ -3,6 +3,7 @@ using Gang.Demo.Web.Services.Events;
 using Gang.Demo.Web.Services.State;
 using Gang.State;
 using Gang.State.Commands;
+using Gang.Tests.State.Fakes;
 using System;
 using System.Threading.Tasks;
 using Xunit;
@@ -113,7 +114,7 @@ namespace Gang.Demo.Tests.Commands
                users: new[] { new User(USER_ID) }
                );
 
-            return new GangState<HostState>(state);
+            return GangState.Create(state);
         }
     }
 }

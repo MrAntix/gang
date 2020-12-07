@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace Gang.State.Commands
 {
     public sealed class GangCommandHandler<TStateData>
-        where TStateData : class, new()
+        where TStateData : class
     {
         public GangCommandHandler(
             Type dataType,

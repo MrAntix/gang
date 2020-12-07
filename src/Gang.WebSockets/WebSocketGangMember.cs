@@ -17,18 +17,18 @@ namespace Gang.WebSockets
 
         public WebSocketGangMember(
             byte[] id,
-            GangAuth auth,
+            GangSession session,
             WebSocket webSocket)
         {
             Id = id;
-            Auth = auth;
+            Session = session;
             _webSocket = webSocket;
             _sendQueue = new TaskQueue();
             _buffer = new ArraySegment<byte>(new byte[1024 * 4]);
         }
 
         public byte[] Id { get; }
-        public GangAuth Auth { get; }
+        public GangSession Session { get; }
 
         Task IGangMember.ConnectAsync(
             IGangController controller, Func<Task> _onDisconnectAsync)
@@ -77,9 +77,9 @@ namespace Gang.WebSockets
                         new[] { (byte)type },
                         WebSocketMessageType.Binary, data == null, CancellationToken.None);
 
-                    if (audit?.Sequence != null)
+                    if (audit?.Version != null)
                         await _webSocket.SendAsync(
-                            BitConverter.GetBytes(audit.Sequence.Value),
+                            BitConverter.GetBytes(audit.Version.Value),
                             WebSocketMessageType.Binary, data == null, CancellationToken.None);
 
                     if (data != null)

@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 namespace Gang.State
 {
     [Serializable]
-    internal class GangCommandHandlerException :
+    class GangCommandHandlerException :
         Exception
     {
         public GangCommandHandlerException(

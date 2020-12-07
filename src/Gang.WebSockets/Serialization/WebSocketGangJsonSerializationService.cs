@@ -25,6 +25,7 @@ namespace Gang.WebSockets.Serialization
             .Map(object json, Type type)
         {
             if (json == null) return null;
+            if (json.GetType() == type) return json;
 
             return ((JToken)json).ToObject(type);
         }

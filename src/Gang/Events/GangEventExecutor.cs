@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -15,13 +15,11 @@ namespace Gang.Events
         readonly IImmutableList<GangEventHandler<TDataImplements>> _allHandlers;
         readonly IImmutableDictionary<Type, ImmutableList<Func<TDataImplements, Task>>> _handlers;
 
-
         public GangEventExecutor(
             IEnumerable<GangEventHandler<TDataImplements>> handlers = null
             )
         {
-            _allHandlers = handlers?.ToImmutableList()
-                ?? ImmutableList<GangEventHandler<TDataImplements>>.Empty;
+            _allHandlers = handlers.ToImmutableListDefaultEmpty();
 
             _handlers = _allHandlers.Aggregate(
                 ImmutableDictionary<Type, ImmutableList<Func<TDataImplements, Task>>>.Empty,

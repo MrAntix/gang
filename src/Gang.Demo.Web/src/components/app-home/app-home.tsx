@@ -1,7 +1,8 @@
 import { Component, h, Host, State, Listen, Fragment, Element } from '@stencil/core';
-import { GangContext, getGangId, GangStore } from '@gang-js/core';
+import { GangContext, getGangId, GangStore, GangService } from '@gang-js/core';
 
-import { IAppState, IAppUser, IAppMessage, IAppMessageGroup, provideSendCommand } from '../../app/models';
+import { IAppState, IAppUser, IAppMessage, provideSendCommand } from '../../app/models';
+import { escapeText, sortUsers, unescapeText } from '../../app/services';
 
 @Component({
   tag: 'app-home',
@@ -11,18 +12,17 @@ import { IAppState, IAppUser, IAppMessage, IAppMessageGroup, provideSendCommand 
 export class AppHome {
   @Element() element: HTMLElement;
 
-  gang = GangContext.service;
+  gang: GangService<IAppState> = GangContext.service;
+  auth = GangContext.auth;
   logger = GangContext.logger;
   sendCommand = provideSendCommand(this);
 
+  @State() isAuthenticated: boolean;
+
   @State() state: IAppState;
 
-  @State() messageGroups: IAppMessageGroup[];
-
   @State() newMessageText: string;
-
   @State() currentUser: IAppUser;
-  @State() userNames: { [id: string]: string } = {};
 
   messagesList: HTMLOListElement;
   messagesCount: number = 0;
@@ -37,22 +37,8 @@ export class AppHome {
     this.gang.mapEvents(this);
   }
 
-  onGangAuthenticated(token: string) {
-
-    this.logger('onGangAuthenticated', {
-      token,
-      isConnected: this.gang.isConnected,
-      name: GangStore.get('name')
-    });
-
-    if (!!token
-      && this.gang.isConnected
-      && !!GangStore.get('name'))
-      this.updatetUserName(GangStore.get('name'));
-  }
-
   onGangState(state: Partial<IAppState>) {
-    this.logger('onGangState', { state });
+    this.logger('home.onGangState', { state });
 
     state = {
       ...this.state,
@@ -60,28 +46,18 @@ export class AppHome {
     };
 
     this.state = {
-      notifications: {},
       ...state,
       messages: state.messages || [],
       users: sortUsers(state.users || [])
     }
 
-    this.messageGroups = sortAndGroupMessages(
-      (state.messages || [])
-        .concat(mapToArray(state.notifications) || [])
-    );
-
-    this.userNames = this.state.users.reduce((map, user) => {
-      map[user.id] = user.name;
-      return map;
-    }, {});
-
     this.currentUser = this.state
       .users.find(user => user.isCurrent);
+
   }
 
   onGangConnectionRetry(seconds: number) {
-    this.logger('onGangConnectionRetry', {})
+    this.logger('home.onGangConnectionRetry', {})
 
     const message = {
       id: 'Disconnected',
@@ -101,92 +77,65 @@ export class AppHome {
 
   render() {
 
+    console.log({
+      isAuthenticated: this.isAuthenticated
+    })
+
     return <Host>
       <div class="section messages">
-        <ol class="messages-list" ref={el => this.messagesList = el}>
-          {this.messageGroups?.map(group => <li key={group.time} class={{
-            "message": true,
-            "current-user": !!group.byId && group.byId === this.currentUser?.id,
-            "host-bot": !this.userNames[group.byId]
-          }}>
-            <div class="row detail">
-              <span class="text user-name">{unescapeText(this.userNames[group.byId] || 'Host Bot')}</span>
-              <ol class="text message-text-list">
-                {group.items.map(message =>
-                  <li key={message.id} class={`message-text-list-item ${message.class}`}>
-                    <span class="text message-text">{unescapeText(this.replaceUserIds(message.text))}</span>
-                  </li>
-                )}
-              </ol>
-            </div>
-            <div class="row info">
-              <span class="message-on">{formatDate(group.time)}</span>
-            </div>
-          </li>)}
-        </ol>
-
-        {!this.currentUser?.name &&
-          <form class="row">
-            <input class="input user-name"
-              autoFocus
-              placeholder="(set your name)"
-              onChange={(e: any) => {
-                this.updatetUserName(e.target.value);
-                window.setTimeout(() =>
-                  this.focus('.input.message'), 600);
-              }}
-              value={this.currentUser?.name}
-            />
-            <button class="button" type="button"
-            >Enter chat</button>
-          </form>
-        }
+        <app-messages class="messages-list"
+          value={this.state.messages}
+          users={this.state.users}
+          currentUserId={this.currentUser?.id}
+        />
 
         {!!this.currentUser?.name &&
           <form class="row"
             onSubmit={e => this.addMessage(e, escapeText(this.newMessageText))}
           >
-            <textarea class="input message"
+            <textarea class="input fit message"
               autoFocus
               rows={2} placeholder="(type the message to send here)"
               value={this.newMessageText}
               onInput={(e: any) => this.newMessageText = e.target.value}
               onKeyPress={e => e.key === 'Enter' && !e.shiftKey && this.addMessage(e, escapeText(this.newMessageText))}
             />
-            <button class="button"
+            <button class="button primary"
               disabled={!this.newMessageText}
             >Send</button>
           </form>
         }
       </div>
 
-      {!!this.currentUser &&
-        <div class="section users">
-          <ol>
-            <li class="heading">You</li>
-            <li>
-              <input class="input user-name"
-                autoFocus
-                placeholder="(set your name)"
-                onChange={(e: any) => this.updatetUserName(escapeText(e.target.value))}
-                value={unescapeText(this.currentUser?.name)}
-              />
-            </li>
-
-            {!!this.currentUser && <Fragment>
-              <li class="heading">Other Users</li>
-              {this.state.users?.filter(u => !!u?.name && u.id !== this.currentUser?.id)
-                .map(user => <li class={{
-                  "user-name other text": true,
-                  "is-online": user.isOnline
-                }}
-                >{unescapeText(user.name)}</li>)}
-            </Fragment>
-            }
-          </ol>
-        </div>
-      }
+      {this.renderUsers()}
     </Host>
+  }
+
+  renderUsers() {
+    return <div class="section users">
+      <ol>
+        <li class="heading">You</li>
+        <li>
+          <input class="input user-name"
+            autoFocus
+            placeholder="(set your name)"
+            onChange={(e: any) => this.updateUserName(escapeText(e.target.value))}
+            value={unescapeText(this.currentUser?.name)}
+          />
+        </li>
+
+        {!!this.currentUser && <Fragment>
+          <li class="heading">Other Users</li>
+          {this.state.users?.filter(u => !!u?.name && u.id !== this.currentUser?.id)
+            .map(user => <li class={{
+              "user-name other text": true,
+              "is-online": user.isOnline
+            }}
+            >{unescapeText(user.name)}</li>)}
+        </Fragment>
+        }
+      </ol>
+    </div>;
   }
 
   componentDidRender() {
@@ -196,9 +145,9 @@ export class AppHome {
     }
   }
 
-  async updatetUserName(name: string) {
+  async updateUserName(name: string) {
 
-    this.logger('updatetUserName', { name });
+    this.logger('home.updateUserName', { name });
 
     try {
       this.currentUser = {
@@ -221,7 +170,7 @@ export class AppHome {
 
     e.preventDefault();
 
-    this.logger('addMessage', { text })
+    this.logger('home.addMessage', { text })
     if (!text) return;
 
     const message: IAppMessage = {
@@ -241,23 +190,10 @@ export class AppHome {
     })
 
     await this.gang
-      .sendCommand('addMessage', {
-        id: getGangId(),
-        text
-      });
+      .sendCommand('addMessage', { id: getGangId(), text }).wait();
 
-    this.logger('addMessage.done', { text })
+    this.logger('home.addMessage.done', { text })
     this.newMessageText = '';
-  }
-
-  replaceUserIds(text: string): string {
-    if (!text) return;
-
-    return this.state.users.reduce((text, user) => {
-
-      return text.replace(`@${user.id}`, user.name);
-
-    }, text);
   }
 
   scrollToLastMessage() {
@@ -269,90 +205,5 @@ export class AppHome {
   focus(selector: string) {
     this.element.shadowRoot
       .querySelector<HTMLElement>(selector)?.focus();
-  }
-}
-
-const messageDateFormatter = Intl.DateTimeFormat('en-GB', {
-  weekday: 'short',
-  year: 'numeric',
-  month: 'short',
-  day: 'numeric',
-  hour: 'numeric',
-  minute: 'numeric'
-}).format;
-
-function formatDate(date: string | number) {
-  if (date == null || isNaN(date as any)) return ''
-
-  return messageDateFormatter(new Date(date));
-}
-
-function sortUsers(items: IAppUser[]): IAppUser[] {
-  const sorted = [...items];
-
-  sorted.sort((a, b) => a.isOnline && b.isOnline
-    ? a.name?.localeCompare(b.name)
-    : a.isOnline ? -1 : 1);
-  return sorted;
-}
-
-function sortMessages(items: IAppMessage[]): IAppMessage[] {
-  const sorted = [...items];
-
-  sorted.sort((a, b) => new Date(a.on).getTime() - new Date(b.on).getTime());
-  return sorted;
-}
-
-function sortAndGroupMessages(items: IAppMessage[]): IAppMessageGroup[] {
-
-  return sortMessages(items)
-    .reduce<IAppMessageGroup[]>((groups, item) => {
-      const time = new Date(item.on).getTime();
-      let group = groups[groups.length - 1];
-
-      if (
-        !group
-        || group.byId !== item.byId
-        || Math.abs(group.time - time) > 30000
-      ) {
-
-        groups = [...groups, {
-          time,
-          byId: item.byId,
-          items: [item]
-        }]
-
-      } else {
-
-        groups = groups.map(
-          g => g === group
-            ? {
-              ...group,
-              time,
-              items: [...group.items, item]
-            }
-            : g);
-
-      }
-
-      return groups;
-    }, []);
-}
-
-function mapToArray<T>(map: Record<string, T>) {
-  if (map == null) return null;
-
-  return Object.keys(map).map(k => map[k]).filter(v => v != null);
-}
-
-function escapeText(value: string): string {
-  return encodeURI(value);
-}
-
-function unescapeText(value: string): string {
-  try {
-    return decodeURI(value);
-  } catch {
-    return value;
   }
 }

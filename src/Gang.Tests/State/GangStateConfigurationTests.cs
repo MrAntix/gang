@@ -2,6 +2,7 @@ using Gang.Commands;
 using Gang.Serialization;
 using Gang.State;
 using Gang.State.Commands;
+using Gang.Tests.State.Fakes;
 using Gang.Tests.State.Todos;
 using Gang.Tests.State.Todos.Add;
 using Gang.WebSockets;
@@ -43,7 +44,7 @@ namespace Gang.Tests.State
             var data = serialization.SerializeCommandData(new AddTodo(TODO_ID));
 
             var result = await commandHandler.ExecuteAsync(
-                new GangState<TodosState>(),
+                GangState.Create(new TodosState()),
                 data,
                 AUDIT
                 );

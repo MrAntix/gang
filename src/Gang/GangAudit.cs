@@ -6,29 +6,29 @@ namespace Gang
     {
         public GangAudit(
             string gangId,
-            uint? sequence = null,
+            uint? version = null,
             byte[] memberId = null,
             string userId = null,
             DateTimeOffset? on = null)
         {
             GangId = gangId;
-            Sequence = sequence;
+            Version = version;
             MemberId = memberId;
             UserId = userId;
             On = on ?? DateTimeOffset.UtcNow;
         }
 
         public string GangId { get; }
-        public uint? Sequence { get; }
+        public uint? Version { get; }
         public byte[] MemberId { get; }
         public string UserId { get; }
         public DateTimeOffset On { get; }
 
-        public GangAudit SetSequence(uint sequence)
+        public GangAudit SetVersion(uint value)
         {
             return new GangAudit(
                 GangId,
-                sequence,
+                value,
                 MemberId, UserId,
                 On);
         }

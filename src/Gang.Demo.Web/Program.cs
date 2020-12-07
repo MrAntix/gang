@@ -19,7 +19,7 @@ namespace Gang.Demo.Web
                 {
                     builder
                         .AddJsonFile("appsettings.json")
-                        .AddJsonFile("appsettings.Development.json", true)
+                        .AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json", true)
                         .AddEnvironmentVariables();
                 })
                 .ConfigureLogging((context, builder) =>

@@ -8,13 +8,13 @@ namespace Gang.Authentication.Tokens
     {
         public GangTokenData(
             string id, DateTimeOffset expires,
-            string name = null, string emailAddress = null,
+            string name = null, string email = null,
             IEnumerable<string> roles = null)
         {
             Id = id;
             Expires = expires;
             Name = name;
-            EmailAddress = emailAddress;
+            Email = email;
             Roles = roles?.ToImmutableSortedSet()
                ?? ImmutableSortedSet<string>.Empty;
         }
@@ -23,7 +23,7 @@ namespace Gang.Authentication.Tokens
         public DateTimeOffset Expires { get; }
 
         public string Name { get; }
-        public string EmailAddress { get; }
+        public string Email { get; }
         public IImmutableSet<string> Roles { get; }
     }
 }

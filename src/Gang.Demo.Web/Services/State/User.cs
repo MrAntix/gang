@@ -15,11 +15,9 @@ namespace Gang.Demo.Web.Services.State
             IEnumerable<Message> messages = null
             )
         {
-            Id = id ?? throw new System.ArgumentNullException(nameof(id));
+            Id = id ?? throw new ArgumentNullException(nameof(id));
             Name = name;
-            Messages = messages
-               ?.ToImmutableList()
-               ?? ImmutableList<Message>.Empty;
+            Messages = messages.ToImmutableListDefaultEmpty();
         }
 
         public string Id { get; }
@@ -73,10 +71,10 @@ namespace Gang.Demo.Web.Services.State
         }
 
         public static string NameIsUnique(
-            GangState<HostState> state, string name)
+            GangState<HostState> state, string id, string name)
         {
             return state.Data
-                .Users.Any(u => u.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase))
+                .Users.Any(u => u.Id != id && u.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase))
                 ? ERROR_NAME_IS_TAKEN
                 : null;
         }

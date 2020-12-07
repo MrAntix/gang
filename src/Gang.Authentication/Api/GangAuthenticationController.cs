@@ -1,64 +1,91 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System;
 using System.Threading.Tasks;
+using static Gang.Validation.GangPredicates;
 
 namespace Gang.Authentication.Api
 {
     public sealed class GangAuthenticationController :
         Controller
     {
-        readonly ILogger<GangAuthenticationController> _logger;
-        readonly IGangAuthenticationService _authService;
+        readonly IGangAuthenticationService _auth;
 
         public GangAuthenticationController(
-            ILogger<GangAuthenticationController> logger,
-            IGangAuthenticationService authService)
+            IGangAuthenticationService auth
+            )
         {
-            _logger = logger;
-            _authService = authService;
+            _auth = auth;
         }
 
         [HttpPost]
         [Route(GangAuthenticationRoutes.REQUEST_LINK)]
         public async Task<IActionResult> RequestLinkAsync(
-            [FromBody] string identity)
+            [FromBody] string identity
+            )
         {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(identity))
-                    return BadRequest();
+            if (identity.Is(NullOrWhiteSpace)
+                || identity.IsNot(EmailAddress))
+                return BadRequest("invalid email address");
 
-                await _authService.RequestLink(identity);
+            await _auth.RequestLinkAsync(identity);
 
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Request Link Error");
-                throw;
-            }
+            return Ok();
         }
 
-        [HttpGet]
-        [Route(GangAuthenticationRoutes.LINK)]
-        public async Task<IActionResult> LinkAsync(
-            [FromRoute] string token)
+        [HttpPost]
+        [Route(GangAuthenticationRoutes.VALIDATE_LINK)]
+        public async Task<IActionResult> ValidateLinkAsync(
+            [FromBody] GangLink data
+            )
         {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(token))
-                    return BadRequest();
+            if ((data?.Email).Is(NullOrWhiteSpace))
+                return BadRequest("invalid email");
+            if ((data?.Code).Is(NullOrWhiteSpace))
+                return BadRequest("invalid code");
 
-                var sessionToken = await _authService.Link(token);
+            var sessionToken = await _auth.ValidateLinkAsync(data);
 
-                return Ok(sessionToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Link Error");
-                throw;
-            }
+            return sessionToken != null
+                ? Ok(sessionToken)
+                : BadRequest();
+        }
+
+        [HttpPost]
+        [Route(GangAuthenticationRoutes.REQUEST_CHALLENGE)]
+        public async Task<IActionResult> RequestChallengeAsync(
+            [FromHeader] string authorization
+            )
+        {
+            var challenge = await _auth.RequestChallengeAsync(authorization);
+
+            return Ok(challenge);
+        }
+
+        [HttpPost]
+        [Route(GangAuthenticationRoutes.REGISTER_CREDENTIAL)]
+        public async Task<IActionResult> RegisterCredentialAsync(
+            [FromHeader] string authorization,
+            [FromBody] GangCredentialRegistration data
+            )
+        {
+            if (authorization.Is(NullOrWhiteSpace))
+                return BadRequest("invalid token");
+
+            return await _auth.RegisterCredentialAsync(authorization, data)
+                   ? Ok()
+                   : BadRequest();
+        }
+
+        [HttpPost]
+        [Route(GangAuthenticationRoutes.VALIDATE_CREDENTIAL)]
+        public async Task<IActionResult> ValidateCredentialAsync(
+            [FromBody] GangAuthentication data
+            )
+        {
+            var sessionToken = await _auth.ValidateCredentialAsync(data);
+
+            return sessionToken != null
+                ? Ok(sessionToken)
+                : BadRequest();
         }
     }
 }

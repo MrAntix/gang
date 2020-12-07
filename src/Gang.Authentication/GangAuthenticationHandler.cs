@@ -13,8 +13,8 @@ namespace Gang.Authentication
             _service = service;
         }
 
-        async Task<GangAuth> IGangAuthenticationHandler
-            .AuthenticateAsync(GangParameters parameters)
+        async Task<GangSession> IGangAuthenticationHandler
+            .HandleAsync(GangParameters parameters)
         {
             if (parameters is null)
                 throw new System.ArgumentNullException(nameof(parameters));

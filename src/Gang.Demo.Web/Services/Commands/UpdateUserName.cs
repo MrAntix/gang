@@ -5,7 +5,7 @@ namespace Gang.Demo.Web.Services.Commands
         public UpdateUserName(
             string name)
         {
-            Name = name;
+            Name = name?.Trim();
         }
 
         public string Name { get; }

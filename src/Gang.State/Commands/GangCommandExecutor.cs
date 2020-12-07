@@ -10,7 +10,7 @@ namespace Gang.State.Commands
 {
     public sealed class GangCommandExecutor<TStateData> :
         IGangCommandExecutor<TStateData>
-        where TStateData : class, new()
+        where TStateData : class
     {
         readonly IGangSerializationService _serialization;
 

@@ -9,7 +9,7 @@ namespace Gang.Tests.State.Fakes
     public sealed class FakeSerializationService :
         IGangSerializationService
     {
-        private readonly IImmutableDictionary<Type, object> _deserialize;
+        readonly IImmutableDictionary<Type, object> _deserialize;
 
         public FakeSerializationService(
             IEnumerable<object> deserialize = null)

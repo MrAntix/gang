@@ -3,20 +3,20 @@ namespace Gang.Authentication.Users
     public sealed class GangUserLink
     {
         public GangUserLink(
-            string name, string emailAddress,
-            GangUserToken token,
+            string name, string email,
+            GangUserLinkCode code,
             object data = null
             )
         {
             Name = name;
-            EmailAddress = emailAddress;
-            Token = token;
+            Email = email;
+            Code = code;
             Data = data;
         }
 
         public string Name { get; }
-        public string EmailAddress { get; }
-        public GangUserToken Token { get; }
+        public string Email { get; }
+        public GangUserLinkCode Code { get; }
         public object Data { get; }
     }
 }

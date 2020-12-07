@@ -5,8 +5,14 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
+import { IAppMessage, IAppUser } from "./app/models";
 export namespace Components {
     interface AppHome {
+    }
+    interface AppMessages {
+        "currentUserId": string;
+        "users": IAppUser[];
+        "value": IAppMessage[];
     }
     interface AppRoot {
     }
@@ -18,6 +24,12 @@ declare global {
         prototype: HTMLAppHomeElement;
         new (): HTMLAppHomeElement;
     };
+    interface HTMLAppMessagesElement extends Components.AppMessages, HTMLStencilElement {
+    }
+    var HTMLAppMessagesElement: {
+        prototype: HTMLAppMessagesElement;
+        new (): HTMLAppMessagesElement;
+    };
     interface HTMLAppRootElement extends Components.AppRoot, HTMLStencilElement {
     }
     var HTMLAppRootElement: {
@@ -26,16 +38,23 @@ declare global {
     };
     interface HTMLElementTagNameMap {
         "app-home": HTMLAppHomeElement;
+        "app-messages": HTMLAppMessagesElement;
         "app-root": HTMLAppRootElement;
     }
 }
 declare namespace LocalJSX {
     interface AppHome {
     }
+    interface AppMessages {
+        "currentUserId"?: string;
+        "users"?: IAppUser[];
+        "value"?: IAppMessage[];
+    }
     interface AppRoot {
     }
     interface IntrinsicElements {
         "app-home": AppHome;
+        "app-messages": AppMessages;
         "app-root": AppRoot;
     }
 }
@@ -44,6 +63,7 @@ declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
             "app-home": LocalJSX.AppHome & JSXBase.HTMLAttributes<HTMLAppHomeElement>;
+            "app-messages": LocalJSX.AppMessages & JSXBase.HTMLAttributes<HTMLAppMessagesElement>;
             "app-root": LocalJSX.AppRoot & JSXBase.HTMLAttributes<HTMLAppRootElement>;
         }
     }

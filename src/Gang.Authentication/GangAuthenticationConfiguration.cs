@@ -1,8 +1,11 @@
 using Gang.Authentication.Api;
+using Gang.Authentication.Crypto;
+using Gang.Authentication.Crypto.Verification;
 using Gang.Authentication.Tokens;
 using Gang.Authentication.Users;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Gang.Authentication
 {
@@ -19,40 +22,45 @@ namespace Gang.Authentication
         /// <returns>Service collection</returns>
         public static IServiceCollection AddGangAuthenticationServices<TUserStore>(
             this IServiceCollection services,
-            GangAuthenticationSettings settings
+            IGangAuthenticationSettings settings
             )
-            where TUserStore : class, IGangAuthenticationUserStore
+            where TUserStore : class, IGangUserStore
         {
             return services
-                .AddSingleton<IGangAuthenticationUserStore, TUserStore>()
+                .AddSingleton<IGangUserStore, TUserStore>()
                 .AddGangAuthenticationServices(settings);
         }
 
         /// <summary>
         /// Add Gang Authentication services
-        ///
-        /// n.b. you will need to add an implementation of IGangAuthenticationUserStore
         /// </summary>
         /// <param name="services">Serice collection</param>
         /// <param name="settings">Setting</param>
         /// <returns>Service collection</returns>
         public static IServiceCollection AddGangAuthenticationServices(
             this IServiceCollection services,
-            GangAuthenticationSettings settings
+            IGangAuthenticationSettings settings
             )
         {
+            services.TryAddSingleton<IGangUserStore, GangUserStore>();
+
             services
                 .AddMvcCore(o =>
                 {
                     o.EnableEndpointRouting = false;
                 })
                 .AddApplicationPart(typeof(GangAuthenticationController).Assembly)
-                .AddControllersAsServices();
+                .AddControllersAsServices()
+                .AddNewtonsoftJson();
 
             return services
                 .AddSingleton(settings)
                 .AddGangAuthenticationHandler<GangAuthenticationHandler>()
                 .AddTransient<IGangAuthenticationService, GangAuthenticationService>()
+                .AddSingleton<IGangCryptoSettings>(settings)
+                .AddTransient<IGangCryptoService, GangCryptoService>()
+                .AddTransient<IGangCryptoVerificationService, ECES256VerificationService>()
+                .AddTransient<IGangCryptoVerificationService, RSARS256VerificationService>()
                 .AddTransient<IGangTokenService, GangTokenService>();
         }
 

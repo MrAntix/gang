@@ -17,34 +17,42 @@ namespace Gang.Demo.Web.Services.Commands
 
             if (user == null)
             {
-                return Task.FromResult(
-                    state
+                state = state
                         .CreateUser(
                             command.Audit.UserId, command.Data.Name
                         )
                         .AddUserMessage(
+                            "Welcome",
                             $"Hello @{command.Audit.UserId}, welcome to the gang",
-                            command.Audit.UserId
+                            new[] { command.Audit.UserId }
                         )
                         .AddUserMessage(
                             $"@{command.Audit.UserId} joined the gang",
                             otherUserIds
+                    );
+            }
+            else
+            {
+                state =
+                    user.Name == command.Data.Name
+                    ? state
+                    : state
+                        .SetUserName(
+                            command.Audit.UserId, command.Data.Name
                         )
+                        .AddUserMessage(
+                            $"{user.Name} changed their name to @{user.Id}",
+                            otherUserIds
                     );
             }
 
-            return Task.FromResult(
-                user.Name == command.Data.Name
-                ? state
-                : state
-                    .SetUserName(
-                        command.Audit.UserId, command.Data.Name
-                    )
-                    .AddUserMessage(
-                        $"{user.Name} changed their name to @{user.Id}",
-                        otherUserIds
-                    )
-                );
+            //if (!state.HasErrors)
+            //{
+            //    var gangUser = await _userStore.TryGetByIdAsync(command.Audit.UserId);
+            //    await _userStore.SetAsync(gangUser.SetName(command.Data.Name));
+            //}
+
+            return Task.FromResult(state);
         }
     }
 }

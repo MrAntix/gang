@@ -1,6 +1,7 @@
 using Gang.Management;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ namespace Gang
 {
     public static class GangExtensions
     {
-        public async static Task BlockAsync(
+        public static async Task BlockAsync(
             this Task<GangMemberConnectionState> task)
         {
             var state = await task;
@@ -56,6 +57,14 @@ namespace Gang
             where T : IHasGangIdString
         {
             return list.Where(item => item.Id != id);
+        }
+
+        public static IImmutableList<T> ToImmutableListDefaultEmpty<T>(
+            this IEnumerable<T> list)
+        {
+            return list
+                ?.ToImmutableList()
+                ?? ImmutableList<T>.Empty;
         }
 
         public static string GangToString(

@@ -1,15 +1,19 @@
 import { Subject } from 'rxjs';
 
 import { GangWebSocket } from '../models';
+import { parseGangEvent } from './communications';
 import { GangService } from './GangService';
 
 describe('GangService', () => {
-  let gangService: GangService;
+  type IState = { three?: boolean };
+
+  let gangService: GangService<IState>;
   let recieveMessage: (type: string, message: string, sn?: number) => void;
   let receiveOpen: () => void;
   let receiveClose: () => void;
 
   const sentMessages: ArrayBuffer[] = [];
+  const AUTH_MESSAGE = '{"memberId":"MemberId"}';
 
   function webSocketFactoryMock(
     _url: string,
@@ -42,14 +46,17 @@ describe('GangService', () => {
     receiveOpen = () => onOpen(null);
     receiveClose = () => onClose(new CloseEvent('close', { reason: 'disconnected' }));
 
-    return new GangWebSocket(messageSubject, (data) => sentMessages.push(data));
+    return new GangWebSocket(parseGangEvent, messageSubject, (data) => sentMessages.push(data));
   }
 
   beforeEach(() => {
     GangService.setState(null);
 
     gangService = new GangService(webSocketFactoryMock);
-    gangService.connect('tests', 'gangId');
+    gangService.connect({
+      path: '/tests',
+      gangId: 'gangId',
+    });
     receiveOpen();
   });
 
@@ -69,24 +76,24 @@ describe('GangService', () => {
     });
   });
 
-  it('onMemberConnected host message, host is true and memberId set', (done) => {
-    gangService.onMemberConnected.subscribe(() => {
+  it('onAuthenticated host message, host is true and memberId set', (done) => {
+    gangService.onAuthenticated.subscribe(() => {
       expect(gangService.memberId).toBe('MemberId');
       expect(gangService.isHost).toBe(true);
       done();
     });
 
-    recieveMessage('H', 'MemberId');
+    recieveMessage('H', AUTH_MESSAGE);
   });
 
-  it('onMemberConnected member message, host is false', (done) => {
-    gangService.onMemberConnected.subscribe(() => {
+  it('onAuthenticated member message, host is false', (done) => {
+    gangService.onAuthenticated.subscribe(() => {
       expect(gangService.memberId).toBe('MemberId');
       expect(gangService.isHost).toBe(false);
       done();
     });
 
-    recieveMessage('M', 'MemberId');
+    recieveMessage('M', AUTH_MESSAGE);
   });
 
   it('onCommand message', (done) => {
@@ -137,7 +144,6 @@ describe('GangService', () => {
   });
 
   it('onState merges', (done) => {
-    type IState = { three: boolean };
     const firstState = { one: true, two: true };
     const secondState = { two: false, three: true };
 
@@ -178,35 +184,35 @@ describe('GangService', () => {
   });
 
   it('cannot send state if not host', (done) => {
-    gangService.onMemberConnected.subscribe(() => {
+    gangService.onAuthenticated.subscribe(() => {
       expect(() => gangService.sendState({})).toThrow();
       done();
     });
 
-    recieveMessage('M', 'MemberId');
+    recieveMessage('M', AUTH_MESSAGE);
   });
 
   it('can send state if host', (done) => {
-    gangService.onMemberConnected.subscribe(() => {
+    gangService.onAuthenticated.subscribe(() => {
       expect(() => gangService.sendState({})).not.toThrow();
       done();
     });
 
-    recieveMessage('H', 'MemberId');
+    recieveMessage('H', AUTH_MESSAGE);
   });
 
   it('sends command if not host', (done) => {
-    gangService.onMemberConnected.subscribe(() => {
+    gangService.onAuthenticated.subscribe(() => {
       gangService.sendCommand('do-it', {});
       expect(sentMessages.length).not.toBe(1);
       done();
     });
 
-    recieveMessage('M', 'MemberId');
+    recieveMessage('M', AUTH_MESSAGE);
   });
 
   it('sends commands with sequence number', (done) => {
-    gangService.onMemberConnected.subscribe(async () => {
+    gangService.onAuthenticated.subscribe(async () => {
       gangService.sendCommand('do-it', {});
       gangService.sendCommand('do-it-again', {});
 
@@ -215,21 +221,24 @@ describe('GangService', () => {
       done();
     });
 
-    recieveMessage('M', 'MemberId');
+    recieveMessage('M', AUTH_MESSAGE);
   });
 
   it('send and wait for returning sequence number', (done) => {
-    gangService.onMemberConnected.subscribe(() => {
-      gangService.sendCommand('do-it', {}).wait().then(() => done());
+    gangService.onAuthenticated.subscribe(() => {
+      gangService
+        .sendCommand('do-it', {})
+        .wait()
+        .then(() => done());
 
       recieveMessage('C', '{"rsn":1}', 1);
     });
 
-    recieveMessage('M', 'MemberId');
+    recieveMessage('M', AUTH_MESSAGE);
   });
 
   it('executes command if host', (done) => {
-    gangService.onMemberConnected.subscribe(() => {
+    gangService.onAuthenticated.subscribe(() => {
       gangService.sendCommand('do-it', {});
       expect(sentMessages.length).not.toBe(0);
     });
@@ -238,19 +247,6 @@ describe('GangService', () => {
       done();
     });
 
-    recieveMessage('H', 'MemberId');
-  });
-
-  it('close triggers local onMemberDisconnect to allow cleanup', (done) => {
-    gangService.onMemberConnected.subscribe(() => {
-      receiveClose();
-    });
-
-    gangService.onMemberDisconnected.subscribe((memberId) => {
-      expect(memberId).toBe('MemberId');
-      done();
-    });
-
-    recieveMessage('M', 'MemberId');
+    recieveMessage('H', AUTH_MESSAGE);
   });
 });

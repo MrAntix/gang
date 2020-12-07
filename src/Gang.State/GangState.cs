@@ -7,29 +7,46 @@ using System.Reflection;
 
 namespace Gang.State
 {
-    public sealed class GangState<TData>
-        where TData : class, new()
+    public static class GangState
     {
+        public static GangState<TData> Create<TData>(
+             TData data,
+            uint version = 0,
+            IEnumerable<object> uncommitted = null,
+            IEnumerable<string> errors = null
+            )
+            where TData : class
+        {
+            return new GangState<TData>(
+                data, version,
+                uncommitted, errors
+                );
+        }
+    }
+
+    public sealed class GangState<TData>
+        where TData : class
+    {
+
         public GangState(
-            TData data = null,
+            TData data,
             uint version = 0,
             IEnumerable<object> uncommitted = null,
             IEnumerable<string> errors = null
             )
         {
-            Data = data ?? new TData();
+            Data = data ?? throw new ArgumentNullException(nameof(data));
             Version = version;
-            Uncommitted = uncommitted
-                ?.ToImmutableList()
-                ?? ImmutableList<object>.Empty;
-            Errors = errors
-                ?.ToImmutableList();
+            Uncommitted = uncommitted.ToImmutableListDefaultEmpty();
+            Errors = errors?.ToImmutableList();
+            HasErrors = Errors?.Any() ?? false;
         }
 
         public TData Data { get; }
         public uint Version { get; }
         public IImmutableList<object> Uncommitted { get; }
         public IImmutableList<string> Errors { get; }
+        public bool HasErrors { get; }
 
         public GangState<TData> Assert(
             string nullOrFailMessage,
@@ -55,7 +72,7 @@ namespace Gang.State
         {
             return Errors?.Any() ?? false
                 ? this
-                : new GangState<TData>(
+                : GangState.Create(
                     apply(eventData),
                     Version + 1,
                     Uncommitted.Append(eventData),
@@ -66,7 +83,7 @@ namespace Gang.State
         public GangState<TData> RaiseErrors(
             IEnumerable<string> errors)
         {
-            return new GangState<TData>(
+            return GangState.Create(
                 Data, Version, Uncommitted,
                 Errors?.Concat(errors) ?? errors
                 );
@@ -79,7 +96,7 @@ namespace Gang.State
         }
 
         public GangState<TData> Apply(
-            IEnumerable<IGangEvent> events)
+            IEnumerable<IGangStateEvent> events)
         {
             var version = Version;
             var data = events.Aggregate(
@@ -87,43 +104,55 @@ namespace Gang.State
                 (s, e) =>
                 {
                     version++;
-                    if (version != e.Audit.Sequence)
+                    if (version != e.Audit.Version)
                         throw new GangStateVersionException(version, e.Audit);
 
-                    return _applyMethods[e.Data.GetType()](s, e.Data);
+                    var method = ApplyMethods[e.Data.GetType()];
+
+                    return method(s, e.Data);
                 });
 
-            return new GangState<TData>(
+            return GangState.Create(
                     data, version, null,
                     null
                     );
         }
 
-        static GangState()
-        {
-            _applyMethods = typeof(TData)
-                    .GetMethods()
-                    .Select(WrapMethod)
-                    .Where(m => m != null)
-                    .ToImmutableDictionary(kv => kv.Item1, kv => kv.Item2);
-        }
+        public static readonly ImmutableDictionary<Type, Func<TData, object, TData>> ApplyMethods
+            = typeof(TData)
+                .GetMethods()
+                .Select(WrapMethod)
+                .Where(m => m.Key != null)
+                .ToImmutableDictionary();
 
-        static readonly ImmutableDictionary<Type, Func<TData, object, TData>> _applyMethods;
-
-        static Tuple<Type, Func<TData, object, TData>> WrapMethod(
-            MethodInfo method)
+        static KeyValuePair<Type, Func<TData, object, TData>> WrapMethod(
+            MethodInfo method
+            )
         {
-            if (method.ReturnType != typeof(TData)) return null;
+            if (method.ReturnType != typeof(TData)) return default;
 
             var p = method.GetParameters();
-            if (p.Length != 1) return null;
+            if (p.Length != 1) return default;
 
-            return Tuple
+            return KeyValuePair
                 .Create<Type, Func<TData, object, TData>>(
                     p[0].ParameterType,
-                    (state, data) => (TData)method
-                         .Invoke(state, new[] { data })
+                    (state, data) => (TData)method.Invoke(state, new[] { data })
                 );
+        }
+
+        public static IImmutableList<IGangStateEvent> EventSequenceFrom(
+            IEnumerable<object> data,
+            GangAudit audit
+        )
+        {
+            var sequence = audit.Version ?? 0U;
+            return data
+                .Select((d, i) =>
+                    GangStateEvent.From(d, audit.SetVersion(++sequence)
+                    )
+                )
+                .ToImmutableList();
         }
     }
 }

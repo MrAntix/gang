@@ -1,8 +1,9 @@
 import { GangService } from '@gang-js/core';
 import { getErrorMessage } from './getErrorMessage';
+import { IAppState } from './IAppState';
 
 export function provideSendCommand(services: {
-  gang: GangService;
+  gang: GangService<IAppState>;
 }) {
 
   return <T>(type: string, data: T, options?: {

@@ -46,12 +46,12 @@ namespace Gang.Tests.Management.Fakes
             IGangMember gangMember)
         {
             var state = new GangMemberConnectionState();
-            state.Disconnected();
+            state.SetDisconnected();
 
             gangMember.ConnectAsync(
                 new GangController(
-                    parameters.GangId, gangMember,
                     this,
+                    parameters.GangId, gangMember,
                     Receive,
                     Send,
                     null

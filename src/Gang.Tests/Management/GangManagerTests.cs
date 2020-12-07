@@ -169,10 +169,15 @@ namespace Gang.Tests.Management
             GangCollection gangs = null,
             GangEventExecutor<IGangManagerEvent> executor = null)
         {
+            var serializer = new WebSocketGangJsonSerializationService();
+            var controllerfactory = new GangControllerFactory(serializer);
+
             return new GangManager(
                 NullLogger<GangManager>.Instance,
+                TestGangSettings.Default,
                 gangs ?? new GangCollection(),
-                new WebSocketGangJsonSerializationService(),
+                controllerfactory,
+                serializer,
                 new GangManagerInMemorySequenceProvider(),
                 executor
                 );

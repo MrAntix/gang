@@ -31,6 +31,7 @@ namespace Gang.Demo.Web.Services.State
         public static string TextIsRequred(string text)
         {
             return string.IsNullOrWhiteSpace(text)
+                || text == "error"
                 ? ERROR_MESSAGE_TEXT_IS_REQUIRED
                 : null;
         }

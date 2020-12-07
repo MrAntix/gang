@@ -11,15 +11,15 @@ namespace Gang.Tests.Management.Fakes
     {
         public FakeGangMember(
              string id,
-             GangAuth auth = null)
+             GangSession session = null)
         {
             Id = id.GangToBytes();
-            Auth = auth;
+            Session = session ?? GangSession.Default;
             MessagesReceived = new List<Message>();
         }
 
         public byte[] Id { get; }
-        public GangAuth Auth { get; }
+        public GangSession Session { get; }
 
         public IGangController Controller { get; private set; }
         public Func<Task> OnDisconnectAsync { get; private set; }
@@ -52,7 +52,7 @@ namespace Gang.Tests.Management.Fakes
         Task IGangMember.HandleAsync(GangMessageTypes type,
             byte[] data, GangAudit audit)
         {
-            MessagesReceived.Add(new Message(type, data, audit?.Sequence));
+            MessagesReceived.Add(new Message(type, data, audit?.Version));
             return Task.CompletedTask;
         }
 

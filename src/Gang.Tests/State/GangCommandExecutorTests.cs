@@ -23,7 +23,7 @@ namespace Gang.Tests.State
             var serialization = GetSerializationService()
                 .SetupDeserialize(new GangCommandWrapper(TYPE_NAME, DATA));
             var executor = GetExecutor(serialization: serialization);
-            var state = new GangState<TodosState>();
+            var state = GangState.Create(new TodosState());
 
             await Assert.ThrowsAsync<GangCommandHandlerNotFoundExcetion>(
                 async () => await executor.ExecuteAsync(state, null, AUDIT)
@@ -38,7 +38,7 @@ namespace Gang.Tests.State
             var handler = new FakeHandler((s, c) => throw new Exception());
             var executor = GetExecutor(serialization: serialization)
                 .RegisterHandlerProvider(() => handler);
-            var state = new GangState<TodosState>();
+            var state = GangState.Create(new TodosState());
 
             await Assert.ThrowsAsync<Exception>(
                 async () => await executor.ExecuteAsync(state, null, AUDIT)
@@ -53,7 +53,7 @@ namespace Gang.Tests.State
             var handler = new FakeHandler();
             var executor = GetExecutor(serialization: serialization)
                 .RegisterHandlerProvider(() => handler);
-            var state = new GangState<TodosState>();
+            var state = GangState.Create(new TodosState());
 
             await executor.ExecuteAsync(state, null, AUDIT);
 

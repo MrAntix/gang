@@ -16,15 +16,9 @@ namespace Gang.Demo.Web.Services.State
                 && users.GroupBy(u => u.Id).Any(g => g.Count() > 2))
                 throw new Exception("Duplicate users");
 
-            Users = users
-                ?.ToImmutableList()
-                ?? ImmutableList<User>.Empty;
-            Messages = messages
-                ?.ToImmutableList()
-                ?? ImmutableList<Message>.Empty;
+            Users = users.ToImmutableListDefaultEmpty();
+            Messages = messages.ToImmutableListDefaultEmpty();
         }
-
-        public HostState() : this(null, null) { }
 
         public IImmutableList<User> Users { get; }
         public IImmutableList<Message> Messages { get; }

@@ -1,11 +1,16 @@
+using Gang.Authentication.Api;
 using System.Threading.Tasks;
 
 namespace Gang.Authentication
 {
     public interface IGangAuthenticationService
     {
-        Task RequestLink(string emailAddress, object data = null);
-        Task<string> Link(string token);
-        Task<GangAuth> AuthenticateAsync(string token);
+        Task RequestLinkAsync(string email, object data = null);
+        Task<string> ValidateLinkAsync(GangLink data);
+
+        Task<string> RequestChallengeAsync(string token);
+        Task<GangSession> AuthenticateAsync(string token);
+        Task<bool> RegisterCredentialAsync(string token, GangCredentialRegistration data);
+        Task<string> ValidateCredentialAsync(GangAuthentication data);
     }
 }
