@@ -15,30 +15,33 @@ namespace Gang.WebSockets
 {
     public static class WebSocketGangConfiguration
     {
+        public const string RESULT_DENIED = "denied";
+
         public static IServiceCollection AddWebSocketGangs(
-            this IServiceCollection services)
+            this IServiceCollection services,
+            IGangSettings settings
+            )
         {
-            services.AddGangs();
-            services.TryAddSingleton<IWebSocketGangAuthenticationService, WebSocketGangAuthenticationenticator>();
+            services.AddGangs(settings);
             services.TryAddSingleton<IGangSerializationService, WebSocketGangJsonSerializationService>();
 
             return services;
         }
 
         public static IServiceCollection AddWebSocketGangsSerialization(
-            this IServiceCollection services)
+            this IServiceCollection services
+            )
         {
             return services.AddSingleton<IGangSerializationService, WebSocketGangJsonSerializationService>();
         }
-
 
         public static IApplicationBuilder UseWebSocketGangs(
             this IApplicationBuilder app,
             string path
             )
         {
-            var authenticator = app.ApplicationServices.GetRequiredService<IWebSocketGangAuthenticationService>();
             var manager = app.ApplicationServices.GetRequiredService<IGangManager>();
+            var authenticateAsync = app.ApplicationServices.GetRequiredService<GangAuthenticationFunc>();
 
             app.UseWebSockets();
             app.Map(path, subApp =>
@@ -52,9 +55,11 @@ namespace Gang.WebSockets
                             return;
                         }
 
-                        await authenticator.ExecuteAsync(
-                            GetGangParameters(context.Request.Query),
-                            auth => GetGangMemberAsync(auth, context));
+                        var parameters = GetGangParameters(context.Request.Query);
+                        var session = await authenticateAsync(parameters);
+                        var member = await GetGangMemberAsync(session, context);
+
+                        await manager.ManageAsync(parameters, member).BlockAsync();
                     });
             });
 
@@ -62,18 +67,20 @@ namespace Gang.WebSockets
         }
 
         static async Task<IGangMember> GetGangMemberAsync(
-            GangAuth auth,
+            GangSession session,
             HttpContext context
             )
         {
             return new WebSocketGangMember(
                 $"{Guid.NewGuid():N}".GangToBytes(),
-                auth,
+                session,
                 await context.WebSockets.AcceptWebSocketAsync()
                 );
         }
 
-        public static GangParameters GetGangParameters(IQueryCollection query)
+        public static GangParameters GetGangParameters(
+            IQueryCollection query
+            )
         {
             if (!TryGetString(query, "gangId", out var gangId))
                 return null;
@@ -83,7 +90,10 @@ namespace Gang.WebSockets
             return new GangParameters(gangId, token);
         }
 
-        static bool TryGetString(IQueryCollection query, string name, out string value)
+        static bool TryGetString(
+            IQueryCollection query,
+            string name, out string value
+            )
         {
             if (!query.TryGetValue(name, out var values))
             {

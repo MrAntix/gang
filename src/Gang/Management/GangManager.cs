@@ -12,7 +12,10 @@ namespace Gang.Management
     public sealed class GangManager :
         IGangManager
     {
+        public const string RESULT_DENIED = "denied";
+
         readonly ILogger<GangManager> _logger;
+        readonly IGangSettings _settings;
         readonly GangCollection _gangs;
         readonly IGangSerializationService _serializer;
         readonly IGangManagerSequenceProvider _sequence;
@@ -21,6 +24,7 @@ namespace Gang.Management
 
         public GangManager(
             ILogger<GangManager> logger,
+            IGangSettings settings,
             GangCollection gangs,
             IGangSerializationService serializer,
             IGangManagerSequenceProvider sequence,
@@ -28,6 +32,7 @@ namespace Gang.Management
             )
         {
             _logger = logger;
+            _settings = settings;
             _gangs = gangs;
             _serializer = serializer;
             _sequence = sequence;
@@ -73,52 +78,63 @@ namespace Gang.Management
         }
 
         async Task<GangMemberConnectionState> IGangManager.ManageAsync(
-            GangParameters parameters, IGangMember gangMember)
+            GangParameters parameters, IGangMember member)
         {
             if (parameters is null)
                 throw new ArgumentNullException(nameof(parameters));
-            if (gangMember is null)
-                throw new ArgumentNullException(nameof(gangMember));
+            if (member is null)
+                throw new ArgumentNullException(nameof(member));
+
+            var audit = new GangAudit(parameters.GangId, null, member.Id, member.Session?.User.Id);
+            var auth = _serializer.Serialize(
+                new GangAuth(member.Id,
+                    member.Session?.Token, _settings.Application)
+                );
+
+            if (member.Session == null)
+            {
+                await member.HandleAsync(GangMessageTypes.Denied, auth, audit);
+                await member.DisconnectAsync(RESULT_DENIED);
+
+                return GangMemberConnectionState.Disconnected;
+            }
 
             var gangId = parameters.GangId;
-            var gang = _gangs.AddMemberToGang(parameters.GangId, gangMember,
-               _ => RaiseEvent(new GangAdded(), gangId));
+            var gang = _gangs
+                .AddMemberToGang(parameters.GangId, member, _ => RaiseEvent(new GangAdded(), gangId));
 
-            var audit = new GangAudit(parameters.GangId, null, gangMember.Id, gangMember.Auth?.Id);
-            if (gang.HostMember == gangMember)
+            if (gang.HostMember == member)
             {
-                await gangMember.HandleAsync(GangMessageTypes.Host, gangMember.Id, audit);
+                await member.HandleAsync(GangMessageTypes.Host, auth, audit);
             }
             else
             {
+                await member.HandleAsync(GangMessageTypes.Member, auth, audit);
                 await gang.HostMember.HandleAsync(GangMessageTypes.Connect, null, audit);
-                await gangMember.HandleAsync(GangMessageTypes.Member, gangMember.Id, audit);
             }
-            if (gangMember.Auth != null)
-                await gangMember.HandleAsync(GangMessageTypes.Authenticate, gangMember.Auth?.Token?.GangToBytes());
 
-            RaiseEvent(new GangMemberAdded(), gangId, gangMember.Id);
+            RaiseEvent(new GangMemberAdded(), gangId, member.Id);
 
             var controller = new GangController(
-                parameters.GangId, gangMember, this,
+                parameters.GangId, member, this,
                 async (data) =>
                 {
-                    if (gangMember == gang.HostMember)
+                    if (member == gang.HostMember)
                         throw new GangException("host member should not receive data");
 
                     var sequenceNumber = BitConverter.ToUInt32(data.AsSpan()[0..4]);
 
-                    var audit = new GangAudit(parameters.GangId, sequenceNumber, gangMember.Id, gangMember.Auth?.Id)
+                    var audit = new GangAudit(parameters.GangId, sequenceNumber, member.Id, member.Session?.User.Id)
 ;
                     await gang.HostMember
                         .HandleAsync(GangMessageTypes.Command, data[4..], audit);
 
-                    RaiseEvent(new GangMemberData(data), gangId, gangMember.Id);
+                    RaiseEvent(new GangMemberData(data), gangId, member.Id);
                 },
                 async (type, data, audit, memberIds) =>
                 {
                     var gang = _gangs[parameters.GangId];
-                    if (gangMember != gang.HostMember)
+                    if (member != gang.HostMember)
                         throw new GangException("Only host member can send data to members");
 
                     var members = memberIds == null
@@ -127,7 +143,7 @@ namespace Gang.Management
                             .Where(m => memberIds.Any(mId => mId.SequenceEqual(m.Id)));
 
                     var tasks = members
-                        .Select(member => member
+                        .Select(m => m
                             .HandleAsync(type ?? GangMessageTypes.State, data, audit))
                         .ToArray();
 
@@ -137,18 +153,18 @@ namespace Gang.Management
                 );
 
             var state = new GangMemberConnectionState();
-            await gangMember.ConnectAsync(controller, async () =>
+            await member.ConnectAsync(controller, async () =>
                 {
-                    _gangs.RemoveMemberFromGang(parameters.GangId, gangMember);
+                    _gangs.RemoveMemberFromGang(parameters.GangId, member);
 
                     gang = _gangs[parameters.GangId];
                     if (gang != null)
                         await gang.HostMember
-                        .HandleAsync(GangMessageTypes.Disconnect, gangMember.Id);
+                            .HandleAsync(GangMessageTypes.Disconnect, member.Id);
 
-                    RaiseEvent(new GangMemberRemoved(), gangId, gangMember.Id);
+                    RaiseEvent(new GangMemberRemoved(), gangId, member.Id);
 
-                    state.Disconnected();
+                    state.SetDisconnected();
                 });
 
             return state;

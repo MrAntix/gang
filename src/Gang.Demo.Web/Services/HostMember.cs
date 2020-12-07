@@ -46,14 +46,14 @@ namespace Gang.Demo.Web.Services
         protected override async Task<GangState<HostState>>
             OnStateAsync(GangState<HostState> state)
         {
-            var members = Controller.GetGang().Members.Where(m => m.Auth != null).ToArray();
+            var members = Controller.GetGang().Members.Where(m => m.Session != null).ToArray();
             var usersOnline = state.Data.Users
-                .Where(u => !string.IsNullOrWhiteSpace(u.Name) && members.Any(m => m.Auth.Id == u.Id));
+                .Where(u => !string.IsNullOrWhiteSpace(u.Name) && members.Any(m => m.Session.User.Id == u.Id));
 
             foreach (var member in members)
             {
                 var user = state.Data.Users
-                    ?.FirstOrDefault(u => u.Id == member.Auth.Id);
+                    ?.FirstOrDefault(u => u.Id == member.Session.User.Id);
 
                 if (user == null)
 
@@ -62,8 +62,7 @@ namespace Gang.Demo.Web.Services
                         {
                             messages = new[]
                             {
-                                new Message("Welcome", "Enter your name to join the chat"),
-                                new Message("About-Data", "Data is held in memory and will clear down after a period of inactivity")
+                                new Message("Welcome", "Enter your name to join the chat")
                             },
                             users = Array.Empty<object>()
                         },

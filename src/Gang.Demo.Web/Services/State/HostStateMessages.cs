@@ -1,4 +1,4 @@
-﻿using Gang.Demo.Web.Services.Events;
+using Gang.Demo.Web.Services.Events;
 using Gang.State;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,8 @@ using System.Linq;
 
 namespace Gang.Demo.Web.Services.State
 {
-    public static class HostStateMessages{
+    public static class HostStateMessages
+    {
 
         public static GangState<HostState> AddMessage(
             this GangState<HostState> state,
@@ -53,7 +54,7 @@ namespace Gang.Demo.Web.Services.State
         public static GangState<HostState> AddUserMessage(
             this GangState<HostState> state,
             string text,
-            params string[] userIds
+            IEnumerable<string> userIds
             )
         {
             return AddUserMessage(state, null, text, userIds);

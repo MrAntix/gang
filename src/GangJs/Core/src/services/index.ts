@@ -3,7 +3,10 @@
  */
 
 export * from './createGangWebSocket';
-export * from './GangAuthService';
+export * from './GangAuthenticationService';
+export * from './gangClean';
+export * from './GangHttp';
+export * from './GangLocationService';
 export * from './GangService';
 export * from './GangStore';
 export * from './getGangId';

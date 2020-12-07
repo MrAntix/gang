@@ -8,7 +8,7 @@ namespace Gang
     public abstract class GangHostBase : IGangMember
     {
         public byte[] Id { get; } = "HOST".GangToBytes();
-        public GangAuth Auth { get; } = null;
+        public GangSession Session { get; } = GangSession.Default;
 
         protected IGangController Controller { get; private set; }
 

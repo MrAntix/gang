@@ -24,12 +24,14 @@ namespace Gang.State
                 ?? ImmutableList<object>.Empty;
             Errors = errors
                 ?.ToImmutableList();
+            HasErrors = Errors?.Any() ?? false;
         }
 
         public TData Data { get; }
         public uint Version { get; }
         public IImmutableList<object> Uncommitted { get; }
         public IImmutableList<string> Errors { get; }
+        public bool HasErrors { get; }
 
         public GangState<TData> Assert(
             string nullOrFailMessage,

@@ -1,4 +1,6 @@
-import { createGangWebSocket, IWebSocket } from './createGangWebSocket';
+import { createGangWebSocket } from './createGangWebSocket';
+import { IWebSocket } from './IWebSocket';
+import { WebSocketData } from './WebSocketData';
 
 describe('createGangWebSocket', () => {
 
@@ -8,7 +10,7 @@ describe('createGangWebSocket', () => {
     const fakeSocket = new FakeSocket()
 
     const socket = createGangWebSocket(
-      null, () => { }, () => { }, () => { },
+      null, null, null, null,
       () => fakeSocket
     );
 
@@ -26,8 +28,7 @@ describe('createGangWebSocket', () => {
     let received: CloseEvent = null;
 
     const socket = createGangWebSocket(
-      null, () => { }, () => { },
-      e => received = e,
+      null, null, null,      e => received = e,
       () => new FakeSocket()
     );
 
@@ -37,16 +38,18 @@ describe('createGangWebSocket', () => {
   });
 
   class FakeSocket implements IWebSocket {
-    binaryType: BinaryType;
-    onclose: (this: IWebSocket, ev: CloseEvent) => any;
-    onerror: (this: IWebSocket, ev: Event) => any;
-    onmessage: (this: IWebSocket, ev: MessageEvent<any>) => any;
-    onopen: (this: IWebSocket, ev: Event) => any;
-    send(_data: string | ArrayBuffer | SharedArrayBuffer | Blob | ArrayBufferView): void {
+    sent: WebSocketData[] = [];
 
+    binaryType: BinaryType;
+    onclose: (this: IWebSocket, ev: CloseEvent) => void;
+    onerror: (this: IWebSocket, ev: Event) => void;
+    onmessage: (this: IWebSocket, ev: MessageEvent<unknown>) => void;
+    onopen: (this: IWebSocket, ev: Event) => void;
+    send(data: WebSocketData): void {
+      this.sent = [...this.sent, data]
     }
     close(_code?: number, reason?: string): void {
       this.onclose(new CloseEvent('close', { reason }));
     }
-  };
+  }
 });

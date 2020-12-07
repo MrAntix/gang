@@ -1,5 +1,5 @@
 import { Component, h, Host, State, Listen, Fragment, Element } from '@stencil/core';
-import { GangContext, getGangId, GangStore } from '@gang-js/core';
+import { GangContext, getGangId, GangStore, GangService } from '@gang-js/core';
 
 import { IAppState, IAppUser, IAppMessage, IAppMessageGroup, provideSendCommand } from '../../app/models';
 
@@ -11,16 +11,17 @@ import { IAppState, IAppUser, IAppMessage, IAppMessageGroup, provideSendCommand 
 export class AppHome {
   @Element() element: HTMLElement;
 
-  gang = GangContext.service;
+  gang: GangService<IAppState> = GangContext.service;
+  auth = GangContext.auth;
   logger = GangContext.logger;
   sendCommand = provideSendCommand(this);
+
+  @State() isAuthenticated: boolean;
 
   @State() state: IAppState;
 
   @State() messageGroups: IAppMessageGroup[];
-
   @State() newMessageText: string;
-
   @State() currentUser: IAppUser;
   @State() userNames: { [id: string]: string } = {};
 
@@ -39,20 +40,43 @@ export class AppHome {
 
   onGangAuthenticated(token: string) {
 
-    this.logger('onGangAuthenticated', {
-      token,
+    this.logger('home.onGangAuthenticated', {
       isConnected: this.gang.isConnected,
+      isAuthenticated: this.gang.isAuthenticated,
+      token,
       name: GangStore.get('name')
     });
 
-    if (!!token
-      && this.gang.isConnected
-      && !!GangStore.get('name'))
-      this.updatetUserName(GangStore.get('name'));
+    this.isAuthenticated = this.gang.isAuthenticated;
+
+    if (this.isAuthenticated) {
+      this.removeNotification('Invite');
+      this.gang.setState({
+        inviteSentTo: null
+      });
+
+      if (this.gang.isConnected && !!GangStore.get('name'))
+        this.updatetUserName(GangStore.get('name'));
+
+    } else {
+
+      this.notify({
+        id: 'Welcome',
+        text: 'Hello there.\nEnter your email to get an invite.\nPlease note this is a demo, no data is stored'
+      });
+
+      if (this.state?.inviteSentTo) {
+        this.notify({
+          id: 'Invite',
+          text: `I have sent an invite to ${this.state.inviteSentTo}\nEnter the code in the email below`,
+          class: 'success'
+        });
+      }
+    }
   }
 
   onGangState(state: Partial<IAppState>) {
-    this.logger('onGangState', { state });
+    this.logger('home.onGangState', { state });
 
     state = {
       ...this.state,
@@ -60,6 +84,7 @@ export class AppHome {
     };
 
     this.state = {
+      inviteSentTo: null,
       notifications: {},
       ...state,
       messages: state.messages || [],
@@ -78,10 +103,11 @@ export class AppHome {
 
     this.currentUser = this.state
       .users.find(user => user.isCurrent);
+
   }
 
   onGangConnectionRetry(seconds: number) {
-    this.logger('onGangConnectionRetry', {})
+    this.logger('home.onGangConnectionRetry', {})
 
     const message = {
       id: 'Disconnected',
@@ -113,7 +139,7 @@ export class AppHome {
               <span class="text user-name">{unescapeText(this.userNames[group.byId] || 'Host Bot')}</span>
               <ol class="text message-text-list">
                 {group.items.map(message =>
-                  <li key={message.id} class={`message-text-list-item ${message.class}`}>
+                  <li key={message.id} data-id={message.id} class={`message-text-list-item ${message.class}`}>
                     <span class="text message-text">{unescapeText(this.replaceUserIds(message.text))}</span>
                   </li>
                 )}
@@ -125,28 +151,39 @@ export class AppHome {
           </li>)}
         </ol>
 
-        {!this.currentUser?.name &&
-          <form class="row">
-            <input class="input user-name"
+        {this.isAuthenticated
+          ? !this.currentUser?.name &&
+          <form class="row"
+            onSubmit={e => {
+              e.preventDefault();
+
+              const name = e.currentTarget['name'].value;
+              this.updatetUserName(name);
+
+              window.setTimeout(() =>
+                this.focus('.input.message'), 600);
+            }}>
+
+            <input class="input fit user-name"
+              name="name"
               autoFocus
               placeholder="(set your name)"
-              onChange={(e: any) => {
-                this.updatetUserName(e.target.value);
-                window.setTimeout(() =>
-                  this.focus('.input.message'), 600);
-              }}
               value={this.currentUser?.name}
             />
-            <button class="button" type="button"
-            >Enter chat</button>
+            <button class="button"
+            >Enter</button>
           </form>
+          : !this.state.inviteSentTo
+            ? this.renderInvite()
+            : this.renderCodeEntry()
+
         }
 
         {!!this.currentUser?.name &&
           <form class="row"
             onSubmit={e => this.addMessage(e, escapeText(this.newMessageText))}
           >
-            <textarea class="input message"
+            <textarea class="input fit message"
               autoFocus
               rows={2} placeholder="(type the message to send here)"
               value={this.newMessageText}
@@ -160,33 +197,76 @@ export class AppHome {
         }
       </div>
 
-      {!!this.currentUser &&
-        <div class="section users">
-          <ol>
-            <li class="heading">You</li>
-            <li>
-              <input class="input user-name"
-                autoFocus
-                placeholder="(set your name)"
-                onChange={(e: any) => this.updatetUserName(escapeText(e.target.value))}
-                value={unescapeText(this.currentUser?.name)}
-              />
-            </li>
-
-            {!!this.currentUser && <Fragment>
-              <li class="heading">Other Users</li>
-              {this.state.users?.filter(u => !!u?.name && u.id !== this.currentUser?.id)
-                .map(user => <li class={{
-                  "user-name other text": true,
-                  "is-online": user.isOnline
-                }}
-                >{unescapeText(user.name)}</li>)}
-            </Fragment>
-            }
-          </ol>
-        </div>
-      }
+      {!!this.currentUser && this.renderUsers()}
     </Host>
+  }
+
+  renderUsers() {
+    return <div class="section users">
+      <ol>
+        <li class="heading">You</li>
+        <li>
+          <input class="input user-name"
+            autoFocus
+            placeholder="(set your name)"
+            onChange={(e: any) => this.updatetUserName(escapeText(e.target.value))}
+            value={unescapeText(this.currentUser?.name)}
+          />
+        </li>
+
+        {!!this.currentUser && <Fragment>
+          <li class="heading">Other Users</li>
+          {this.state.users?.filter(u => !!u?.name && u.id !== this.currentUser?.id)
+            .map(user => <li class={{
+              "user-name other text": true,
+              "is-online": user.isOnline
+            }}
+            >{unescapeText(user.name)}</li>)}
+        </Fragment>
+        }
+      </ol>
+    </div>;
+  }
+
+  renderInvite() {
+    return <form class="row"
+      onSubmit={e => {
+        e.preventDefault();
+
+        const emailAddress = e.currentTarget['emailAddress'].value;
+        this.invite(emailAddress);
+
+      }}>
+      <input key="linkRequest" class="input fit user-email"
+        name="emailAddress"
+        autoFocus
+        placeholder="(email address)"
+      />
+      <button class="button"
+      >Get an Invite</button>
+    </form>
+  }
+
+  renderCodeEntry() {
+    return <form class="row"
+      onSubmit={async e => {
+        e.preventDefault();
+
+        const code = e.currentTarget['code'].value;
+        await this.authenticateCode(code);
+
+      }}>
+      <input key="link" class="input fit code"
+        name="code"
+        autoFocus
+        placeholder="(code eg. XXX-XXX-XXX)"
+      />
+      <button class="button"
+      >Submit Code</button>
+      <a class="button"
+        onClick={() => this.cancelInvite()}
+      >Cancel</a>
+    </form>
   }
 
   componentDidRender() {
@@ -196,9 +276,50 @@ export class AppHome {
     }
   }
 
+  async invite(emailAddress: string) {
+
+    if (await this.auth.requestLink(emailAddress)) {
+
+      this.gang.setState({
+        inviteSentTo: emailAddress
+      });
+      
+      this.onGangAuthenticated(undefined);
+
+    } else
+
+      this.notify({
+        id: 'Invite',
+        text: `Email address is not valid, please check and try again`,
+        class: 'error'
+      });
+  }
+
+  cancelInvite() {
+
+    this.gang.setState({
+      inviteSentTo: undefined
+    });
+
+    this.removeNotification('Invite');
+  }
+
+  async authenticateCode(code: string) {
+
+    const token = await this.auth.tryGetToken(code);
+
+    if (token) await this.gang.connect({ token });
+    else
+      this.notify({
+        id: 'Invite',
+        text: 'Code was not valid or out of date, check and try again or cancel to get a new code',
+        class: 'error'
+      });
+  }
+
   async updatetUserName(name: string) {
 
-    this.logger('updatetUserName', { name });
+    this.logger('home.updatetUserName', { name });
 
     try {
       this.currentUser = {
@@ -217,11 +338,34 @@ export class AppHome {
     }
   }
 
+  notify(message: IAppMessage) {
+
+    this.gang.setState({
+      notifications: {
+        ...this.state?.notifications,
+        [message.id]: {
+          on: new Date(),
+          ...message
+        }
+      }
+    });
+  }
+
+  removeNotification(id: string) {
+
+    this.gang.setState({
+      notifications: {
+        ...this.state?.notifications,
+        [id]: undefined
+      }
+    });
+  }
+
   async addMessage(e: Event, text: string) {
 
     e.preventDefault();
 
-    this.logger('addMessage', { text })
+    this.logger('home.addMessage', { text })
     if (!text) return;
 
     const message: IAppMessage = {
@@ -241,12 +385,9 @@ export class AppHome {
     })
 
     await this.gang
-      .sendCommand('addMessage', {
-        id: getGangId(),
-        text
-      });
+      .sendCommand('addMessage', { id: getGangId(), text }).wait();
 
-    this.logger('addMessage.done', { text })
+    this.logger('home.addMessage.done', { text })
     this.newMessageText = '';
   }
 
@@ -337,6 +478,8 @@ function sortAndGroupMessages(items: IAppMessage[]): IAppMessageGroup[] {
 
       return groups;
     }, []);
+
+
 }
 
 function mapToArray<T>(map: Record<string, T>) {
@@ -346,12 +489,16 @@ function mapToArray<T>(map: Record<string, T>) {
 }
 
 function escapeText(value: string): string {
-  return encodeURI(value);
+  if (!value) return value;
+
+  return unescape(encodeURIComponent(value));
 }
 
 function unescapeText(value: string): string {
+  if (!value) return value;
+
   try {
-    return decodeURI(value);
+    return decodeURIComponent(escape(value));
   } catch {
     return value;
   }

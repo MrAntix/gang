@@ -1,17 +1,17 @@
-﻿using Gang.Authentication;
+using Gang.Authentication;
 using System;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
 
 namespace Gang.Demo.Web.Services
 {
-    public sealed class AuthenticationHandler :
+    public sealed class SimpleAuthenticationHandler :
         IGangAuthenticationHandler
     {
         IImmutableDictionary<string, string> _userIds = ImmutableDictionary<string, string>.Empty;
 
-        Task<GangAuth> IGangAuthenticationHandler
-            .AuthenticateAsync(GangParameters parameters)
+        Task<GangSession> IGangAuthenticationHandler
+            .HandleAsync(GangParameters parameters)
         {
             var token = parameters.Token ?? $"{Guid.NewGuid():N}";
 
@@ -22,7 +22,7 @@ namespace Gang.Demo.Web.Services
             }
 
             return Task.FromResult(
-                new GangAuth(userId, token: token)
+                new GangSession(userId, token: token)
                 );
         }
     }

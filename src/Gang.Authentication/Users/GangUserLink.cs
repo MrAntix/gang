@@ -4,19 +4,19 @@ namespace Gang.Authentication.Users
     {
         public GangUserLink(
             string name, string emailAddress,
-            GangUserToken token,
+            GangUserLinkCode code,
             object data = null
             )
         {
             Name = name;
             EmailAddress = emailAddress;
-            Token = token;
+            Code = code;
             Data = data;
         }
 
         public string Name { get; }
         public string EmailAddress { get; }
-        public GangUserToken Token { get; }
+        public GangUserLinkCode Code { get; }
         public object Data { get; }
     }
 }

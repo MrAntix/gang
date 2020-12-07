@@ -2,7 +2,7 @@
   box-sizing: border-box;
 }
 
-button {
+.button {
   font: inherit;
   border: none;
   padding: var(--padding-unit);
@@ -10,7 +10,7 @@ button {
   color: var(--primary-color-alt);
 }
 
-button,
+.button,
 input,
 textarea {
   border-radius: var(--border-radius);

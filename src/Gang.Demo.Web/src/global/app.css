@@ -5,7 +5,7 @@
   --border-radius: 5px;
   --callout-size: .4em;
   --callout-border-radius: 1em;
-  --text-line-height: 1.1;
+  --text-line-height: 1.4;
 
   --color: #333;
   --color-alt: #ddd;
@@ -19,8 +19,8 @@
 
   --user-color: var(--color-alt);
   --user-color-alt: var(--color);
-  --host-bot-color: #dca;
-  --host-bot-color-alt: #111;
+  --host-bot-color: #edb;
+  --host-bot-color-alt: #000;
   --current-user-color: var(--primary-color);
   --current-user-color-alt: var(--primary-color-alt);
 
@@ -31,8 +31,11 @@
   --page-head-height: 90px;
   --page-foot-height: 75px;
 
-  --error-color: #f99;
-  --error-color-alt: #fff;
+  --error-color: #c99;
+  --error-color-alt: #300;
+
+  --success-color: #9c9;
+  --success-color-alt: #030;
 }
 
 @media (prefers-color-scheme: light) {

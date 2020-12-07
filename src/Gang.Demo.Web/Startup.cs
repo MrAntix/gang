@@ -31,7 +31,7 @@ namespace Gang.Demo.Web
                 .AddSingleton(Settings.App)
                 .AddSingleton(Settings.Auth)
                 .AddSingleton(Settings.Smtp)
-                .AddWebSocketGangs()
+                .AddWebSocketGangs(Settings)
                 .AddGangManagerEventHandlers<GangAddedHandler>()
                 .AddGangHost<HostMember>()
                 .AddGangStateInMemory<HostState>()
@@ -40,12 +40,12 @@ namespace Gang.Demo.Web
             if (Settings.Auth.Enabled)
             {
                 services
-                    .AddGangAuthenticationServices<UserStore>(Settings.Auth);
+                    .AddGangAuthenticationServices<UserStore>(Settings);
             }
             else
             {
                 services
-                    .AddGangAuthenticationHandler<AuthenticationHandler>();
+                    .AddGangAuthenticationHandler<SimpleAuthenticationHandler>();
             }
         }
 
@@ -58,8 +58,13 @@ namespace Gang.Demo.Web
 
             app
                 .UseDefaultFiles()
-                .UseStaticFiles()
-                //.UseGangAuthenticationApi()
+                .UseStaticFiles();
+
+            if (Settings.Auth.Enabled)
+                app
+                    .UseGangAuthenticationApi();
+
+            app
                 .UseWebSocketGangs("/ws")
                 .Map("/disconnect", HandleDisconnect);
         }

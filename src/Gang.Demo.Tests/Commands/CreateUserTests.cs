@@ -1,9 +1,9 @@
+using Gang.Authentication.Users;
 using Gang.Demo.Web.Services.Commands;
 using Gang.Demo.Web.Services.Events;
 using Gang.Demo.Web.Services.State;
 using Gang.State;
 using Gang.State.Commands;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;

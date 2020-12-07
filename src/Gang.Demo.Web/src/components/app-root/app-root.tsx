@@ -1,7 +1,7 @@
 import { Component, Fragment, h, Listen, State } from '@stencil/core';
 
-import { GangContext, GangStore, GangConnectionState } from '@gang-js/core';
-import { Commands, CommandTypes } from '../../app/models';
+import { GangContext, GangStore, GangConnectionState, GangService } from '@gang-js/core';
+import { Commands, CommandTypes, IAppState } from '../../app/models';
 
 @Component({
   tag: 'app-root',
@@ -10,7 +10,7 @@ import { Commands, CommandTypes } from '../../app/models';
 })
 export class AppRoot {
 
-  gang = GangContext.service;
+  gang: GangService<IAppState> = GangContext.service;
   auth = GangContext.auth;
   logger = GangContext.logger;
 
@@ -25,22 +25,28 @@ export class AppRoot {
 
   @Listen('visibilitychange', { target: 'document' })
   async connect() {
-    this.logger('connect', { token: this.token })
+    this.logger('root.connect', { token: this.token })
 
     if (document.hidden)
       await this.gang.disconnect();
     else if (!this.gang.isConnected)
-      await this.gang.connect('ws', 'demo', this.token)
+      await this.gang.connect({
+        path: '/ws', gangId: 'demo',
+        token: this.token
+      })
         .catch(_ => { });
   }
 
   async componentWillLoad() {
-    this.logger('componentWillLoad', { token: this.token })
+    this.logger('root.componentWillLoad', { token: this.token })
 
-    if (this.token = await this.auth.tryLinkInUrl())
-      await this.connect();
+    this.token = await this.auth.tryGetTokenFromUrl();
+    await this.connect();
 
     this.gang.mapEvents(this);
+
+    this.onResize();
+    await this.connect();
   }
 
   onGangConnection(connectionState: GangConnectionState) {
@@ -49,21 +55,25 @@ export class AppRoot {
   }
 
   onGangAuthenticated(token: string) {
-    this.logger('onGangAuthenticated', { token })
+    this.logger('root.onGangAuthenticated', { token });
 
-    GangStore.set('properties', atob(token.substr(0, token.indexOf('.'))))
+    const properties = this.auth.decodeToken(token);
+    if (!properties) {
+      GangStore.set('name');
+      GangStore.set('emailAddress');
+    }
+    else {
+      this.logger({ properties });
+
+      if (properties.name) GangStore.set('name', properties.name);
+      GangStore.set('emailAddress', properties.emailAddress);
+    }
+
     this.token = token;
   }
 
-  async componentDidLoad() {
-    this.logger('componentDidLoad', { token: this.token })
-
-    this.onResize();
-    await this.connect();
-  }
-
   onGangCommand(command: Commands) {
-    this.logger('onGangCommand', command)
+    this.logger('root.onGangCommand', command)
 
     switch (command.type) {
       case CommandTypes.setSettings:
@@ -89,7 +99,7 @@ export class AppRoot {
                   class: `notification ${command.data.type}`
                 }
               }
-            })
+            });
 
             setTimeout(() => {
               this.gang.setState({
@@ -119,11 +129,6 @@ export class AppRoot {
 
         <div>
           <p><a href="https://github.com/MrAntix/gang">github.com/MrAntix/gang</a></p>
-          {!this.isConnected
-            && <button class="connect-button" type="button"
-              onClick={() => this.connect()}
-            >Connect</button>
-          }
         </div>
       </section>
 

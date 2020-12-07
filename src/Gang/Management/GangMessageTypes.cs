@@ -4,7 +4,7 @@ namespace Gang.Management
     {
         Host = 'H',
         Member = 'M',
-        Authenticate = 'A',
+        Denied = 'D',
         State = 'S',
         Command = 'C',
         Receipt = 'R',

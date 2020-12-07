@@ -11,7 +11,7 @@ namespace Gang.Demo.Web.Services.State
         {
             return state
                     .Assert(User.NameIsValid(name))
-                    .Assert(User.NameIsUnique(state, name))
+                    .Assert(User.NameIsUnique(state, id, name))
                     .Assert(User.DoesNotExist(state, id))
                     .RaiseEvent(
                         new UserCreated(id, name),
@@ -25,7 +25,7 @@ namespace Gang.Demo.Web.Services.State
         {
             return state
                     .Assert(User.NameIsValid(name))
-                    .Assert(User.NameIsUnique(state, name))
+                    .Assert(User.NameIsUnique(state, id, name))
                     .Assert(User.Exists(state, id))
                     .RaiseEvent(
                         new UserNameUpdated(id, name),

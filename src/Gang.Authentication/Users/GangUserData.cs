@@ -5,15 +5,15 @@ using System.Collections.Immutable;
 
 namespace Gang.Authentication.Users
 {
-    public sealed class GangUser :
+    public sealed class GangUserData :
         IHasGangIdString
     {
-        public GangUser(
+        public GangUserData(
             string id,
             string name = "(new user)", string emailAddress = null,
             IEnumerable<string> roles = null,
             string secret = null,
-            GangUserToken linkToken = null
+            GangUserLinkCode linkCode = null
             )
         {
             Id = id;
@@ -22,7 +22,7 @@ namespace Gang.Authentication.Users
             Roles = roles?.ToImmutableSortedSet()
                 ?? ImmutableSortedSet<string>.Empty;
             Secret = secret ?? $"{Guid.NewGuid():N}";
-            LinkToken = linkToken;
+            LinkCode = linkCode;
         }
 
         public string Id { get; }
@@ -31,13 +31,15 @@ namespace Gang.Authentication.Users
         public IImmutableSet<string> Roles { get; }
 
         public string Secret { get; }
-        public GangUserToken LinkToken { get; }
+        public GangUserLinkCode LinkCode { get; }
 
-        public GangAuth GetAuth(string token)
+        public GangSession GetAuth(string token)
         {
-            return new GangAuth(
-                Id,
-                Name, EmailAddress,
+            return new GangSession(
+                new GangSessionUser(
+                    Id,
+                    Name, EmailAddress
+                ),
                 Roles,
                 token
                 );
@@ -52,88 +54,74 @@ namespace Gang.Authentication.Users
                 );
         }
 
-        public GangUserLink GetLink(GangUserToken token, object data = null)
+        public GangUserLink GetLink(GangUserLinkCode code, object data = null)
         {
-            if (token.Value == null
-                || token.Expires == null
-                || token.Expires < DateTimeOffset.Now)
-                throw new InvalidOperationException("Link Token Invalid");
+            if (code.Value == null
+                || code.Expires == null
+                || code.Expires < DateTimeOffset.Now)
+                throw new InvalidOperationException("Link code is invalid");
 
             return new GangUserLink(
                 Name, EmailAddress,
-                token, data
+                code, data
                 );
         }
 
-        public GangUser SetName(
+        public GangUserData SetName(
             string name)
         {
-            return new GangUser(
+            return new GangUserData(
                 Id,
                 name, EmailAddress,
                 Roles,
                 Secret,
-                LinkToken
+                LinkCode
                 );
         }
 
-        public GangUser SetEmailAddress(
+        public GangUserData SetEmailAddress(
             string emailAddress)
         {
-            return new GangUser(
+            return new GangUserData(
                 Id,
                 Name, emailAddress,
                 Roles,
                 Secret,
-                LinkToken
+                LinkCode
                 );
         }
 
-        public GangUser SetLinkToken(GangUserToken linkToken)
+        public GangUserData SetLinkCode(GangUserLinkCode linkCode)
         {
-            return new GangUser(
+            return new GangUserData(
                 Id,
                 Name, EmailAddress,
                 Roles,
                 Secret,
-                linkToken
+                linkCode
                 );
         }
 
-        public GangUser AddRole(string role)
+        public GangUserData AddRole(string role)
         {
-            return new GangUser(
+            return new GangUserData(
                 Id,
                 Name, EmailAddress,
                 Roles.Add(role),
                 Secret,
-                LinkToken
+                LinkCode
                 );
         }
 
-        public GangUser RemoveRole(string role)
+        public GangUserData RemoveRole(string role)
         {
-            return new GangUser(
+            return new GangUserData(
                 Id,
                 Name, EmailAddress,
                 Roles.Remove(role),
                 Secret,
-                LinkToken
+                LinkCode
                 );
         }
-    }
-
-    public sealed class GangUserToken
-    {
-        public GangUserToken(
-            string value,
-            DateTimeOffset? expiry = null)
-        {
-            Value = value;
-            Expires = expiry ?? DateTimeOffset.Now.AddMinutes(5);
-        }
-
-        public string Value { get; }
-        public DateTimeOffset? Expires { get; }
     }
 }

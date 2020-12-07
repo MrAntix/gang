@@ -1,6 +1,6 @@
 export interface IAppMessage {
   id: string;
-  on: string|Date;
+  on?: string|Date;
   byId?: string;
   text: string;
   class?: string;

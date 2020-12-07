@@ -70,7 +70,7 @@ li {
   display: flex;
 }
 
-.input.user-name {
+.input.fit {
   flex: 1 1 auto;
 }
 
@@ -137,6 +137,12 @@ li {
 
 .message-text-list-item.error {
   --host-bot-color: var(--error-color);
+  --host-bot-color-alt: var(--error-color-alt);
+}
+
+.message-text-list-item.success {
+  --host-bot-color: var(--success-color);
+  --host-bot-color-alt: var(--success-color-alt);
 }
 
 .message-text-list-item.pending::before {
@@ -161,6 +167,7 @@ li {
   background-color: var(--host-bot-color);
   color: var(--host-bot-color-alt);
   font-family: monospace;
+  font-size: 1.2rem;
 }
 
 .messages-list .message.current-user .message-text {

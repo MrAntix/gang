@@ -1,4 +1,4 @@
-import { BehaviorSubject, Subject, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, Subject, Observable, Subscription, ReplaySubject } from 'rxjs';
 
 import { GangContext } from '../context';
 import {
@@ -12,14 +12,19 @@ import {
   GangWebSocketFactory,
   IGangCommandSent,
   IGangCommandWaitOptions,
+  IGangAuth,
+  IGangApplication,
+  IGangSettings,
+  IGangConnectionProperties
 } from '../models';
+import { gangClean } from './gangClean';
 import { GangStore } from './GangStore';
 
 const GANG_AUTHENTICATION_TOKEN = 'GANG.AUTHENTICATION.TOKEN';
 const GANG_STATE = 'GANG.STATE';
 
-export class GangService {
-  private readonly rootUrl: string;
+export class GangService<TState>
+{
   private retry = RETRY_INIT;
   private retrying: number;
 
@@ -27,6 +32,7 @@ export class GangService {
   private webSocket: GangWebSocket;
   private connectionSubject: BehaviorSubject<GangConnectionState>;
 
+  connectionProperties: IGangConnectionProperties;
   get connectionState(): GangConnectionState {
     return this.connectionSubject.value;
   }
@@ -34,15 +40,18 @@ export class GangService {
     return this.connectionSubject.value === GangConnectionState.connected;
   }
   memberId: string;
+  isAuthenticated: boolean;
   isHost: boolean;
 
+  application: IGangApplication;
+
   private connectionRetrySubject: Subject<number>;
-  private authenticatedSubject: BehaviorSubject<string>;
+  private authenticatedSubject: ReplaySubject<string>;
   private memberConnectedSubject: Subject<string>;
   private memberDisconnectedSubject: Subject<string>;
   private commandSubject: Subject<GangCommandWrapper<unknown>>;
   private receiptSubject: Subject<number>;
-  private stateSubject: BehaviorSubject<Record<string, unknown>>;
+  private stateSubject: BehaviorSubject<TState>;
   private unsentCommands: GangCommandWrapper<unknown>[] = [];
 
   onConnection: Observable<GangConnectionState>;
@@ -54,37 +63,41 @@ export class GangService {
   onReceipt: Observable<number>;
   onState: Observable<unknown>;
 
-  constructor(private webSocketFactory: GangWebSocketFactory, initialState: Record<string, unknown> = undefined) {
-    if (!location) throw new Error('required location object not found');
-
-    const protocol = location.protocol.replace('http', 'ws');
-    const host = location.host;
-    this.rootUrl = `${protocol}//${host}/`;
-
+  constructor(
+    private readonly webSocketFactory: GangWebSocketFactory,
+    private readonly settings: IGangSettings = GangContext.defaultSettings,
+    initialState: TState = null
+  ) {
     this.onConnection = this.connectionSubject = new BehaviorSubject(GangConnectionState.disconnected);
     this.onConnectionRetry = this.connectionRetrySubject = new Subject<number>();
-    this.onAuthenticated = this.authenticatedSubject = new BehaviorSubject<string>(GangStore.get(GANG_AUTHENTICATION_TOKEN));
+    this.onAuthenticated = this.authenticatedSubject = new ReplaySubject<string>(1);
     this.onMemberConnected = this.memberConnectedSubject = new Subject<string>();
     this.onMemberDisconnected = this.memberDisconnectedSubject = new Subject<string>();
     this.onCommand = this.commandSubject = new Subject<GangCommandWrapper<Record<string, unknown>>>();
     this.onReceipt = this.receiptSubject = new Subject<number>();
-
-    const state = GangStore.get(GANG_STATE);
-    this.onState = this.stateSubject = new BehaviorSubject<Record<string, unknown>>(
-      !state ? initialState : JSON.parse(state)
-    );
+    this.onState = this.stateSubject = new BehaviorSubject<TState>(initialState);
   }
 
-  async connect(url: string, gangId: string, token?: string): Promise<void> {
+  /**
+   * Connect to gang
+   */
+  async connect(properties: IGangConnectionProperties): Promise<boolean> {
     if (this.isConnected) await this.disconnect('reconnect');
 
-    return new Promise<void>((resolve, reject) => {
+    this.connectionProperties = {
+      ...this.connectionProperties,
+      token: GangStore.get(GANG_AUTHENTICATION_TOKEN),
+      ...gangClean(properties)
+    };
+    GangContext.logger('GangService.connect', this.connectionProperties);
+
+    return new Promise<boolean>((resolve) => {
       this.connectionSubject.next(GangConnectionState.connecting);
-      const connectUrl = GangUrlBuilder.from(this.rootUrl + url)
-        .set('gangId', gangId)
-        .set('token', token)
+      const connectUrl = GangUrlBuilder.from(this.settings.rootUrl + this.connectionProperties.path)
+        .set('gangId', this.connectionProperties.gangId)
+        .set('token', this.connectionProperties.token)
         .build();
-      GangContext.logger('GangService.connect', this.rootUrl + url, connectUrl);
+      GangContext.logger('GangService.connected', this.settings.rootUrl + this.connectionProperties.path, connectUrl);
 
       this.webSocket = this.webSocketFactory(
         connectUrl,
@@ -92,9 +105,10 @@ export class GangService {
           GangContext.logger('GangService.onopen', e);
 
           this.connectionSubject.next(GangConnectionState.connected);
+
           this.retry = RETRY_INIT;
           this.retryingIn = undefined;
-          resolve();
+          resolve(true);
 
           let wrapper: GangCommandWrapper<unknown>;
           while ((wrapper = this.unsentCommands.shift())) this.sendCommandWrapper(wrapper);
@@ -113,20 +127,23 @@ export class GangService {
           GangContext.logger('GangService.onerror', e);
 
           this.connectionSubject.next(GangConnectionState.error);
-          reject(e);
+          resolve(false);
         },
         (e: CloseEvent) => {
           GangContext.logger('GangService.onclose', e);
 
           this.connectionSubject.next(GangConnectionState.disconnected);
-          this.memberDisconnectedSubject.next(this.memberId);
 
           window.removeEventListener('offline', this.offline)
 
           if (!e.reason) {
             this.online = () => {
               GangContext.logger('GangService.online');
-              !this.isConnected && this.connect(url, gangId, token).catch(_ => { });
+              !this.isConnected
+                && this.connect(properties)
+                  .catch(() => {
+                    // do nothing.
+                  });
             };
 
             window.addEventListener('online', this.online);
@@ -150,21 +167,19 @@ export class GangService {
             throw new Error(`unknown message type: ${messageType}`);
           case 'H': {
             this.isHost = true;
-            this.memberId = readString(data, 1);
-            this.memberConnectedSubject.next(this.memberId);
+            authenticated(parseAsAuth(data))
+
             break;
           }
           case 'M': {
             this.isHost = false;
-            this.memberId = readString(data, 1);
-            this.memberConnectedSubject.next(this.memberId);
+            authenticated(parseAsAuth(data))
+
             break;
           }
-          case 'A': {
-            const token = readString(data, 1);
-            GangStore.set(GANG_AUTHENTICATION_TOKEN, token);
+          case 'D': {
+            authenticated(parseAsAuth(data))
 
-            this.authenticatedSubject.next(token);
             break;
           }
           case '+': {
@@ -202,8 +217,29 @@ export class GangService {
         }
       });
 
+      const parseAsAuth = (data: ArrayBuffer): IGangAuth => JSON.parse(readString(data, 1)) as IGangAuth;
+
+      const authenticated = (auth: IGangAuth) => {
+
+        this.memberId = auth.memberId;
+        this.application = auth.application;
+        this.isAuthenticated = !!auth.token;
+
+        if (this.isAuthenticated) {
+          GangStore.set(GANG_AUTHENTICATION_TOKEN, auth.token);
+        } else {
+          GangStore.set(GANG_AUTHENTICATION_TOKEN);
+          GangStore.set(GANG_STATE);
+        }
+
+        this.authenticatedSubject.next(auth.token);
+
+        const state = GangStore.get(GANG_STATE);
+        if (state) this.stateSubject.next(JSON.parse(state));
+      }
+
       const retryConnect = (() => {
-        if (this.retry === NO_RETRY || this.retrying || this.connectionState === GangConnectionState.connected) return;
+        if (this.retry === NO_RETRY || this.retrying || this.isConnected) return;
 
         GangContext.logger('GangService.retryConnect in', this.retry);
 
@@ -214,8 +250,10 @@ export class GangService {
 
           if (this.retryingIn === 0) {
             clearRetryConnect();
-            this.connect(url, gangId, token)
-              .catch(_ => { });
+            this.connect(properties)
+              .catch(() => {
+                // do nothing.
+              });
           }
         }, 1000);
 
@@ -230,23 +268,6 @@ export class GangService {
       }).bind(this);
 
       retryConnect();
-    });
-  }
-
-  private offline: () => void;
-  private online: () => void;
-
-  /** Set the local current state, ie not sent to the server
-   *
-   * @param state the passed state will be shallow merged with the current state
-   */
-  setState(state: Record<string, unknown>) {
-
-    GangStore.set(GANG_STATE, JSON.stringify(state));
-
-    this.stateSubject.next({
-      ...this.stateSubject.value,
-      ...state,
     });
   }
 
@@ -271,6 +292,23 @@ export class GangService {
       } else {
         resolve();
       }
+    });
+  }
+
+  private offline: () => void;
+  private online: () => void;
+
+  /** Set the local current state, ie not sent to the server
+   *
+   * @param state the passed state will be shallow merged with the current state
+   */
+  setState(state: Partial<TState>): void {
+
+    GangStore.set(GANG_STATE, JSON.stringify(state));
+
+    this.stateSubject.next({
+      ...this.stateSubject.value,
+      ...state,
     });
   }
 
@@ -400,7 +438,7 @@ export class GangService {
     };
   }
 
-  sendState(state: Record<string, unknown>): void {
+  sendState(state: TState): void {
     if (!this.isHost) throw new Error('only host can send state');
 
     this.stateSubject.next(state);

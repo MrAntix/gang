@@ -9,17 +9,17 @@ namespace Gang.Demo.Web.Services.State
     public sealed class UserStore :
         IGangAuthenticationUserStore
     {
-        IImmutableList<GangUser> _users
-            = ImmutableList<GangUser>.Empty;
+        IImmutableList<GangUserData> _users
+            = ImmutableList<GangUserData>.Empty;
 
-        public Task<GangUser> TryGetAsync(string id)
+        public Task<GangUserData> TryGetByIdAsync(string id)
         {
             return Task.FromResult(
                 _users.TryGetById(id)
                 );
         }
 
-        public Task SetAsync(GangUser value)
+        public Task SetAsync(GangUserData value)
         {
             lock (_users)
                 _users = _users
@@ -30,7 +30,7 @@ namespace Gang.Demo.Web.Services.State
             return Task.CompletedTask;
         }
 
-        public Task<GangUser> TryGetByEmailAddressAsync(string emailAddress)
+        public Task<GangUserData> TryGetByEmailAddressAsync(string emailAddress)
         {
             return Task.FromResult(
                 _users.FirstOrDefault(u => u.EmailAddress.Equals(emailAddress,
@@ -39,10 +39,10 @@ namespace Gang.Demo.Web.Services.State
                 );
         }
 
-        public Task<GangUser> TryGetByLinkTokenAsync(string token)
+        public Task<GangUserData> TryGetByLinkTokenAsync(string token)
         {
             return Task.FromResult(
-                _users.FirstOrDefault(u => u.LinkToken?.Value == token)
+                _users.FirstOrDefault(u => u.LinkCode?.Value == token)
                 );
         }
     }
