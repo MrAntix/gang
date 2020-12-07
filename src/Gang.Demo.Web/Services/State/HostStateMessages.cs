@@ -6,7 +6,8 @@ using System.Linq;
 
 namespace Gang.Demo.Web.Services.State
 {
-    public static class HostStateMessages{
+    public static class HostStateMessages
+    {
 
         public static GangState<HostState> AddMessage(
             this GangState<HostState> state,

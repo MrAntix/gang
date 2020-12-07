@@ -1,9 +1,9 @@
+using Gang.Authentication.Users;
 using Gang.Demo.Web.Services.Commands;
 using Gang.Demo.Web.Services.Events;
 using Gang.Demo.Web.Services.State;
 using Gang.State;
 using Gang.State.Commands;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -119,7 +119,13 @@ namespace Gang.Demo.Tests.Commands
 
         static IGangCommandHandler<HostState, UpdateUserName> GetHandler()
         {
-            return new UpdateUserNameHandler();
+            //TODO: FAKE?
+            var userStore = new UserStore();
+            userStore.SetAsync(new GangUserData(USER_ID)).GetAwaiter().GetResult();
+
+            return new UpdateUserNameHandler(
+                userStore
+                );
         }
 
         static GangState<HostState> GetState(

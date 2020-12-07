@@ -12,7 +12,7 @@ namespace Gang.Authentication.Tokens
         readonly IGangSerializationService _serializationService;
 
         public GangTokenService(
-            GangAuthenticationSettings settings,
+            IGangAuthenticationSettings settings,
             IGangSerializationService serializationService)
         {
             _serializationService = serializationService;

@@ -1,4 +1,4 @@
-import { BehaviorSubject, Subject, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, Subject, Observable, Subscription, ReplaySubject } from 'rxjs';
 
 import { GangContext } from '../context';
 import {
@@ -12,6 +12,8 @@ import {
   GangWebSocketFactory,
   IGangCommandSent,
   IGangCommandWaitOptions,
+  IGangAuth,
+  IGangApplication,
 } from '../models';
 import { GangStore } from './GangStore';
 
@@ -34,10 +36,13 @@ export class GangService {
     return this.connectionSubject.value === GangConnectionState.connected;
   }
   memberId: string;
+  isAuthenticated: boolean;
   isHost: boolean;
 
+  application: IGangApplication;
+
   private connectionRetrySubject: Subject<number>;
-  private authenticatedSubject: BehaviorSubject<string>;
+  private authenticatedSubject: ReplaySubject<string>;
   private memberConnectedSubject: Subject<string>;
   private memberDisconnectedSubject: Subject<string>;
   private commandSubject: Subject<GangCommandWrapper<unknown>>;
@@ -63,20 +68,24 @@ export class GangService {
 
     this.onConnection = this.connectionSubject = new BehaviorSubject(GangConnectionState.disconnected);
     this.onConnectionRetry = this.connectionRetrySubject = new Subject<number>();
-    this.onAuthenticated = this.authenticatedSubject = new BehaviorSubject<string>(GangStore.get(GANG_AUTHENTICATION_TOKEN));
+    this.onAuthenticated = this.authenticatedSubject = new ReplaySubject<string>(1);
     this.onMemberConnected = this.memberConnectedSubject = new Subject<string>();
     this.onMemberDisconnected = this.memberDisconnectedSubject = new Subject<string>();
     this.onCommand = this.commandSubject = new Subject<GangCommandWrapper<Record<string, unknown>>>();
     this.onReceipt = this.receiptSubject = new Subject<number>();
-
-    const state = GangStore.get(GANG_STATE);
-    this.onState = this.stateSubject = new BehaviorSubject<Record<string, unknown>>(
-      !state ? initialState : JSON.parse(state)
-    );
+    this.onState = this.stateSubject = new BehaviorSubject<Record<string, unknown>>(initialState);
   }
 
+  /**
+   *
+   * @param url server url
+   * @param gangId gang id
+   * @param token token, if undefined will try and use stored token
+   */
   async connect(url: string, gangId: string, token?: string): Promise<void> {
     if (this.isConnected) await this.disconnect('reconnect');
+
+    if (token == null) token = GangStore.get(GANG_AUTHENTICATION_TOKEN);
 
     return new Promise<void>((resolve, reject) => {
       this.connectionSubject.next(GangConnectionState.connecting);
@@ -92,6 +101,7 @@ export class GangService {
           GangContext.logger('GangService.onopen', e);
 
           this.connectionSubject.next(GangConnectionState.connected);
+
           this.retry = RETRY_INIT;
           this.retryingIn = undefined;
           resolve();
@@ -119,7 +129,6 @@ export class GangService {
           GangContext.logger('GangService.onclose', e);
 
           this.connectionSubject.next(GangConnectionState.disconnected);
-          this.memberDisconnectedSubject.next(this.memberId);
 
           window.removeEventListener('offline', this.offline)
 
@@ -150,21 +159,19 @@ export class GangService {
             throw new Error(`unknown message type: ${messageType}`);
           case 'H': {
             this.isHost = true;
-            this.memberId = readString(data, 1);
-            this.memberConnectedSubject.next(this.memberId);
+            authenticated(parseAsAuth(data))
+
             break;
           }
           case 'M': {
             this.isHost = false;
-            this.memberId = readString(data, 1);
-            this.memberConnectedSubject.next(this.memberId);
+            authenticated(parseAsAuth(data))
+
             break;
           }
-          case 'A': {
-            const token = readString(data, 1);
-            GangStore.set(GANG_AUTHENTICATION_TOKEN, token);
+          case 'D': {
+            authenticated(parseAsAuth(data))
 
-            this.authenticatedSubject.next(token);
             break;
           }
           case '+': {
@@ -201,6 +208,27 @@ export class GangService {
           }
         }
       });
+
+      const parseAsAuth = (data: ArrayBuffer): IGangAuth => JSON.parse(readString(data, 1)) as IGangAuth;
+
+      const authenticated = (auth: IGangAuth) => {
+
+        this.memberId = auth.memberId;
+        this.application = auth.application;
+        this.isAuthenticated = !!auth.token;
+
+        if (this.isAuthenticated) {
+          GangStore.set(GANG_AUTHENTICATION_TOKEN, auth.token);
+        } else {
+          GangStore.set(GANG_AUTHENTICATION_TOKEN);
+          GangStore.set(GANG_STATE);
+        }
+
+        this.authenticatedSubject.next(auth.token);
+
+        const state = GangStore.get(GANG_STATE);
+        if (!!state) this.stateSubject.next(JSON.parse(state));
+      }
 
       const retryConnect = (() => {
         if (this.retry === NO_RETRY || this.retrying || this.connectionState === GangConnectionState.connected) return;

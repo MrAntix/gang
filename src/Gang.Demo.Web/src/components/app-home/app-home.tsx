@@ -12,15 +12,16 @@ export class AppHome {
   @Element() element: HTMLElement;
 
   gang = GangContext.service;
+  auth = GangContext.auth;
   logger = GangContext.logger;
   sendCommand = provideSendCommand(this);
+
+  @State() isAuthenticated: boolean;
 
   @State() state: IAppState;
 
   @State() messageGroups: IAppMessageGroup[];
-
   @State() newMessageText: string;
-
   @State() currentUser: IAppUser;
   @State() userNames: { [id: string]: string } = {};
 
@@ -39,20 +40,43 @@ export class AppHome {
 
   onGangAuthenticated(token: string) {
 
-    this.logger('onGangAuthenticated', {
-      token,
+    this.logger('home.onGangAuthenticated', {
       isConnected: this.gang.isConnected,
+      isAuthenticated: this.gang.isAuthenticated,
+      token,
       name: GangStore.get('name')
     });
 
-    if (!!token
-      && this.gang.isConnected
-      && !!GangStore.get('name'))
-      this.updatetUserName(GangStore.get('name'));
+    this.isAuthenticated = this.gang.isAuthenticated;
+
+    if (this.isAuthenticated) {
+      if (this.gang.isConnected && !!GangStore.get('name'))
+        this.updatetUserName(GangStore.get('name'));
+
+      this.gang.setState({
+
+        notifications: {
+          'Invite': undefined
+        }
+      })
+
+    } else {
+
+      this.gang.setState({
+
+        notifications: {
+          'Invite': {
+            id: 'Invite',
+            on: new Date(),
+            text: 'Hello there, enter your email to get an invite, please note this is a demo, no data is stored'
+          }
+        }
+      })
+    }
   }
 
   onGangState(state: Partial<IAppState>) {
-    this.logger('onGangState', { state });
+    this.logger('home.onGangState', { state });
 
     state = {
       ...this.state,
@@ -81,7 +105,7 @@ export class AppHome {
   }
 
   onGangConnectionRetry(seconds: number) {
-    this.logger('onGangConnectionRetry', {})
+    this.logger('home.onGangConnectionRetry', {})
 
     const message = {
       id: 'Disconnected',
@@ -113,7 +137,7 @@ export class AppHome {
               <span class="text user-name">{unescapeText(this.userNames[group.byId] || 'Host Bot')}</span>
               <ol class="text message-text-list">
                 {group.items.map(message =>
-                  <li key={message.id} class={`message-text-list-item ${message.class}`}>
+                  <li key={message.id} data-id={message.id} class={`message-text-list-item ${message.class}`}>
                     <span class="text message-text">{unescapeText(this.replaceUserIds(message.text))}</span>
                   </li>
                 )}
@@ -125,28 +149,52 @@ export class AppHome {
           </li>)}
         </ol>
 
-        {!this.currentUser?.name &&
-          <form class="row">
-            <input class="input user-name"
+        {this.isAuthenticated
+          ? !this.currentUser?.name &&
+          <form class="row"
+            onSubmit={e => {
+              e.preventDefault();
+
+              const name = e.currentTarget['name'].value;
+              this.updatetUserName(name);
+
+              window.setTimeout(() =>
+                this.focus('.input.message'), 600);
+            }}>
+
+            <input class="input fit user-name"
+              name="name"
               autoFocus
               placeholder="(set your name)"
-              onChange={(e: any) => {
-                this.updatetUserName(e.target.value);
-                window.setTimeout(() =>
-                  this.focus('.input.message'), 600);
-              }}
               value={this.currentUser?.name}
             />
-            <button class="button" type="button"
-            >Enter chat</button>
+            <button class="button"
+            >Enter</button>
           </form>
+          : <form class="row"
+            onSubmit={e => {
+              e.preventDefault();
+
+              const emailAddress = e.currentTarget['emailAddress'].value;
+              this.invite(emailAddress);
+
+            }}>
+            <input class="input fit user-email"
+              name="emailAddress"
+              autoFocus
+              placeholder="(email address)"
+            />
+            <button class="button"
+            >Get an Invite</button>
+          </form>
+
         }
 
         {!!this.currentUser?.name &&
           <form class="row"
             onSubmit={e => this.addMessage(e, escapeText(this.newMessageText))}
           >
-            <textarea class="input message"
+            <textarea class="input fit message"
               autoFocus
               rows={2} placeholder="(type the message to send here)"
               value={this.newMessageText}
@@ -196,9 +244,40 @@ export class AppHome {
     }
   }
 
+  async invite(emailAddress: string) {
+
+    if (await this.auth.requestLink(emailAddress))
+
+      this.gang.setState({
+
+        notifications: {
+          'Invite': {
+            id: 'Invite',
+            on: new Date(),
+            text: `I have sent an invite to ${emailAddress}`
+          }
+        }
+      });
+
+    else
+
+      this.gang.setState({
+
+        notifications: {
+          'Invite': {
+            id: 'Invite',
+            on: new Date(),
+            text: `Please check that email address is valid`,
+            class: "error"
+          }
+        }
+      });
+
+  }
+
   async updatetUserName(name: string) {
 
-    this.logger('updatetUserName', { name });
+    this.logger('home.updatetUserName', { name });
 
     try {
       this.currentUser = {
@@ -221,7 +300,7 @@ export class AppHome {
 
     e.preventDefault();
 
-    this.logger('addMessage', { text })
+    this.logger('home.addMessage', { text })
     if (!text) return;
 
     const message: IAppMessage = {
@@ -246,7 +325,7 @@ export class AppHome {
         text
       });
 
-    this.logger('addMessage.done', { text })
+    this.logger('home.addMessage.done', { text })
     this.newMessageText = '';
   }
 
@@ -346,10 +425,14 @@ function mapToArray<T>(map: Record<string, T>) {
 }
 
 function escapeText(value: string): string {
+  if (!value) return value;
+
   return encodeURI(value);
 }
 
 function unescapeText(value: string): string {
+  if (!value) return value;
+
   try {
     return decodeURI(value);
   } catch {

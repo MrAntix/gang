@@ -73,10 +73,10 @@ namespace Gang.Demo.Web.Services.State
         }
 
         public static string NameIsUnique(
-            GangState<HostState> state, string name)
+            GangState<HostState> state, string id, string name)
         {
             return state.Data
-                .Users.Any(u => u.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase))
+                .Users.Any(u => u.Id != id && u.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase))
                 ? ERROR_NAME_IS_TAKEN
                 : null;
         }

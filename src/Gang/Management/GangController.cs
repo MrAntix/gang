@@ -57,7 +57,7 @@ namespace Gang.Management
         async Task IGangController.SendAsync(
             GangMessageTypes? type, byte[] data, IEnumerable<byte[]> memberIds)
         {
-            var audit = new GangAudit(_gangId, null, Member.Id, Member.Auth?.Id);
+            var audit = new GangAudit(_gangId, null, Member.Id, Member.Session?.User.Id);
             await _sendAsync(type, data, audit, memberIds);
         }
 
@@ -68,7 +68,7 @@ namespace Gang.Management
                 type, data,
                 replySequence
                 );
-            var audit = new GangAudit(_gangId, ++_commandSequence, Member.Id, Member.Auth?.Id);
+            var audit = new GangAudit(_gangId, ++_commandSequence, Member.Id, Member.Session?.User.Id);
 
             await _sendAsync(GangMessageTypes.Command, bytes, audit, memberIds);
         }

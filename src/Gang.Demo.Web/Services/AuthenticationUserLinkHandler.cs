@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 
 namespace Gang.Demo.Web.Services
 {
-
     public sealed class AuthenticationUserLinkHandler :
         IGangEventHandler<GangManagerEvent<GangUserLink>>
     {
@@ -29,14 +28,14 @@ namespace Gang.Demo.Web.Services
         {
             var message = new MailMessage
             {
-                Subject = "Gang Chat: Access code request"
+                Subject = "Gang Chat: Invite"
             };
 
             message.To.Add(new MailAddress(e.Data.EmailAddress, e.Data.Name));
 
             var uri = QueryHelpers.AddQueryString(
                 _app.RootUrl + "/", new Dictionary<string, string>{
-                            {"link-token", e.Data.Token.Value }
+                            {"link-code", e.Data.OneTimeCode.Value }
                 });
 
             message.Body =

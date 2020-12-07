@@ -19,11 +19,12 @@ namespace Gang.Authentication
         /// <returns>Service collection</returns>
         public static IServiceCollection AddGangAuthenticationServices<TUserStore>(
             this IServiceCollection services,
-            GangAuthenticationSettings settings
+            IGangAuthenticationSettings settings
             )
             where TUserStore : class, IGangAuthenticationUserStore
         {
             return services
+                .AddTransient<IGangLinkService, GangLinkService>()
                 .AddSingleton<IGangAuthenticationUserStore, TUserStore>()
                 .AddGangAuthenticationServices(settings);
         }
@@ -38,7 +39,7 @@ namespace Gang.Authentication
         /// <returns>Service collection</returns>
         public static IServiceCollection AddGangAuthenticationServices(
             this IServiceCollection services,
-            GangAuthenticationSettings settings
+            IGangAuthenticationSettings settings
             )
         {
             services

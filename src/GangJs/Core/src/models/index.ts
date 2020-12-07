@@ -3,13 +3,14 @@
  */
 
 export * from './constants';
-export * from './GangAuth';
 export * from './GangCommandWrapper';
 export * from './GangConnectionState';
 export * from './GangMessage';
 export * from './GangUrlBuilder';
 export * from './GangWebSocket';
 export * from './GangWebSocketFactory';
+export * from './IGangApplication';
+export * from './IGangAuth';
 export * from './IGangAuthSettings';
 export * from './IGangCommandSent';
 export * from './IGangCommandWaitOptions';

@@ -11,18 +11,20 @@ namespace Gang
     public static class GangConfiguration
     {
         public static IServiceCollection AddGangs(
-            this IServiceCollection services)
+            this IServiceCollection services,
+            IGangSettings settings)
         {
+            services.AddSingleton(settings);
             services.AddSingleton<IGangManager, GangManager>();
             services.AddTransient<GangCollection>();
             services.AddSingleton<IGangManagerSequenceProvider, GangManagerInMemorySequenceProvider>();
 
-            // default auth func, just uses the token as the member id
+            // default auth func, just uses the token as the user id
             services.AddSingleton<GangAuthenticationFunc>(
                 parameters => Task.FromResult(
-                    new GangAuth(
+                    new GangSession(
                         parameters.Token,
-                        null, null
+                        null
                         )
                     ));
             return services;
@@ -48,7 +50,7 @@ namespace Gang
         {
             services.AddTransient<T>();
             services.AddSingleton<GangAuthenticationFunc>(
-                sp => sp.GetRequiredService<T>().AuthenticateAsync);
+                sp => sp.GetRequiredService<T>().HandleAsync);
 
             return services;
         }

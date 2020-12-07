@@ -4,9 +4,9 @@ namespace Gang.Authentication.Users
 {
     public interface IGangAuthenticationUserStore
     {
-        Task<GangUser> TryGetAsync(string id);
-        Task<GangUser> TryGetByEmailAddressAsync(string emailAddress);
-        Task<GangUser> TryGetByLinkTokenAsync(string token);
-        Task SetAsync(GangUser value);
+        Task<GangUserData> TryGetByIdAsync(string id);
+        Task<GangUserData> TryGetByEmailAddressAsync(string emailAddress);
+        Task<GangUserData> TryGetByLinkTokenAsync(string token);
+        Task SetAsync(GangUserData value);
     }
 }

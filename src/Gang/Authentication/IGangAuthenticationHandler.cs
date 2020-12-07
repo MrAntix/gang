@@ -4,6 +4,6 @@ namespace Gang.Authentication
 {
     public interface IGangAuthenticationHandler
     {
-        Task<GangAuth> AuthenticateAsync(GangParameters parameters);
+        Task<GangSession> HandleAsync(GangParameters parameters);
     }
 }

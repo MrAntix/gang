@@ -171,6 +171,7 @@ namespace Gang.Tests.Management
         {
             return new GangManager(
                 NullLogger<GangManager>.Instance,
+                TestGangSettings.Default,
                 gangs ?? new GangCollection(),
                 new WebSocketGangJsonSerializationService(),
                 new GangManagerInMemorySequenceProvider(),

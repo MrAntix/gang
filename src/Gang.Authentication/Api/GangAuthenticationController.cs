@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
+using static Gang.GangPredicate;
 
 namespace Gang.Authentication.Api
 {
@@ -26,10 +27,11 @@ namespace Gang.Authentication.Api
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(identity))
-                    return BadRequest();
+                if (Is.NullOrWhiteSpace(identity)
+                    || IsNot.EmailAddress(identity))
+                    return BadRequest("invalid email address");
 
-                await _authService.RequestLink(identity);
+                await _authService.RequestLinkAsync(identity);
 
                 return Ok();
             }
@@ -47,10 +49,10 @@ namespace Gang.Authentication.Api
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(token))
-                    return BadRequest();
+                if (Is.NullOrWhiteSpace(token))
+                    return BadRequest("invalid token");
 
-                var sessionToken = await _authService.Link(token);
+                var sessionToken = await _authService.LinkAsync(token);
 
                 return Ok(sessionToken);
             }

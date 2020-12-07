@@ -25,7 +25,7 @@ export class AppRoot {
 
   @Listen('visibilitychange', { target: 'document' })
   async connect() {
-    this.logger('connect', { token: this.token })
+    this.logger('root.connect', { token: this.token })
 
     if (document.hidden)
       await this.gang.disconnect();
@@ -35,12 +35,15 @@ export class AppRoot {
   }
 
   async componentWillLoad() {
-    this.logger('componentWillLoad', { token: this.token })
+    this.logger('root.componentWillLoad', { token: this.token })
 
-    if (this.token = await this.auth.tryLinkInUrl())
-      await this.connect();
+    this.token = await this.auth.tryLinkInUrl();
+    await this.connect();
 
     this.gang.mapEvents(this);
+
+    this.onResize();
+    await this.connect();
   }
 
   onGangConnection(connectionState: GangConnectionState) {
@@ -49,21 +52,26 @@ export class AppRoot {
   }
 
   onGangAuthenticated(token: string) {
-    this.logger('onGangAuthenticated', { token })
+    this.logger('root.onGangAuthenticated', { token });
 
-    GangStore.set('properties', atob(token.substr(0, token.indexOf('.'))))
+    const propertiesData = !!token && atob(token.substr(0, token.indexOf('.')));
+    if (!propertiesData) {
+      GangStore.set('name');
+      GangStore.set('emailAddress');
+    }
+    else {
+      const properties = JSON.parse(propertiesData);
+      this.logger({ properties });
+
+      if (properties.name) GangStore.set('name', properties.name);
+      GangStore.set('emailAddress', properties.emailAddress);
+    }
+
     this.token = token;
   }
 
-  async componentDidLoad() {
-    this.logger('componentDidLoad', { token: this.token })
-
-    this.onResize();
-    await this.connect();
-  }
-
   onGangCommand(command: Commands) {
-    this.logger('onGangCommand', command)
+    this.logger('root.onGangCommand', command)
 
     switch (command.type) {
       case CommandTypes.setSettings:
@@ -89,7 +97,7 @@ export class AppRoot {
                   class: `notification ${command.data.type}`
                 }
               }
-            })
+            });
 
             setTimeout(() => {
               this.gang.setState({
@@ -119,11 +127,6 @@ export class AppRoot {
 
         <div>
           <p><a href="https://github.com/MrAntix/gang">github.com/MrAntix/gang</a></p>
-          {!this.isConnected
-            && <button class="connect-button" type="button"
-              onClick={() => this.connect()}
-            >Connect</button>
-          }
         </div>
       </section>
 

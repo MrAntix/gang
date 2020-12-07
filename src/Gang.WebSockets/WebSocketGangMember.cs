@@ -17,18 +17,18 @@ namespace Gang.WebSockets
 
         public WebSocketGangMember(
             byte[] id,
-            GangAuth auth,
+            GangSession session,
             WebSocket webSocket)
         {
             Id = id;
-            Auth = auth;
+            Session = session;
             _webSocket = webSocket;
             _sendQueue = new TaskQueue();
             _buffer = new ArraySegment<byte>(new byte[1024 * 4]);
         }
 
         public byte[] Id { get; }
-        public GangAuth Auth { get; }
+        public GangSession Session { get; }
 
         Task IGangMember.ConnectAsync(
             IGangController controller, Func<Task> _onDisconnectAsync)

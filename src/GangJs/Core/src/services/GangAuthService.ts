@@ -43,17 +43,19 @@ export class GangAuthService {
    *
    * if successful, the link token is removed from the url
    *
-   * @param {string} [parameterName=link-token] - name of the url parameter
+   * @param {string} [parameterName=link-code] - name of the url parameter
    */
-  async tryLinkInUrl(parameterName = 'link-token'): Promise<string> {
+  async tryLinkInUrl(parameterName = 'link-code'): Promise<string> {
     let token: string = null;
     const win = this.window || window;
 
     const urlBuilder = new GangUrlBuilder(win.location.href);
-    const linkToken = urlBuilder.parameters[parameterName];
+    const code = urlBuilder.parameters[parameterName];
 
-    if (linkToken) {
-      token = await this.getTokenFromLink(linkToken[0]);
+    
+
+    if (code) {
+      token = await this.getTokenFromLink(code[0]);
 
       delete urlBuilder.parameters[parameterName];
       win.history.pushState(null, win.document.title, urlBuilder.build());
