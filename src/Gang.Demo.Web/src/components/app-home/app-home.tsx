@@ -427,14 +427,14 @@ function mapToArray<T>(map: Record<string, T>) {
 function escapeText(value: string): string {
   if (!value) return value;
 
-  return encodeURI(value);
+  return unescape(encodeURIComponent(value));
 }
 
 function unescapeText(value: string): string {
   if (!value) return value;
 
   try {
-    return decodeURI(value);
+    return decodeURIComponent(escape(value));
   } catch {
     return value;
   }
