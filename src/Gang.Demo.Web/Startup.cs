@@ -58,8 +58,13 @@ namespace Gang.Demo.Web
 
             app
                 .UseDefaultFiles()
-                .UseStaticFiles()
-                .UseGangAuthenticationApi()
+                .UseStaticFiles();
+
+            if (Settings.Auth.Enabled)
+                app
+                    .UseGangAuthenticationApi();
+
+            app
                 .UseWebSocketGangs("/ws")
                 .Map("/disconnect", HandleDisconnect);
         }

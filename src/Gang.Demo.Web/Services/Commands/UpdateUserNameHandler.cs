@@ -1,4 +1,3 @@
-using Gang.Authentication.Users;
 using Gang.Demo.Web.Services.State;
 using Gang.State;
 using Gang.State.Commands;
@@ -10,14 +9,6 @@ namespace Gang.Demo.Web.Services.Commands
     public sealed class UpdateUserNameHandler :
         IGangCommandHandler<HostState, UpdateUserName>
     {
-        readonly IGangAuthenticationUserStore _userStore;
-
-        public UpdateUserNameHandler(
-            IGangAuthenticationUserStore userStore)
-        {
-            _userStore = userStore;
-        }
-
         async Task<GangState<HostState>> IGangCommandHandler<HostState, UpdateUserName>
             .HandleAsync(GangState<HostState> state, GangCommand<UpdateUserName> command)
         {
@@ -54,11 +45,11 @@ namespace Gang.Demo.Web.Services.Commands
                     );
             }
 
-            if (!state.HasErrors)
-            {
-                var gangUser = await _userStore.TryGetByIdAsync(command.Audit.UserId);
-                await _userStore.SetAsync(gangUser.SetName(command.Data.Name));
-            }
+            //if (!state.HasErrors)
+            //{
+            //    var gangUser = await _userStore.TryGetByIdAsync(command.Audit.UserId);
+            //    await _userStore.SetAsync(gangUser.SetName(command.Data.Name));
+            //}
 
             return state;
         }

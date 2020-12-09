@@ -119,13 +119,7 @@ namespace Gang.Demo.Tests.Commands
 
         static IGangCommandHandler<HostState, UpdateUserName> GetHandler()
         {
-            //TODO: FAKE?
-            var userStore = new UserStore();
-            userStore.SetAsync(new GangUserData(USER_ID)).GetAwaiter().GetResult();
-
-            return new UpdateUserNameHandler(
-                userStore
-                );
+            return new UpdateUserNameHandler();
         }
 
         static GangState<HostState> GetState(
