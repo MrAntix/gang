@@ -28,7 +28,7 @@ namespace Gang.Demo.Web.Services
         {
             var message = new MailMessage
             {
-                Subject = "Gang Chat: Invite"
+                Subject = "Gang Demo: Invite"
             };
 
             message.To.Add(new MailAddress(e.Data.EmailAddress, e.Data.Name));
@@ -41,7 +41,7 @@ namespace Gang.Demo.Web.Services
             message.Body =
 $@"Hi {e.Data.Name},
 
-An access code was requested for {e.Data.EmailAddress}
+An invite to the Gang Demo was requested for {e.Data.EmailAddress}
 
 click the link below to gain access
 {uri}";
