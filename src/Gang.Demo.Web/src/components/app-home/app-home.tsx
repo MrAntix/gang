@@ -239,7 +239,7 @@ export class AppHome {
       }}>
       <input key="linkRequest" class="input fit user-email"
         name="emailAddress"
-        autoFocus
+        autoFocus type="email" inputMode="email"
         placeholder="(email address)"
       />
       <button class="button"
@@ -283,7 +283,7 @@ export class AppHome {
       this.gang.setState({
         inviteSentTo: emailAddress
       });
-      
+
       this.onGangAuthenticated(undefined);
 
     } else
