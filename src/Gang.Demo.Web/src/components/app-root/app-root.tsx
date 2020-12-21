@@ -71,6 +71,14 @@ export class AppRoot {
 
       }
 
+      if (GangStore.get('registered')) {
+        credentials = await this.auth.getCredential(properties, token);
+
+      } else {
+        credentials = await this.auth.register(properties, token);
+        GangStore.set('registered', 'yes');
+      }
+
       this.logger({ properties, credentials });
 
       if (properties.name) GangStore.set('name', properties.name);
