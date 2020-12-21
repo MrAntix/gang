@@ -1,6 +1,5 @@
+import { IWebSocket, WebSocketData } from '../models';
 import { createGangWebSocket } from './createGangWebSocket';
-import { IWebSocket } from './IWebSocket';
-import { WebSocketData } from './WebSocketData';
 
 describe('createGangWebSocket', () => {
 

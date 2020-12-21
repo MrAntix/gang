@@ -1,16 +1,38 @@
-import { GangUrlBuilder, IGangHttp, IGangLocationService, IGangTokenData } from '../models';
+import {
+  IGangHttp,
+  IGangLocationService,
+  IGangCredentialsService,
+  GangUrlBuilder, IGangTokenData, IGangSettings, IGangPlatform
+} from '../models';
 
 export class GangAuthenticationService {
 
   /**
    * Create a service
    * @param settings
+   * @param http
    * @param location
+   * @param credentials
    */
   constructor(
+    private settings: IGangSettings,
     private http: IGangHttp,
-    private location: IGangLocationService
-  ) { }
+    private location: IGangLocationService,
+    private credentials: IGangCredentialsService
+  ) {
+
+    if (window.PublicKeyCredential)
+
+      this.platform = PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
+        .then(value => ({
+          hasAuthenticator: value
+        }));
+
+    else
+      this.platform = Promise.resolve({
+        hasAuthenticator: false
+      });
+  }
 
   /**
   * Request a link code
@@ -63,6 +85,50 @@ export class GangAuthenticationService {
     if (!result.ok) return undefined;
 
     return await result.text();
+  }
+
+  readonly platform: Promise<IGangPlatform>;
+
+  async register(
+    tokenData: IGangTokenData,
+    challenge: string): Promise<PublicKeyCredential> {
+
+    const publicKey: PublicKeyCredentialCreationOptions = {
+      challenge: Uint8Array.from(challenge, c => c.charCodeAt(0)),
+      rp: {
+        name: this.settings.app.name,
+      },
+      user: {
+        id: Uint8Array.from(tokenData.id, c => c.charCodeAt(0)),
+        name: tokenData.emailAddress,
+        displayName: tokenData.name || tokenData.emailAddress,
+      },
+      pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
+      authenticatorSelection: {
+        userVerification: 'required',
+        requireResidentKey: true
+      },
+      timeout: 60000,
+      attestation: 'none'
+    };
+
+    return await this
+      .credentials.create({ publicKey }) as PublicKeyCredential;
+  }
+
+  async getCredential(
+    _tokenData: IGangTokenData,
+    challenge: string
+  ): Promise<PublicKeyCredential> {
+
+    const publicKey: PublicKeyCredentialRequestOptions = {
+      challenge: Uint8Array.from(challenge, c => c.charCodeAt(0)),
+      userVerification: 'required',
+      timeout: 60000
+    };
+
+    return await this
+      .credentials.get({ publicKey }) as PublicKeyCredential;
   }
 
   /**

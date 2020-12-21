@@ -41,6 +41,7 @@ export class AppRoot {
     this.logger('root.componentWillLoad', { token: this.token })
 
     this.token = await this.auth.tryGetTokenFromUrl();
+
     await this.connect();
 
     this.gang.mapEvents(this);
@@ -54,7 +55,7 @@ export class AppRoot {
     this.isConnected = connectionState === GangConnectionState.connected;
   }
 
-  onGangAuthenticated(token: string) {
+  async onGangAuthenticated(token: string) {
     this.logger('root.onGangAuthenticated', { token });
 
     const properties = this.auth.decodeToken(token);
@@ -63,7 +64,14 @@ export class AppRoot {
       GangStore.set('emailAddress');
     }
     else {
-      this.logger({ properties });
+      let credentials;
+      const platform = await this.auth.platform;
+      if (platform.hasAuthenticator) {
+        credentials = await this.auth.getCredential(properties, token);
+
+      }
+
+      this.logger({ properties, credentials });
 
       if (properties.name) GangStore.set('name', properties.name);
       GangStore.set('emailAddress', properties.emailAddress);

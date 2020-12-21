@@ -63,6 +63,25 @@ describe('GangAuthenticationService', () => {
     expect(result).toBe(token);
   });
 
+  it('createCredential', async () => {
+
+    const tokenData = {
+      id: 'USER-ID',
+      expires: new Date(Date.now() + 1000).toISOString(),
+      name: 'USER-NAME',
+      emailAddress: 'user@example.com',
+      roles: []
+    };
+    const challenge = "CHALLENGE";
+
+    const verify = { credentialsCreateOptions: null };
+
+    const service = getService(undefined, verify);
+    await service.createCredential(tokenData, challenge);
+
+    expect(verify.credentialsCreateOptions).not.toBeNull();
+  });
+
   function getService(options: {
     linkCode?: string,
     linkCodeName?: string
@@ -72,8 +91,9 @@ describe('GangAuthenticationService', () => {
         url?: string,
         init?: RequestInit
       },
-      locationGo?: string
-    } = {}
+      locationGo?: string,
+      credentialsCreateOptions?: CredentialCreationOptions
+    } = {},
   ) {
 
     options = {
@@ -92,6 +112,14 @@ describe('GangAuthenticationService', () => {
         href: `${baseUrl}${options.linkCode && `?${options.linkCodeName}=${options.linkCode}`}`,
         pushState: url => {
           verify.locationGo = url
+        }
+      },
+      {
+        create: async (options) => {
+
+          verify.credentialsCreateOptions = options;
+
+          return null;
         }
       }
     )

@@ -13,6 +13,10 @@ export class GangContext {
 
   public static logger: GangLogger = () => undefined;
   public static defaultSettings: IGangSettings = {
+    app: {
+      id: null,
+      name: 'Gang App'
+    },
     rootUrl: `${location.protocol.replace('http', 'ws')}//${location.host}`,
     authRootPath: '/api/gang/auth'
   };
@@ -32,8 +36,10 @@ export class GangContext {
     return (
       GangContext._auth
       || (GangContext._auth = new GangAuthenticationService(
+        this.settings,
         new GangHttp(this.settings.authRootPath),
-        GangLocationService.instance
+        GangLocationService.instance,
+        navigator.credentials
       ))
     )
   }

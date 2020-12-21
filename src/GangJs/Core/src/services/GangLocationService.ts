@@ -6,8 +6,9 @@ import { IGangLocationService } from "../models";
 export class GangLocationService
   implements IGangLocationService {
 
-  get href(): string { return window.location.href; }
-  pushState(url: string): void {
+    get host(): string { return window.location.host; }
+    get href(): string { return window.location.href; }
+    pushState(url: string): void {
 
     window.history.pushState(null, document.title, url);
   }
