@@ -65,12 +65,6 @@ export class AppRoot {
     }
     else {
       let credentials;
-      const platform = await this.auth.platform;
-      if (platform.hasAuthenticator) {
-        credentials = await this.auth.getCredential(properties, token);
-
-      }
-
       if (GangStore.get('registered')) {
         credentials = await this.auth.getCredential(properties, token);
 
