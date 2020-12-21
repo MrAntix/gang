@@ -64,9 +64,16 @@ export class AppRoot {
       GangStore.set('emailAddress');
     }
     else {
-      let credentials;
+      let credentials: PublicKeyCredential;
       if (GangStore.get('registered')) {
-        credentials = await this.auth.getCredential(properties, token);
+        try {
+          credentials = await this.auth.getCredential(properties, token);
+
+        } catch (err) {
+
+          GangStore.set('registered', undefined);
+          alert(err);
+        };
 
       } else {
         credentials = await this.auth.register(properties, token);
