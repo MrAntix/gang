@@ -113,6 +113,8 @@ export class GangAuthenticationService {
       attestation: 'none'
     };
 
+    alert('platform')
+
     return await this
       .credentials.create({ publicKey }) as PublicKeyCredential;
   }
