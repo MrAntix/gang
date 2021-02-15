@@ -1,7 +1,7 @@
-using Gang.Demo.Web.Services.Events;
+using Gang.Demo.Web.Server.Events;
 using Gang.State;
 
-namespace Gang.Demo.Web.Services.State
+namespace Gang.Demo.Web.Server.State
 {
     public static class HostStateUsers
     {

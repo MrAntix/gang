@@ -1,4 +1,4 @@
-namespace Gang.Demo.Web.Services.Commands
+namespace Gang.Demo.Web.Server.Commands
 {
     public sealed class AddMessage
     {

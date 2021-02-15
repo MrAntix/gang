@@ -1,10 +1,10 @@
-using Gang.Demo.Web.Services.Events;
+using Gang.Demo.Web.Server.Events;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace Gang.Demo.Web.Services.State
+namespace Gang.Demo.Web.Server.State
 {
     public sealed class HostState
     {

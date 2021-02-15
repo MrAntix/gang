@@ -1,10 +1,10 @@
-using Gang.Demo.Web.Services.Events;
+using Gang.Demo.Web.Server.Events;
 using Gang.State;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Gang.Demo.Web.Services.State
+namespace Gang.Demo.Web.Server.State
 {
     public static class HostStateMessages
     {

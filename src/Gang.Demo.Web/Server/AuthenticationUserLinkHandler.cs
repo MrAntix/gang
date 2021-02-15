@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Net.Mail;
 using System.Threading.Tasks;
 
-namespace Gang.Demo.Web.Services
+namespace Gang.Demo.Web.Server
 {
     public sealed class AuthenticationUserLinkHandler :
         IGangEventHandler<GangManagerEvent<GangUserLink>>

@@ -1,9 +1,9 @@
-using Gang.Demo.Web.Services.State;
+using Gang.Demo.Web.Server.State;
 using Gang.State;
 using Gang.State.Commands;
 using System.Threading.Tasks;
 
-namespace Gang.Demo.Web.Services.Commands
+namespace Gang.Demo.Web.Server.Commands
 {
     public sealed class AddMessageHandler :
         IGangCommandHandler<HostState, AddMessage>

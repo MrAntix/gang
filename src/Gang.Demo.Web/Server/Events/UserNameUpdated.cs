@@ -1,8 +1,8 @@
-namespace Gang.Demo.Web.Services.Events
+namespace Gang.Demo.Web.Server.Events
 {
-    public sealed class UserCreated
+    public sealed class UserNameUpdated
     {
-        public UserCreated(
+        public UserNameUpdated(
             string userId,
             string name
             )

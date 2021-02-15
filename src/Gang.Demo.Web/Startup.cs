@@ -1,8 +1,8 @@
 using Gang.Authentication;
 using Gang.Demo.Web.Properties;
-using Gang.Demo.Web.Services;
-using Gang.Demo.Web.Services.Events;
-using Gang.Demo.Web.Services.State;
+using Gang.Demo.Web.Server;
+using Gang.Demo.Web.Server.Events;
+using Gang.Demo.Web.Server.State;
 using Gang.Management;
 using Gang.State;
 using Gang.WebSockets;

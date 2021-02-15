@@ -1,6 +1,6 @@
 using System;
 
-namespace Gang.Demo.Web.Services.Events
+namespace Gang.Demo.Web.Server.Events
 {
     public sealed class MessageAdded
     {

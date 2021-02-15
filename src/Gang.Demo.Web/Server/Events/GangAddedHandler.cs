@@ -4,7 +4,7 @@ using Gang.Management.Events;
 using System;
 using System.Threading.Tasks;
 
-namespace Gang.Demo.Web.Services.Events
+namespace Gang.Demo.Web.Server.Events
 {
     public sealed class GangAddedHandler :
         IGangEventHandler<GangManagerEvent<GangAdded>>

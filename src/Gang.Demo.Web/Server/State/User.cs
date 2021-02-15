@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace Gang.Demo.Web.Services.State
+namespace Gang.Demo.Web.Server.State
 {
 
     public sealed class User : IHasGangIdString

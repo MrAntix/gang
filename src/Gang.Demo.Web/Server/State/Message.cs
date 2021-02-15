@@ -1,6 +1,6 @@
 using System;
 
-namespace Gang.Demo.Web.Services.State
+namespace Gang.Demo.Web.Server.State
 {
     public sealed class Message
     {

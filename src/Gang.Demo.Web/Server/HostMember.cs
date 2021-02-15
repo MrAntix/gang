@@ -1,7 +1,7 @@
 using Gang.Commands;
 using Gang.Demo.Web.Properties;
-using Gang.Demo.Web.Services.Commands;
-using Gang.Demo.Web.Services.State;
+using Gang.Demo.Web.Server.Commands;
+using Gang.Demo.Web.Server.State;
 using Gang.State;
 using Gang.State.Commands;
 using Gang.State.Storage;
@@ -11,7 +11,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Gang.Demo.Web.Services
+namespace Gang.Demo.Web.Server
 {
     public sealed class HostMember :
         GangStateHost<HostState>

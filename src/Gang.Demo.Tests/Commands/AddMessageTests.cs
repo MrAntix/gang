@@ -1,6 +1,6 @@
-using Gang.Demo.Web.Services.Commands;
-using Gang.Demo.Web.Services.Events;
-using Gang.Demo.Web.Services.State;
+using Gang.Demo.Web.Server.Commands;
+using Gang.Demo.Web.Server.Events;
+using Gang.Demo.Web.Server.State;
 using Gang.State;
 using Gang.State.Commands;
 using Gang.Tests.State.Fakes;
