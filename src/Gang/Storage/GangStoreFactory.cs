@@ -4,7 +4,7 @@ using System.Collections.Immutable;
 
 namespace Gang.Storage
 {
-    public sealed class GangStoreFactory< TData>
+    public sealed class GangStoreFactory<TData>
     {
         readonly Func<string, IEnumerable<Func<TData, IEnumerable<object>>>, IGangStore<TData>> _create;
         readonly ImmutableArray<Func<TData, IEnumerable<object>>> _indexers;
@@ -20,13 +20,13 @@ namespace Gang.Storage
                 ?? ImmutableArray<Func<TData, IEnumerable<object>>>.Empty;
         }
 
-        public GangStoreFactory< TData> AddIndex(
+        public GangStoreFactory<TData> AddIndex(
             Func<TData, IEnumerable<object>> indexer)
         {
             if (indexer is null)
                 throw new ArgumentNullException(nameof(indexer));
 
-            return new GangStoreFactory< TData>(
+            return new GangStoreFactory<TData>(
                 _create,
                 _indexers.Add(indexer)
                 );

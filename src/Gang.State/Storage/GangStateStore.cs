@@ -127,6 +127,9 @@ namespace Gang.State.Storage
                 );
         }
 
-        static string GetEventKey(uint sequenceNumber) => $"{sequenceNumber++:000000000}";
+        static string GetEventKey(uint sequenceNumber)
+        {
+            return $"{sequenceNumber++:000000000}";
+        }
     }
 }

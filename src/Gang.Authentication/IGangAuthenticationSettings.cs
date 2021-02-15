@@ -16,5 +16,9 @@ namespace Gang.Authentication
         /// Session token minutes, default 14 days
         /// </summary>
         int? SessionExpiryMinutes { get; }
+        /// <summary>
+        /// Unused credentials will expire in days
+        /// </summary>
+        int? CredentialExpiryDays { get; }
     }
 }

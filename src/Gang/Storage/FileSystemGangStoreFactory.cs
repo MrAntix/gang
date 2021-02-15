@@ -21,11 +21,11 @@ namespace Gang.Storage
             _cache = cache;
         }
 
-        GangStoreFactory< TData> IGangStoreFactory
+        GangStoreFactory<TData> IGangStoreFactory
             .For<TData>()
         {
             return new GangStoreFactory<TData>(
-                (name, indexers) =>new FileSystemGangStore<TData>(
+                (name, indexers) => new FileSystemGangStore<TData>(
                     _settings,
                     _serializer,
                     _cache,

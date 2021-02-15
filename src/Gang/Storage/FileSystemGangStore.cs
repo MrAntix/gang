@@ -20,7 +20,7 @@ namespace Gang.Storage
         readonly IFileSystemGangStoreSettings _settings;
         readonly IGangSerializationService _serializer;
         readonly IMemoryCache _cache;
-        readonly TaskQueue _saveTasks;
+        readonly TaskQueue _ioTasks;
 
         readonly ImmutableArray<Func<TData, IEnumerable<object>>> _indexers;
 
@@ -35,7 +35,7 @@ namespace Gang.Storage
             _settings = settings;
             _serializer = serializer;
             _cache = cache;
-            _saveTasks = new TaskQueue();
+            _ioTasks = new TaskQueue();
 
             _indexers = indexers
                 ?.ToImmutableArray()
@@ -91,7 +91,7 @@ namespace Gang.Storage
             {
                 await RemoveIndexedValues(key);
 
-                File.Delete(dataFilePath);
+                await DeleteFileAsync(dataFilePath);
 
                 return true;
             }
@@ -157,6 +157,9 @@ namespace Gang.Storage
         {
             var filePath = GetIndexFilePath(key);
 
+            if (!index.Any())
+                return DeleteFileAsync(filePath);
+
             return SaveFileAsync(filePath, index);
         }
 
@@ -207,12 +210,21 @@ namespace Gang.Storage
 
         Task SaveFileAsync(string filePath, object content)
         {
-            return _saveTasks.Enqueue(() =>
+            return _ioTasks.Enqueue(() =>
             {
                 return File.WriteAllBytesAsync(
                     filePath,
                     _serializer.Serialize(content)
                     );
+            });
+        }
+
+        Task DeleteFileAsync(string filePath)
+        {
+            return _ioTasks.Enqueue(() =>
+            {
+                File.Delete(filePath);
+                return Task.CompletedTask;
             });
         }
 

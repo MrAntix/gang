@@ -150,7 +150,7 @@ namespace Gang.Authentication.Users
         }
 
         public GangUserData SetCredential(
-            GangCredentialRegistration data)
+            GangUserCredential value)
         {
             return new GangUserData(
                 Id,
@@ -158,7 +158,24 @@ namespace Gang.Authentication.Users
                 Roles,
                 Secret,
                 LinkCode, Challenge,
-                Credentials.RemoveAll(c => c.Id == data.CredentialId).Add(GangUserCredential.Create(data))
+                Credentials
+                    .RemoveAll(c => c.Id == value.Id)
+                    .Add(value)
+                );
+        }
+
+        public GangUserData RemoveExpiredCredentials(
+            int expiryDays
+            )
+        {
+            return new GangUserData(
+                Id,
+                Name, Email,
+                Roles,
+                Secret,
+                LinkCode, Challenge,
+                Credentials
+                    .RemoveAll(c => c.Validated.AddDays(expiryDays) < DateTimeOffset.Now)
                 );
         }
     }

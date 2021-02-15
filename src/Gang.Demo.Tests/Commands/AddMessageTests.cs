@@ -3,7 +3,6 @@ using Gang.Demo.Web.Server.Events;
 using Gang.Demo.Web.Server.State;
 using Gang.State;
 using Gang.State.Commands;
-using Gang.Tests.State.Fakes;
 using System;
 using System.Threading.Tasks;
 using Xunit;

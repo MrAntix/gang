@@ -1,6 +1,4 @@
 using Gang.State;
-using Gang.State.Events;
-using Gang.Tests.State.Fakes;
 using Gang.Tests.State.Todos;
 using Gang.Tests.State.Todos.Add;
 using Gang.Tests.State.Todos.Complete;

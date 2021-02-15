@@ -50,7 +50,7 @@ namespace Gang.Demo.Web
             if (Settings.Auth.Enabled)
             {
                 services
-                    .AddGangAuthenticationServices(Settings);
+                    .AddGangAuthenticationServices(Settings.Auth);
             }
             else
             {

@@ -5,8 +5,8 @@ root = true
 charset = utf-8
 indent_style = space
 indent_size = 2
-end_of_line = lf
-insert_final_newline = true
+end_of_line = crlf
+insert_final_newline = false
 trim_trailing_whitespace = true
 
 [*.md]
@@ -19,17 +19,9 @@ quote_type = single
 
 # C# files
 [*.cs]
-
-#### Core EditorConfig Options ####
-
-# Indentation and spacing
 indent_size = 4
 indent_style = space
 tab_width = 4
-
-# New line preferences
-end_of_line = crlf
-insert_final_newline = false
 
 #### .NET Coding Conventions ####
 

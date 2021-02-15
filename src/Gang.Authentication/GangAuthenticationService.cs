@@ -128,7 +128,9 @@ namespace Gang.Authentication
 
             if (user.Challenge != data.Challenge) return false;
 
-            user = user.SetCredential(data);
+            user = user.SetCredential(
+                GangUserCredential.Create(data)
+                );
             await _users.SetAsync(user);
 
             return true;
@@ -148,6 +150,13 @@ namespace Gang.Authentication
                 credential.PublicKey,
                 data.ClientData, data.AuthenticatorData, data.Signature))
                 return null;
+
+            user = user
+                .RemoveExpiredCredentials(_settings.CredentialExpiryDays ?? 60)
+                .SetCredential(
+                    credential.SetValidated()
+                );
+            await _users.SetAsync(user);
 
             return GetToken(user);
         }

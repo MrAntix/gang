@@ -27,6 +27,7 @@ bld/
 wwwroot/
 dist/
 storage/
+BattleMaths*/
 
 # Visual Studio 2015 cache/options directory
 .vs/
