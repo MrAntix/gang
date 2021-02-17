@@ -38,7 +38,7 @@ namespace Gang.Storage
         /// </summary>
         /// <param name="key">Key</param>
         /// <param name="data">Data</param>
-        Task PutAsync(string key, TData data);
+        Task SetAsync(string key, TData data, bool overwrite = true);
 
         /// <summary>
         /// Get data by key

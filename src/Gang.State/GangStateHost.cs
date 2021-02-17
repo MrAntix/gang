@@ -13,6 +13,7 @@ namespace Gang.State
         readonly IGangCommandExecutor<TStateData> _executor;
         readonly IGangStateStore _store;
         readonly TStateData _initialState;
+        readonly TaskCompletionSource<GangState<TStateData>> _stateLoaded;
         readonly TaskQueue _tasks = new();
 
         public GangStateHost(
@@ -24,20 +25,30 @@ namespace Gang.State
             _executor = executor;
             _store = store;
             _initialState = initialState;
+
+            _stateLoaded = new TaskCompletionSource<GangState<TStateData>>();
+            StateAsync = _stateLoaded.Task;
         }
 
-        public GangState<TStateData> State { get; private set; }
-        public async Task SetState(
+        //public GangState<TStateData> State { get; private set; }
+
+        public Task<GangState<TStateData>> StateAsync { get; private set; }
+
+        public async Task SetStateAsync(
             GangState<TStateData> state, GangAudit audit = null)
         {
             if (state == null) return; // state not loaded yet
 
             if (state.Errors == null)
             {
-                State = await OnStateAsync(state);
+                state = await _store
+                    .CommitAsync(
+                        Controller.GangId,
+                       await OnStateAsync(state),
+                       audit
+                       );
 
-                State = await _store
-                    .CommitAsync(Controller.GangId, State, audit);
+                StateAsync = Task.FromResult(state);
             }
             else
             {
@@ -55,9 +66,10 @@ namespace Gang.State
 
         protected override async Task OnConnectAsync()
         {
-            State = await OnStateAsync(
+            var state = await OnStateAsync(
                 await _store.RestoreAsync(Controller.GangId, _initialState)
                 );
+            _stateLoaded.SetResult(state);
         }
 
         protected override async Task OnCommandAsync(
@@ -65,10 +77,27 @@ namespace Gang.State
         {
             await _tasks.Enqueue(async () =>
             {
-                var result = await _executor
-                    .ExecuteAsync(State, bytes, audit);
+                var state = await StateAsync;
 
-                await SetState(result, audit);
+                var result = await _executor
+                    .ExecuteAsync(state, bytes, audit);
+
+                await SetStateAsync(result, audit);
+            });
+        }
+
+        protected async Task ExecuteCommandAsync<TCommandData>(
+            TCommandData data, GangAudit audit = null)
+        {
+            await _tasks.Enqueue(async () =>
+            {
+                var state = await StateAsync;
+
+                audit ??= new GangAudit(Controller.GangId, state.Version, Id);
+                var newState = await _executor
+                    .ExecuteAsync(state, data, audit);
+
+                await SetStateAsync(newState, audit);
             });
         }
 

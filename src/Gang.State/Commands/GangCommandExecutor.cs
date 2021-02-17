@@ -45,6 +45,18 @@ namespace Gang.State.Commands
             return await handler.HandleAsync(state, command);
         }
 
+        async Task<GangState<TStateData>> IGangCommandExecutor<TStateData>
+            .ExecuteAsync<TCommandData>(GangState<TStateData> state, TCommandData data, GangAudit audit)
+        {
+            var handler = _handlers[typeof(TCommandData).GetCommandTypeName()];
+
+            var command = GangCommand.From(
+                _serialization.Map(data, handler.DataType),
+                audit);
+
+            return await handler.HandleAsync(state, command);
+        }
+
         IGangCommandExecutor<TStateData> IGangCommandExecutor<TStateData>
             .RegisterHandler<TCommandData>(GangCommandHandler<TStateData> handler)
         {

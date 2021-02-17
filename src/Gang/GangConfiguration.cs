@@ -67,6 +67,15 @@ namespace Gang
             return services;
         }
 
+        public static IServiceCollection AddGangSessionUserStore(
+            this IServiceCollection services
+            )
+        {
+            services.AddSingleton<IGangSessionUserStore, GangSessionUserStore>();
+
+            return services;
+        }
+
         public static IServiceCollection AddGangFactory<T>(
             this IServiceCollection services)
             where T : class

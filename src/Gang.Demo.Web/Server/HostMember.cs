@@ -30,7 +30,9 @@ namespace Gang.Demo.Web.Server
         protected override async Task OnMemberConnectAsync(
             GangAudit audit)
         {
-            await SetState(State, audit);
+            var state = await StateAsync;
+
+            await SetStateAsync(state, audit);
             await Controller.SendCommandAsync(
                 _setSettings,
                 memberIds: new[] { audit.MemberId }
@@ -40,7 +42,9 @@ namespace Gang.Demo.Web.Server
         protected override async Task OnMemberDisconnectAsync(
             GangAudit audit)
         {
-            await SetState(State, audit);
+            var state = await StateAsync;
+
+            await SetStateAsync(state, audit);
         }
 
         protected override async Task<GangState<HostState>>

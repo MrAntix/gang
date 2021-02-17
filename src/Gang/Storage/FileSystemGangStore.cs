@@ -43,7 +43,8 @@ namespace Gang.Storage
 
             Name = name;
             Directory.CreateDirectory(Path.GetDirectoryName(GetDataFilePath(null)));
-            Directory.CreateDirectory(Path.GetDirectoryName(GetIndexFilePath(null)));
+            if (_indexers.Any())
+                Directory.CreateDirectory(Path.GetDirectoryName(GetIndexFilePath(null)));
         }
 
         public string Name { get; }
@@ -66,18 +67,23 @@ namespace Gang.Storage
         }
 
         async Task IGangStore<TData>
-            .PutAsync(string key, TData data)
+            .SetAsync(string key, TData data, bool overwrite)
         {
             if (key is null)
                 throw new ArgumentNullException(nameof(key));
             if (data is null)
                 throw new ArgumentNullException(nameof(data));
 
-            await RemoveIndexedValues(key);
-
-            await SaveDataAsync(key, data);
-
-            await AddIndexedValues(key, data);
+            try
+            {
+                await SaveDataAsync(key, data, overwrite);
+                await RemoveIndexedValues(key);
+                await AddIndexedValues(key, data);
+            }
+            catch (IOException ioex)
+            {
+                throw new GangStoreException($"{key} already exists in store {Name}", ioex);
+            }
         }
 
         async Task<bool> IGangStore<TData>
@@ -133,12 +139,13 @@ namespace Gang.Storage
 
         Task SaveDataAsync(
             string key,
-            TData data
+            TData data,
+            bool overwrite
             )
         {
             var filePath = GetDataFilePath(key);
 
-            return SaveFileAsync(filePath, data);
+            return SaveFileAsync(filePath, data, overwrite);
         }
 
         async Task<ImmutableArray<string>> LoadIndexAsync(
@@ -160,7 +167,7 @@ namespace Gang.Storage
             if (!index.Any())
                 return DeleteFileAsync(filePath);
 
-            return SaveFileAsync(filePath, index);
+            return SaveFileAsync(filePath, index, true);
         }
 
         async Task AddIndexedValues(
@@ -208,14 +215,21 @@ namespace Gang.Storage
                 await SaveIndexAsync(kv.Key, kv.Value);
         }
 
-        Task SaveFileAsync(string filePath, object content)
+        Task SaveFileAsync(
+            string filePath, object content,
+            bool overwrite)
         {
-            return _ioTasks.Enqueue(() =>
+            return _ioTasks.Enqueue(async () =>
             {
-                return File.WriteAllBytesAsync(
+                using var fileStream = File.Open(
                     filePath,
-                    _serializer.Serialize(content)
+                    overwrite ? FileMode.Create : FileMode.CreateNew,
+                    FileAccess.Write,
+                    FileShare.Read
                     );
+                var bytes = _serializer.Serialize(content);
+
+                await fileStream.WriteAsync(bytes);
             });
         }
 

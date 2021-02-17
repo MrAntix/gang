@@ -11,11 +11,15 @@ namespace Gang.State.Storage
     public sealed class GangStateStore :
         IGangStateStore
     {
+        const string STORE_EVENTS = "events";
+        const string STORE_CACHE = "cache";
+        const string KEY_SEQUENCE_NUMBER = ".sn";
+
         readonly IGangSerializationService _serializer;
         readonly GangStateEventMap _eventMap;
         readonly Subject<IGangStateEvent> _events;
         readonly IGangStore<GangStateEventWrapper> _eventStore;
-
+        readonly IGangStore<uint> _sequenceNumberStore;
         readonly IGangStore<object> _cache;
 
         uint _sequenceNumber;
@@ -30,13 +34,19 @@ namespace Gang.State.Storage
             _eventStore = storeFactory
                 .For<GangStateEventWrapper>()
                 .AddIndex(e => e.Audit.GangId)
-                .Create("events");
+                .Create(STORE_EVENTS);
+            _sequenceNumberStore = storeFactory
+                .For<uint>()
+                .Create(STORE_EVENTS);
 
             _cache = storeFactory
                 .For<object>()
-                .Create("cache");
+                .Create(STORE_CACHE);
             _serializer = serializer;
             _eventMap = eventMap;
+            _sequenceNumber = _sequenceNumberStore
+                .TryGetAsync(KEY_SEQUENCE_NUMBER)
+                .GetAwaiter().GetResult();
         }
 
         async Task<GangState<TStateData>> IGangStateStore
@@ -54,10 +64,18 @@ namespace Gang.State.Storage
 
                 _events.OnNext(e);
 
-                await _eventStore.PutAsync(GetEventKey(++_sequenceNumber), wrapper);
+                var key = GetEventKey(++_sequenceNumber);
+
+                await _eventStore.SetAsync(
+                    key, wrapper,
+                    overwrite: false
+                    );
             }
 
-            await _cache.PutAsync(gangId, state);
+            await _cache.SetAsync(gangId,
+                new { state.Data, state.Version }
+                );
+            await _sequenceNumberStore.SetAsync(KEY_SEQUENCE_NUMBER, _sequenceNumber);
 
             return GangState.Create(state.Data, state.Version);
         }
@@ -84,7 +102,6 @@ namespace Gang.State.Storage
             var keys = await _eventStore.TryGetIndexedKeys(gangId);
             foreach (var key in keys)
             {
-                _sequenceNumber++;
                 var e = await GetEventAsync(key);
 
                 if (++version != e.Audit.Version)

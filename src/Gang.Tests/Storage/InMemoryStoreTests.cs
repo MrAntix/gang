@@ -26,7 +26,7 @@ namespace Gang.Tests.Storage
             var k = "Key";
 
             var a = new A { Prop = "VALUE" };
-            await service.PutAsync(k, a);
+            await service.SetAsync(k, a);
 
             var got = await service.TryGetAsync(k);
 
@@ -44,7 +44,7 @@ namespace Gang.Tests.Storage
             var k = "Key";
 
             var a = new A { Prop = "VALUE" };
-            await service.PutAsync(k, a);
+            await service.SetAsync(k, a);
 
             Assert.Equal(k, Assert.Single(
                 await service.TryGetIndexedKeys(a.Prop)
@@ -62,10 +62,10 @@ namespace Gang.Tests.Storage
             var k = "Key";
 
             var a = new A { Prop = "VALUE" };
-            await service.PutAsync(k, a);
+            await service.SetAsync(k, a);
 
             var update = a with { Prop = "VALUE_UPDATED" };
-            await service.PutAsync(k, update);
+            await service.SetAsync(k, update);
 
             Assert.Empty(await service.TryGetIndexedKeys(a.Prop));
 
@@ -85,7 +85,7 @@ namespace Gang.Tests.Storage
             var k = "Key";
 
             var a = new A { Prop = "VALUE" };
-            await service.PutAsync(k, a);
+            await service.SetAsync(k, a);
 
             Assert.True(await service.TryDeleteAsync(k));
 
@@ -103,11 +103,11 @@ namespace Gang.Tests.Storage
 
             var k1 = "Key1";
             var a1 = new A { Prop = "VALUE" };
-            await service.PutAsync(k1, a1);
+            await service.SetAsync(k1, a1);
 
             var k2 = "Key2";
             var a2 = new A { Prop = "VALUE" };
-            await service.PutAsync(k2, a2);
+            await service.SetAsync(k2, a2);
 
             Assert.Equal(new[] { k1, k2 },
                 await service.TryGetIndexedKeys(a1.Prop)

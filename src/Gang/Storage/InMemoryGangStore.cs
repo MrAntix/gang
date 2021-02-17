@@ -19,9 +19,12 @@ namespace Gang.Storage
         readonly Dictionary<object, ImmutableArray<string>> _indexedData;
 
         public InMemoryGangStore(
+            string name = null,
             IEnumerable<Func<TData, IEnumerable<object>>> indexers = null
             )
         {
+            Name = name;
+
             _indexers = indexers
                 ?.ToImmutableArray()
                 ?? ImmutableArray<Func<TData, IEnumerable<object>>>.Empty;
@@ -29,6 +32,8 @@ namespace Gang.Storage
             _data = new Dictionary<string, TData>();
             _indexedData = new Dictionary<object, ImmutableArray<string>>();
         }
+
+        public string Name { get; }
 
         Task<IImmutableList<string>> IGangStore<TData>
             .TryGetIndexedKeys(object value, int skip, int? take)
@@ -55,7 +60,7 @@ namespace Gang.Storage
         }
 
         Task IGangStore<TData>
-            .PutAsync(string key, TData data)
+            .SetAsync(string key, TData data, bool overwrite)
         {
             if (key is null)
                 throw new ArgumentNullException(nameof(key));
@@ -63,6 +68,9 @@ namespace Gang.Storage
                 throw new ArgumentNullException(nameof(data));
 
             RemoveIndexedValues(key);
+
+            if (!overwrite && _data.ContainsKey(key))
+                throw new GangStoreException($"{key} already exists in store {Name}");
 
             _data[key] = data;
 

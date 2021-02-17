@@ -32,5 +32,14 @@ namespace Gang
                 MemberId, UserId,
                 On);
         }
+
+        public GangAudit SetOn(DateTimeOffset? on = null)
+        {
+            return new GangAudit(
+                GangId,
+                Version,
+                MemberId, UserId,
+                on);
+        }
     }
 }

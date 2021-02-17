@@ -31,6 +31,14 @@ namespace Gang.Authentication
                 .AddGangAuthenticationServices(settings);
         }
 
+        public static IServiceCollection AddGangUserStore(
+            this IServiceCollection services
+            )
+        {
+            return services
+                .AddSingleton<IGangUserStore, GangUserStore>();
+        }
+
         /// <summary>
         /// Add Gang Authentication services
         /// </summary>

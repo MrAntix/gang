@@ -1,4 +1,4 @@
-﻿namespace Gang.Authentication
+namespace Gang.Authentication
 {
     public sealed class GangSessionUser
     {

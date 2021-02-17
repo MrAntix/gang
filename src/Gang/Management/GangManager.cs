@@ -145,7 +145,7 @@ namespace Gang.Management
                         : gang.OtherMembers
                             .Where(m => memberIds.Any(mId => mId.SequenceEqual(m.Id)));
 
-                    var tasks = members
+                    var tasks = members.ToArray()
                         .Select(m => m
                             .HandleAsync(type ?? GangMessageTypes.State, data, audit))
                         .ToArray();
@@ -160,8 +160,10 @@ namespace Gang.Management
 
                     gang = _gangs[parameters.GangId];
                     if (gang != null)
+                    {
                         await gang.HostMember
-                            .HandleAsync(GangMessageTypes.Disconnect, member.Id);
+                            .HandleAsync(GangMessageTypes.Disconnect, null, audit.SetOn());
+                    }
 
                     RaiseEvent(new GangMemberRemoved(), gangId, member.Id);
 

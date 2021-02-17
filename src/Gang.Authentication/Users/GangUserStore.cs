@@ -23,7 +23,7 @@ namespace Gang.Authentication.Users
         Task IGangUserStore
             .SetAsync(GangUserData value)
         {
-            return _store.PutAsync(value.Id, value);
+            return _store.SetAsync(value.Id, value);
         }
 
         async Task<GangUserData> IGangUserStore
@@ -35,7 +35,8 @@ namespace Gang.Authentication.Users
             return await _store.TryGetAsync(id);
         }
 
-        async Task<GangUserData> IGangUserStore.TryGetByEmailAddressAsync(string email)
+        async Task<GangUserData> IGangUserStore
+            .TryGetByEmailAddressAsync(string email)
         {
             var id = await _store.TryGetIndexedKeyAsync(email);
             if (id == null) return null;
@@ -43,7 +44,8 @@ namespace Gang.Authentication.Users
             return await _store.TryGetAsync(id);
         }
 
-        async Task<GangUserData> IGangUserStore.TryGetByIdAsync(string id)
+        async Task<GangUserData> IGangUserStore
+            .TryGetByIdAsync(string id)
         {
             return await _store.TryGetAsync(id);
         }

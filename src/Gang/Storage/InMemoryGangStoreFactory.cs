@@ -6,7 +6,8 @@ namespace Gang.Storage
         GangStoreFactory<TData> IGangStoreFactory.For<TData>()
         {
             return new GangStoreFactory<TData>(
-                (_, indexers) => new InMemoryGangStore<TData>(
+                (name, indexers) => new InMemoryGangStore<TData>(
+                    name,
                     indexers
                     )
                 );

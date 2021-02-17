@@ -32,6 +32,11 @@ namespace Gang.Tests.State.Fakes
                 );
         }
 
+        public Task<GangState<TodosState>> ExecuteAsync<TCommand>(GangState<TodosState> state, TCommand command, GangAudit audit)
+        {
+            throw new NotImplementedException();
+        }
+
         public FakeCommandExecutor WithError()
         {
             return new FakeCommandExecutor(
