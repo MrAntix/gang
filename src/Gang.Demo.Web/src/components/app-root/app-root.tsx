@@ -233,8 +233,8 @@ export class AppRoot {
           <p class="row fit">
             <a href="https://github.com/MrAntix/gang">github.com/MrAntix/gang</a>
 
-            {this.isAuthenticated && <button class="button right"
-              onClick={() => this.logout()}>Logout</button>
+            {this.isAuthenticated && <a class="right"
+              onClick={() => this.logout()}>Logout</a>
             }
           </p>
         </div>

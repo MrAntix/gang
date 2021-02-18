@@ -1,1 +1,134 @@
-@import '../../global/component.css';
+.message {
+  display: flex;
+  flex-direction: column;
+}
+
+.message.current-user {
+  align-items: flex-end;
+}
+
+.message.current-user .detail {
+  flex-flow: row-reverse;
+}
+
+.info {
+  font-size: .667em;
+  opacity: .5;
+  margin: 0 var(--padding-unit);
+}
+
+.message .detail {
+  display: flex;
+}
+
+.message .user-name {
+  margin-top: var(--padding-unit);
+}
+
+.message.current-user .user-name {
+  display: none;
+}
+
+.message-text-list-item {
+  position: relative;
+  padding: 0 0 calc(.25 * var(--callout-size));
+}
+
+.message-text-list-item.error {
+  --host-bot-color: var(--error-color);
+  --host-bot-color-alt: var(--error-color-alt);
+}
+
+.message-text-list-item.success {
+  --host-bot-color: var(--success-color);
+  --host-bot-color-alt: var(--success-color-alt);
+}
+
+.message-text-list-item.pending::before {
+  content: '…';
+  max-width: 1em;
+  overflow: hidden;
+  display: inline-block;
+  position: absolute;
+  bottom: -.5em;
+  right: 0;
+
+  animation: pending steps(4, end) 1s infinite;
+}
+
+@keyframes pending {
+  to {
+    max-width: 0;
+  }
+}
+
+.message.host-bot .message-text {
+  background-color: var(--host-bot-color);
+  color: var(--host-bot-color-alt);
+  font-family: monospace;
+  font-size: 1.2rem;
+}
+
+.message.current-user .message-text {
+  background-color: var(--current-user-color);
+  color: var(--current-user-color-alt);
+  margin-left: auto;
+}
+
+.message .message-text {
+  position: relative;
+  white-space: pre-wrap;
+  border-radius: var(--callout-border-radius);
+  padding: var(--padding-unit) calc(2 * var(--padding-unit));
+  margin: 0;
+  background-color: var(--user-color);
+  color: var(--user-color-alt);
+}
+
+.message .message-text::after {
+  position: absolute;
+  content: '';
+  border: solid var(--callout-size) transparent;
+  display: inline-block;
+  width: 0;
+  height: 0;
+}
+
+.message.current-user .message-text::after {
+  bottom: calc(-2 * var(--callout-size) + 1px);
+  right: var(--callout-border-radius);
+  border-top-color: var(--current-user-color);
+}
+
+.message:not(.current-user) .message-text-list-item:not(:first-child) .message-text::after {
+  top: calc(-2 * var(--callout-size) + 1px);
+  left: var(--callout-border-radius);
+  border-bottom-color: var(--user-color);
+}
+
+.message:not(.current-user) .message-text-list-item:first-child .message-text::after {
+  top: calc(.5 * (1em * var(--text-line-height) + 2 * var(--padding-unit) - 2 * var(--callout-size)));
+  left: calc(-2 * var(--callout-size) + 1px);
+  border-right-color: var(--user-color);
+  border-top-width: calc(.667 * var(--callout-size));
+}
+
+.message.host-bot .message-text-list-item:not(:first-child) .message-text::after {
+  border-bottom-color: var(--host-bot-color);
+}
+
+.message.host-bot .message-text-list-item:first-child .message-text::after {
+  border-right-color: var(--host-bot-color);
+}
+
+.message:not(:last-child) {
+  border-bottom: solid 2px var(--highlight);
+}
+
+.message.input {
+  flex: 1 1 auto;
+  resize: vertical;
+  max-height: 6em;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}

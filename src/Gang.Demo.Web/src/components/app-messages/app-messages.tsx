@@ -7,7 +7,8 @@ import { arrayToMap, formatMessageDate, replaceUserIds, sortAndGroupMessages, un
 
 @Component({
   tag: 'app-messages',
-  styleUrl: 'app-messages.css'
+  styleUrl: 'app-messages.css',
+  shadow: false
 })
 export class AppMessages {
 

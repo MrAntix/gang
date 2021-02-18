@@ -15,3 +15,21 @@
   opacity: .25;
 }
 
+.messages {
+  flex: 100 1 auto;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  min-width: 15em;
+  height: 100%;
+  max-height: calc(100 * var(--vh) - var(--page-head-height));
+  background-color: var(--lowlight);
+  border-radius: 0 0 calc(var(--padding-unit) + var(--border-radius)) calc(var(--padding-unit) + var(--border-radius));
+}
+
+.messages-list {
+  flex: 1 1 auto;
+  overflow: auto;
+  overflow-x: hidden;
+  margin-bottom: var(--padding-unit);
+}
