@@ -13,7 +13,7 @@ namespace Gang.Tests.State.Todos
             )
         {
             Todos = todos
-                ?.ToImmutableDictionary(i => i.Id)
+                ?.ToImmutableDictionary(i => i.UserId)
                 ?? ImmutableDictionary<string, Todo>.Empty;
         }
 

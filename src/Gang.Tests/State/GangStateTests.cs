@@ -58,7 +58,7 @@ namespace Gang.Tests.State
 
             var todo = Assert.Single(state.Data.Todos.Values);
 
-            Assert.Equal(TODO_ID, todo.Id);
+            Assert.Equal(TODO_ID, todo.UserId);
             Assert.NotNull(todo.CompletedOn);
         }
     }

@@ -23,7 +23,7 @@ namespace Gang.Authentication.Users
         Task IGangUserStore
             .SetAsync(GangUserData value)
         {
-            return _store.SetAsync(value.Id, value);
+            return _store.SetAsync(value.UserId, value);
         }
 
         async Task<GangUserData> IGangUserStore

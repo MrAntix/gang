@@ -8,16 +8,16 @@ namespace Gang.Tests.State.Todos
             string id,
             DateTimeOffset? completedOn = null)
         {
-            Id = id;
+            UserId = id;
             CompletedOn = completedOn;
         }
 
-        public string Id { get; }
+        public string UserId { get; }
         public DateTimeOffset? CompletedOn { get; }
 
         public Todo SetCompletedOn(DateTimeOffset on)
         {
-            return new Todo(Id, on);
+            return new Todo(UserId, on);
         }
     }
 }

@@ -1,7 +1,10 @@
+using Gang.Commands;
 using Gang.State.Commands;
 using Gang.State.Storage;
 using Gang.Tasks;
+using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Gang.State
@@ -41,6 +44,8 @@ namespace Gang.State
 
             if (state.Errors == null)
             {
+                var notifications = state.Notifications;
+
                 state = await _store
                     .CommitAsync(
                         Controller.GangId,
@@ -49,6 +54,27 @@ namespace Gang.State
                        );
 
                 StateAsync = Task.FromResult(state);
+
+                if (notifications.Any())
+                {
+                    var members = Controller.GetGang().Members;
+
+                    foreach (var notification in notifications)
+                    {
+                        var memberIds = members
+                            .Where(m =>
+                                m.Session?.User?.Id != null
+                                && notification.UserIds.Contains(m.Session.User.Id)
+                            )
+                            .Select(m => m.Id)
+                            .ToImmutableArray();
+
+                        await Controller.SendCommandAsync(
+                            notification.Command,
+                            memberIds
+                            );
+                    }
+                }
             }
             else
             {

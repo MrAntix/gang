@@ -1,3 +1,4 @@
+using Gang.State.Commands;
 using Gang.State.Events;
 using System;
 using System.Collections.Generic;
@@ -10,16 +11,36 @@ namespace Gang.State
     public static class GangState
     {
         public static GangState<TData> Create<TData>(
-             TData data,
+            TData data,
             uint version = 0,
             IEnumerable<object> uncommitted = null,
+            IEnumerable<GangStateNotification> notifications = null,
             IEnumerable<string> errors = null
             )
             where TData : class
         {
             return new GangState<TData>(
                 data, version,
-                uncommitted, errors
+                uncommitted, notifications, errors
+                );
+        }
+
+        public static GangState<TData> Update<TData>(
+            GangState<TData> state,
+            TData data = null,
+            uint? version = null,
+            IEnumerable<object> uncommitted = null,
+            IEnumerable<GangStateNotification> notifications = null,
+            IEnumerable<string> errors = null
+            )
+            where TData : class
+        {
+            return Create(
+                data ?? state.Data,
+                version ?? state.Version,
+                uncommitted ?? state.Uncommitted,
+                notifications ?? state.Notifications,
+                errors ?? state.Errors
                 );
         }
     }
@@ -27,17 +48,18 @@ namespace Gang.State
     public sealed class GangState<TData>
         where TData : class
     {
-
         public GangState(
             TData data,
             uint version = 0,
             IEnumerable<object> uncommitted = null,
+            IEnumerable<GangStateNotification> notifications = null,
             IEnumerable<string> errors = null
             )
         {
             Data = data ?? throw new ArgumentNullException(nameof(data));
             Version = version;
             Uncommitted = uncommitted.ToImmutableListDefaultEmpty();
+            Notifications = notifications.ToImmutableListDefaultEmpty();
             Errors = errors?.ToImmutableList();
             HasErrors = Errors?.Any() ?? false;
         }
@@ -45,6 +67,7 @@ namespace Gang.State
         public TData Data { get; }
         public uint Version { get; }
         public IImmutableList<object> Uncommitted { get; }
+        public IImmutableList<GangStateNotification> Notifications { get; }
         public IImmutableList<string> Errors { get; }
         public bool HasErrors { get; }
 
@@ -72,20 +95,20 @@ namespace Gang.State
         {
             return Errors?.Any() ?? false
                 ? this
-                : GangState.Create(
-                    apply(eventData),
-                    Version + 1,
-                    Uncommitted.Append(eventData),
-                    Errors
+                : GangState.Update(
+                    this,
+                    data: apply(eventData),
+                    version: Version + 1,
+                    uncommitted: Uncommitted.Append(eventData)
                     );
         }
 
         public GangState<TData> RaiseErrors(
             IEnumerable<string> errors)
         {
-            return GangState.Create(
-                Data, Version, Uncommitted,
-                Errors?.Concat(errors) ?? errors
+            return GangState.Update(
+                this,
+                errors: Errors?.Concat(errors) ?? errors
                 );
         }
 
@@ -93,6 +116,33 @@ namespace Gang.State
             params string[] errors)
         {
             return RaiseErrors(errors as IEnumerable<string>);
+        }
+
+        public GangState<TData> Notify(
+            IEnumerable<string> userIds,
+            string id, string type, string message
+            )
+        {
+            return GangState.Update(
+                this,
+                notifications: Notifications.Add(
+                        new GangStateNotification(
+                            userIds,
+                            new GangNotify(id, type, message)
+                            )
+                    )
+                );
+        }
+
+        public GangState<TData> Notify(
+            string userId,
+            string id, string type, string message
+            )
+        {
+            return Notify(
+                new[] { userId },
+                id, type, message
+                );
         }
 
         public GangState<TData> Apply(

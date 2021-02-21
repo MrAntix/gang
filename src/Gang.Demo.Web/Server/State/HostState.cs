@@ -13,7 +13,7 @@ namespace Gang.Demo.Web.Server.State
             IEnumerable<Message> messages = null)
         {
             if (users != null
-                && users.GroupBy(u => u.Id).Any(g => g.Count() > 2))
+                && users.GroupBy(u => u.UserId).Any(g => g.Count() > 2))
                 throw new Exception("Duplicate users");
 
             Users = users.ToImmutableListDefaultEmpty();
@@ -37,7 +37,7 @@ namespace Gang.Demo.Web.Server.State
 
         public HostState Apply(UserNameUpdated data)
         {
-            var user = Users.First(u => u.Id == data.UserId);
+            var user = Users.First(u => u.UserId == data.UserId);
 
             return new HostState(
                     Users.Replace(user, user.SetName(data.Name)),
@@ -59,7 +59,7 @@ namespace Gang.Demo.Web.Server.State
 
         public HostState Apply(UserMessageAdded data)
         {
-            var user = Users.First(u => u.Id == data.UserId);
+            var user = Users.First(u => u.UserId == data.UserId);
             var message = new Message(
                 data.Id, data.Text,
                 null, data.On);

@@ -13,7 +13,7 @@ namespace Gang.Demo.Web.Server.Commands
             .HandleAsync(GangState<HostState> state, GangCommand<UpdateUserName> command)
         {
             var user = state.Data.Users.TryGetById(command.Audit.UserId);
-            var otherUserIds = state.Data.Users.Where(u => u != user).Select(u => u.Id).ToArray();
+            var otherUserIds = state.Data.Users.Where(u => u != user).Select(u => u.UserId).ToArray();
 
             if (user == null)
             {
@@ -41,7 +41,7 @@ namespace Gang.Demo.Web.Server.Commands
                             command.Audit.UserId, command.Data.Name
                         )
                         .AddUserMessage(
-                            $"{user.Name} changed their name to @{user.Id}",
+                            $"{user.Name} changed their name to @{user.UserId}",
                             otherUserIds
                     );
             }
