@@ -91,7 +91,7 @@ namespace Gang.Authentication
 
             if (expires < DateTimeOffset.Now) return null;
 
-            _logger.LogDebug($"Link code {data.Code} => user {user.UserId}");
+            _logger.LogDebug($"Link code {data.Code} => user {user.Id}");
 
             return GetToken(user);
         }

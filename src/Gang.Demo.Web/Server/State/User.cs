@@ -15,19 +15,19 @@ namespace Gang.Demo.Web.Server.State
             IEnumerable<Message> messages = null
             )
         {
-            UserId = id ?? throw new ArgumentNullException(nameof(id));
+            Id = id ?? throw new ArgumentNullException(nameof(id));
             Name = name;
             Messages = messages.ToImmutableListDefaultEmpty();
         }
 
-        public string UserId { get; }
+        public string Id { get; }
         public string Name { get; }
         public IImmutableList<Message> Messages { get; }
 
         public User SetName(string name)
         {
             return new User(
-                UserId,
+                Id,
                 name,
                 Messages
                 );
@@ -36,7 +36,7 @@ namespace Gang.Demo.Web.Server.State
         internal User AddMessage(Message message)
         {
             return new User(
-                UserId,
+                Id,
                 Name,
                 Messages.Add(message)
                 );
@@ -50,7 +50,7 @@ namespace Gang.Demo.Web.Server.State
         public static string Exists(
              GangState<HostState> state, string id)
         {
-            return state.Data.Users.All(u => u.UserId != id)
+            return state.Data.Users.All(u => u.Id != id)
                 ? ERROR_USER_NOT_FOUND
                 : null;
         }
@@ -58,7 +58,7 @@ namespace Gang.Demo.Web.Server.State
         public static string DoesNotExist(
               GangState<HostState> state, string id)
         {
-            return state.Data.Users.Any(u => u.UserId == id)
+            return state.Data.Users.Any(u => u.Id == id)
                 ? ERROR_USER_EXIST
                 : null;
         }
@@ -74,7 +74,7 @@ namespace Gang.Demo.Web.Server.State
             GangState<HostState> state, string id, string name)
         {
             return state.Data
-                .Users.Any(u => u.UserId != id && u.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase))
+                .Users.Any(u => u.Id != id && u.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase))
                 ? ERROR_NAME_IS_TAKEN
                 : null;
         }

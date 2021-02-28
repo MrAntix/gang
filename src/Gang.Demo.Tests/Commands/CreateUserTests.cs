@@ -36,7 +36,7 @@ namespace Gang.Demo.Tests.Commands
                 );
 
             var user = Assert.Single(result.Data.Users);
-            Assert.Equal(USER_ID, user.UserId);
+            Assert.Equal(USER_ID, user.Id);
             Assert.Equal(USER_NAME, user.Name);
 
             Assert.IsType<UserMessageAdded>(
@@ -65,7 +65,7 @@ namespace Gang.Demo.Tests.Commands
                 );
 
             var user = Assert.Single(result.Data.Users);
-            Assert.Equal(USER_ID, user.UserId);
+            Assert.Equal(USER_ID, user.Id);
             Assert.Equal(USER_NAME, user.Name);
         }
 

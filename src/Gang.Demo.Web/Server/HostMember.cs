@@ -52,12 +52,12 @@ namespace Gang.Demo.Web.Server
         {
             var members = Controller.GetGang().Members.Where(m => m.Session != null).ToArray();
             var usersOnline = state.Data.Users
-                .Where(u => !string.IsNullOrWhiteSpace(u.Name) && members.Any(m => m.Session.User.Id == u.UserId));
+                .Where(u => !string.IsNullOrWhiteSpace(u.Name) && members.Any(m => m.Session.User.Id == u.Id));
 
             foreach (var member in members)
             {
                 var user = state.Data.Users
-                    ?.FirstOrDefault(u => u.UserId == member.Session.User.Id);
+                    ?.FirstOrDefault(u => u.Id == member.Session.User.Id);
 
                 if (user == null)
 
@@ -82,10 +82,10 @@ namespace Gang.Demo.Web.Server
                                 .Messages.Concat(user?.Messages.ToImmutableListDefaultEmpty()),
                             users = state.Data.Users.Select(u => new
                             {
-                                u.UserId,
+                                u.Id,
                                 u.Name,
                                 isOnline = usersOnline.Contains(u),
-                                isCurrent = u.UserId == user?.UserId
+                                isCurrent = u.Id == user?.Id
                             })
                         },
                         new[] { member.Id }

@@ -17,7 +17,7 @@ namespace Gang.Authentication.Users
             IEnumerable<GangUserCredential> credentials = null
             )
         {
-            UserId = id;
+            Id = id;
             Name = name;
             Email = email;
             Roles = roles?.ToImmutableSortedSet()
@@ -28,7 +28,7 @@ namespace Gang.Authentication.Users
             Credentials = credentials.ToImmutableListDefaultEmpty();
         }
 
-        public string UserId { get; }
+        public string Id { get; }
         public string Name { get; }
         public string Email { get; }
         public IImmutableSet<string> Roles { get; }
@@ -42,7 +42,7 @@ namespace Gang.Authentication.Users
         {
             return new GangSession(
                 new GangSessionUser(
-                    UserId,
+                    Id,
                     Name, Email
                 ),
                 Roles,
@@ -53,7 +53,7 @@ namespace Gang.Authentication.Users
         public GangTokenData GetTokenData(DateTimeOffset expires)
         {
             return new GangTokenData(
-                UserId, expires,
+                Id, expires,
                 Name, Email,
                 Roles
                 );
@@ -76,7 +76,7 @@ namespace Gang.Authentication.Users
             string value)
         {
             return new GangUserData(
-                UserId,
+                Id,
                 value, Email,
                 Roles,
                 Secret,
@@ -89,7 +89,7 @@ namespace Gang.Authentication.Users
             string value)
         {
             return new GangUserData(
-                UserId,
+                Id,
                 Name, value,
                 Roles,
                 Secret,
@@ -102,7 +102,7 @@ namespace Gang.Authentication.Users
             GangUserLinkCode value)
         {
             return new GangUserData(
-                UserId,
+                Id,
                 Name, Email,
                 Roles,
                 Secret,
@@ -115,7 +115,7 @@ namespace Gang.Authentication.Users
             string value)
         {
             return new GangUserData(
-                UserId,
+                Id,
                 Name, Email,
                 Roles,
                 Secret,
@@ -127,7 +127,7 @@ namespace Gang.Authentication.Users
         public GangUserData AddRole(string value)
         {
             return new GangUserData(
-                UserId,
+                Id,
                 Name, Email,
                 Roles.Add(value),
                 Secret,
@@ -139,7 +139,7 @@ namespace Gang.Authentication.Users
         public GangUserData RemoveRole(string value)
         {
             return new GangUserData(
-                UserId,
+                Id,
                 Name, Email,
                 Roles.Remove(value),
                 Secret,
@@ -152,7 +152,7 @@ namespace Gang.Authentication.Users
             GangUserCredential value)
         {
             return new GangUserData(
-                UserId,
+                Id,
                 Name, Email,
                 Roles,
                 Secret,
@@ -168,7 +168,7 @@ namespace Gang.Authentication.Users
             )
         {
             return new GangUserData(
-                UserId,
+                Id,
                 Name, Email,
                 Roles,
                 Secret,

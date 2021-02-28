@@ -40,7 +40,7 @@ namespace Gang
             string id)
             where T : IHasGangIdString
         {
-            return list.First(item => item.UserId == id);
+            return list.First(item => item.Id == id);
         }
 
         public static T TryGetById<T>(
@@ -48,7 +48,7 @@ namespace Gang
             string id)
             where T : IHasGangIdString
         {
-            return list.FirstOrDefault(item => item.UserId == id);
+            return list.FirstOrDefault(item => item.Id == id);
         }
 
         public static IEnumerable<T> TryRemoveById<T>(
@@ -64,7 +64,7 @@ namespace Gang
             string id)
             where T : IHasGangIdString
         {
-            return list.Where(item => item.UserId != id);
+            return list.Where(item => item.Id != id);
         }
 
         public static IImmutableList<T> ToImmutableListDefaultEmpty<T>(

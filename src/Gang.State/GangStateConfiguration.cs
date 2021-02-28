@@ -40,7 +40,11 @@ namespace Gang.State
         }
 
         /// <summary>
-        /// Adds services for TStateData
+        /// Adds services for TStateData with default store, including;
+        ///
+        /// Command Executor
+        /// Command handlers in same assembly as TStateData
+        /// 
         /// </summary>
         /// <typeparam name="TStateData">State</typeparam>
         /// <param name="services">Services collection</param>
@@ -50,9 +54,48 @@ namespace Gang.State
             )
             where TStateData : class
         {
-
             return services
                 .AddGangState<TStateData, GangStateStore>();
+        }
+
+        /// <summary>
+        /// Adds services for TStateData, including;
+        ///
+        /// Command Executor
+        /// Command handlers in same assembly as TStateData
+        /// 
+        /// </summary>
+        /// <typeparam name="TStateData">State</typeparam>
+        /// <typeparam name="TStore">Store implementation</typeparam>
+        /// <param name="services">Services collection</param>
+        /// <returns>Services collection</returns>
+        public static IServiceCollection AddGangHost<THost, TStateData, TStore>(
+            this IServiceCollection services
+            )
+            where THost : GangHostBase
+            where TStateData : class
+            where TStore : class, IGangStateStore
+        {
+            return services
+                    .AddGangHost<THost>()
+                    .AddGangState<TStateData, TStore>();
+        }
+
+        /// <summary>
+        /// Adds Host and services for TStateData with default store
+        /// </summary>
+        /// <typeparam name="TStateData">State</typeparam>
+        /// <param name="services">Services collection</param>
+        /// <returns>Services collection</returns>
+        public static IServiceCollection AddGangHost<THost, TStateData>(
+            this IServiceCollection services
+            )
+            where THost : GangHostBase
+            where TStateData : class
+        {
+
+            return services
+                .AddGangHost<THost, TStateData, GangStateStore>();
         }
 
         public static IServiceCollection AddGangCommandExecutor<TStateData>(
