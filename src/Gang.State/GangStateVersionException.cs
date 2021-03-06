@@ -4,17 +4,15 @@ namespace Gang.State
 {
     [Serializable]
     public sealed class GangStateVersionException :
-        Exception
+        GangStateExceptionBase
     {
         public GangStateVersionException(
             uint expectedVersion,
-            GangAudit audit)
+            GangAudit audit) : base(audit)
         {
             ExpectedVersion = expectedVersion;
-            Audit = audit;
         }
 
         public uint ExpectedVersion { get; }
-        public GangAudit Audit { get; }
     }
 }

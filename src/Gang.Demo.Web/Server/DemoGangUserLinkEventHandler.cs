@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 
 namespace Gang.Demo.Web.Server
 {
-    public sealed class AuthenticationUserLinkHandler :
+    public sealed class DemoGangUserLinkEventHandler :
         IGangEventHandler<GangManagerEvent<GangUserLink>>
     {
         readonly AppSettings _app;
         readonly ISmtpService _smtp;
 
-        public AuthenticationUserLinkHandler(
+        public DemoGangUserLinkEventHandler(
             AppSettings app,
             ISmtpService smtp)
         {

@@ -118,31 +118,51 @@ namespace Gang.State
             return RaiseErrors(errors as IEnumerable<string>);
         }
 
-        public GangState<TData> Notify(
-            IEnumerable<string> userIds,
-            string id, string type, string message
+        public GangState<TData> RaiseNotification(
+            IEnumerable<byte[]> memberIds,
+            GangNotify notify
             )
         {
             return GangState.Update(
                 this,
                 notifications: Notifications.Add(
                         new GangStateNotification(
-                            userIds,
-                            new GangNotify(id, type, message)
+                            memberIds,
+                            notify
                             )
                     )
                 );
         }
 
-        public GangState<TData> Notify(
-            string userId,
-            string id, string type, string message
+        public GangState<TData> RaiseNotification(
+            byte[] memberId,
+            GangNotify notify
             )
         {
-            return Notify(
-                new[] { userId },
-                id, type, message
+            return RaiseNotification(
+                new[] { memberId },
+                notify
                 );
+        }
+
+        /// <summary>
+        /// Get errors or notifications on state,
+        /// if there are errors only they will be returned, state has not changed
+        /// </summary>
+        /// <param name="audit">Audit</param>
+        /// <returns>List of notification command messages</returns>
+        public IImmutableList<GangStateNotification> GetResults(GangAudit audit)
+        {
+            if (HasErrors)
+                return Errors
+                    .Select(text => new GangStateNotification(
+                            new[] { audit.MemberId },
+                            new GangNotify(text, type: GangNotificationTypes.Danger, timeout: 0)
+                            )
+                    )
+                    .ToImmutableList();
+
+            return Notifications;
         }
 
         public GangState<TData> Apply(

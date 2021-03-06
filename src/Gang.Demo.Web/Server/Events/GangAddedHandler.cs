@@ -10,11 +10,11 @@ namespace Gang.Demo.Web.Server.Events
         IGangEventHandler<GangManagerEvent<GangAdded>>
     {
         readonly IGangManager _manager;
-        readonly Func<HostMember> _createHost;
+        readonly Func<DemoHostMember> _createHost;
 
         public GangAddedHandler(
             IGangManager manager,
-            Func<HostMember> createHost)
+            Func<DemoHostMember> createHost)
         {
             _manager = manager;
             _createHost = createHost;

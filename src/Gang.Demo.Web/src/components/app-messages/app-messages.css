@@ -34,9 +34,9 @@
   padding: 0 0 calc(.25 * var(--callout-size));
 }
 
-.message-text-list-item.error {
-  --host-bot-color: var(--error-color);
-  --host-bot-color-alt: var(--error-color-alt);
+.message-text-list-item.danger {
+  --host-bot-color: var(--danger-color);
+  --host-bot-color-alt: var(--danger-color-alt);
 }
 
 .message-text-list-item.success {

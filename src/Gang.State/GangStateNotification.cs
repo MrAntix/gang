@@ -7,15 +7,15 @@ namespace Gang.State
     public class GangStateNotification
     {
         public GangStateNotification(
-            IEnumerable<string> userIds,
+            IEnumerable<byte[]> memberIds,
             GangNotify command
             )
         {
-            UserIds = userIds.ToImmutableListDefaultEmpty();
+            MemberIds = memberIds.ToImmutableListDefaultEmpty();
             Command = command;
         }
 
-        public IImmutableList<string> UserIds { get; }
+        public IImmutableList<byte[]> MemberIds { get; }
         public GangNotify Command { get; }
     }
 }

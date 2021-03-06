@@ -1,8 +1,6 @@
 using Gang.State;
 using Gang.State.Commands;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Gang.Tests.State.Todos.Complete
@@ -13,15 +11,13 @@ namespace Gang.Tests.State.Todos.Complete
         Task<GangState<TodosState>> IGangCommandHandler<TodosState, CompleteTodo>
             .HandleAsync(GangState<TodosState> state, GangCommand<CompleteTodo> command)
         {
-            var errors = new List<string>();
-            if (string.IsNullOrWhiteSpace(command.Audit.UserId))
-                errors.Add("Denied");
-
             return Task.FromResult(
 
-                errors.Any()
-                    ? state.RaiseErrors(errors)
-                    : state.CompleteTodo(command.Data.Id, DateTimeOffset.Now)
+                state
+                    .Assert(!string.IsNullOrWhiteSpace(command.Audit.UserId), "DENIED")
+                    .CompleteTodo(command.Data.Id, DateTimeOffset.Now)
+                    .RaiseNotification(command.Audit.MemberId,
+                        new GangNotify("Well done", type: GangNotificationTypes.Success))
                 );
         }
     }

@@ -34,8 +34,8 @@
   --page-head-height: 90px;
   --page-foot-height: 75px;
 
-  --error-color: #c99;
-  --error-color-alt: #300;
+  --danger-color: #c99;
+  --danger-color-alt: #300;
 
   --success-color: #9c9;
   --success-color-alt: #030;

@@ -1,7 +1,8 @@
 import { Component, Fragment, h, Listen, State } from '@stencil/core';
 
-import { GangContext, GangConnectionState, GangService, GangAuthenticationCredential } from '@gang-js/core';
+import { GangContext, GangConnectionState, GangService, GangAuthenticationCredential, GangCommands, GangCommandTypes } from '@gang-js/core';
 import { Commands, CommandTypes, IAppState } from '../../app/models';
+import { getGangNotificationTypeDisplay } from '@gang-js/core';
 
 @Component({
   tag: 'app-root',
@@ -112,7 +113,7 @@ export class AppRoot {
     this.isAuthenticated = !!token;
   }
 
-  onGangCommand(command: Commands) {
+  onGangCommand(command: Commands | GangCommands) {
     this.logger('root.onGangCommand', command)
 
     switch (command.type) {
@@ -124,7 +125,7 @@ export class AppRoot {
         });
 
         break;
-      case CommandTypes.notify:
+      case GangCommandTypes.notify:
 
         switch (command.data.type) {
           default:
@@ -135,23 +136,22 @@ export class AppRoot {
                 {
                   id: command.data.id,
                   on: new Date(),
-                  text: command.data.message,
-                  class: `notification ${command.data.type}`
+                  text: command.data.text,
+                  class: `notification ${getGangNotificationTypeDisplay(command.data.type)}`
                 }]
             });
 
-            setTimeout(() => {
-              this.gang.setState({
+            if (command.data.timeout != 0) {
+              setTimeout(() => {
+                this.gang.setState({
 
-                messages: [
-                  ...this.state.messages.filter(m => m.id !== command.data.id)
-                ]
-              })
-            }, 5000);
+                  messages: [
+                    ...this.state.messages.filter(m => m.id !== command.data.id)
+                  ]
+                })
+              }, command.data.timeout || 5000);
+            }
 
-            break;
-          case 'received':
-            this.logger(`command was received ${command.rsn}`);
             break;
         }
 

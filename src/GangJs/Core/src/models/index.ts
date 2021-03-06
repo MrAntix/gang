@@ -12,4 +12,5 @@ export * from './IGangPlatform';
 export * from './IGangSettings';
 export * from './authentication/index';
 export * from './communications/index';
+export * from './state/index';
 export * from './storage/index';

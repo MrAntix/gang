@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Gang.Demo.Web.Server
 {
-    public sealed class SimpleAuthenticationHandler :
+    public sealed class DemoAuthenticationHandler :
         IGangAuthenticationHandler
     {
         IImmutableDictionary<string, string> _userIds = ImmutableDictionary<string, string>.Empty;

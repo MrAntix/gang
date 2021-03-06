@@ -1,9 +1,8 @@
-using Gang.Commands;
 using Gang.State.Commands;
 using Gang.State.Storage;
 using Gang.Tasks;
-using System.Collections.Immutable;
-using System.Diagnostics;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -33,7 +32,26 @@ namespace Gang.State
             StateAsync = _stateLoaded.Task;
         }
 
-        //public GangState<TStateData> State { get; private set; }
+        protected async Task QueueCommandAsync<TCommandData>(
+            TCommandData data, GangAudit audit = null)
+        {
+            await _tasks.Enqueue(async () =>
+            {
+                var state = await StateAsync;
+
+                audit ??= new GangAudit(Controller.GangId, state.Version, Id);
+                var newState = await _executor
+                    .ExecuteAsync(state, data, audit);
+
+                if (newState.Errors?.Any() ?? false)
+                    throw new GangStateCommandException(data, audit);
+
+                await SetStateAsync(newState, audit);
+
+                var results = newState.GetResults(audit);
+                await OnCommandExecutedAsync(results, audit);
+            });
+        }
 
         public Task<GangState<TStateData>> StateAsync { get; private set; }
 
@@ -42,44 +60,16 @@ namespace Gang.State
         {
             if (state == null) return; // state not loaded yet
 
-            if (state.Errors == null)
-            {
-                var notifications = state.Notifications;
+            if (state.Errors?.Any() == true) return;
 
-                state = await _store
-                    .CommitAsync(
-                        Controller.GangId,
-                       await OnStateAsync(state),
-                       audit
-                       );
+            state = await _store
+                .CommitAsync(
+                    Controller.GangId,
+                   await OnStateAsync(state),
+                   audit
+                   );
 
-                StateAsync = Task.FromResult(state);
-
-                if (notifications.Any())
-                {
-                    var members = Controller.GetGang().Members;
-
-                    foreach (var notification in notifications)
-                    {
-                        var memberIds = members
-                            .Where(m =>
-                                m.Session?.User?.Id != null
-                                && notification.UserIds.Contains(m.Session.User.Id)
-                            )
-                            .Select(m => m.Id)
-                            .ToImmutableArray();
-
-                        await Controller.SendCommandAsync(
-                            notification.Command,
-                            memberIds
-                            );
-                    }
-                }
-            }
-            else
-            {
-                await OnCommandErrorAsync(state, audit);
-            }
+            StateAsync = Task.FromResult(state);
         }
 
         protected virtual Task<GangState<TStateData>> OnStateAsync(
@@ -105,32 +95,23 @@ namespace Gang.State
             {
                 var state = await StateAsync;
 
-                var result = await _executor
+                var newState = await _executor
                     .ExecuteAsync(state, bytes, audit);
 
-                await SetStateAsync(result, audit);
-            });
-        }
-
-        protected async Task ExecuteCommandAsync<TCommandData>(
-            TCommandData data, GangAudit audit = null)
-        {
-            await _tasks.Enqueue(async () =>
-            {
-                var state = await StateAsync;
-
-                audit ??= new GangAudit(Controller.GangId, state.Version, Id);
-                var newState = await _executor
-                    .ExecuteAsync(state, data, audit);
-
                 await SetStateAsync(newState, audit);
+
+                var results = newState.GetResults(audit);
+                await OnCommandExecutedAsync(results, audit);
             });
         }
 
-        protected virtual Task OnCommandErrorAsync(
-            GangState<TStateData> result, GangAudit audit)
+        protected virtual Task OnCommandExecutedAsync(
+            IEnumerable<GangStateNotification> results,
+            GangAudit audit
+            )
         {
-            Debug.WriteLine("Command Errors");
+            if (results?.Any() == true)
+                Console.WriteLine($"Results:\n{string.Join("\n", results)}");
 
             return Task.CompletedTask;
         }

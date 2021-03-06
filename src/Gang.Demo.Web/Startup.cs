@@ -33,7 +33,7 @@ namespace Gang.Demo.Web
                 .AddSingleton(Settings.Smtp)
                 .AddWebSocketGangs(Settings)
                 .AddGangManagerEventHandlers<GangAddedHandler>()
-                .AddGangHost<HostMember, HostState>()
+                .AddGangHost<DemoHostMember, HostState>()
                 .AddTransient<ISmtpService, SmtpService>();
 
             switch (Settings.StateStorage)
@@ -54,7 +54,7 @@ namespace Gang.Demo.Web
             else
             {
                 services
-                    .AddGangAuthenticationHandler<SimpleAuthenticationHandler>();
+                    .AddGangAuthenticationHandler<DemoAuthenticationHandler>();
             }
         }
 

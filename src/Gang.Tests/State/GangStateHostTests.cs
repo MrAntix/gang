@@ -72,7 +72,6 @@ namespace Gang.Tests.State
             Assert.NotNull(call.Audit);
         }
 
-
         [Fact]
         public async Task receipt_on_command()
         {

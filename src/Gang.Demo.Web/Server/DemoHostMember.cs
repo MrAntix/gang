@@ -7,18 +7,19 @@ using Gang.State.Commands;
 using Gang.State.Storage;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Gang.Demo.Web.Server
 {
-    public sealed class HostMember :
+    public sealed class DemoHostMember :
         GangStateHost<HostState>
     {
         readonly SetSettings _setSettings;
 
-        public HostMember(
+        public DemoHostMember(
             AuthSettings authSettings,
             IGangCommandExecutor<HostState> executor,
             IGangStateStore store) :
@@ -97,54 +98,18 @@ namespace Gang.Demo.Web.Server
             return await base.OnStateAsync(state);
         }
 
-        protected override async Task OnCommandAsync(
-            byte[] bytes, GangAudit audit)
+        protected override async Task OnCommandExecutedAsync(
+            IEnumerable<GangStateNotification> results, 
+            GangAudit audit)
         {
-            try
-            {
-                await base.OnCommandAsync(bytes, audit);
+            await base.OnCommandExecutedAsync(results, audit);
 
-                await NotifyAsync(
-                    new Notify("received"),
-                    new[] { audit.MemberId },
+            foreach (var result in results)
+                await Controller.SendCommandAsync(
+                    result.Command,
+                    result.MemberIds,
                     audit.Version
-                );
-            }
-            catch (Exception ex)
-            {
-                await NotifyAsync(
-                    new Notify(
-                        "error", ex.Message
-                    ),
-                    new[] { audit.MemberId },
-                    audit.Version
-                );
-            }
-        }
-
-        protected override async Task OnCommandErrorAsync(
-            GangState<HostState> result, GangAudit audit)
-        {
-            await NotifyAsync(
-                new Notify(
-                    "error", string.Join("\n", result.Errors)
-                ),
-                new[] { audit.MemberId },
-                audit.Version
-            );
-        }
-
-        public async Task NotifyAsync(
-            Notify command,
-            byte[][] memberIds,
-            uint? inReplyToSequenceNumber = null
-            )
-        {
-            await Controller.SendCommandAsync(
-                command,
-                memberIds,
-                inReplyToSequenceNumber
-                );
+                    );
         }
     }
 }
