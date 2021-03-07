@@ -99,7 +99,7 @@ namespace Gang.Demo.Web.Server
         }
 
         protected override async Task OnCommandExecutedAsync(
-            IEnumerable<GangStateNotification> results, 
+            IEnumerable<IGangStateResult> results, 
             GangAudit audit)
         {
             await base.OnCommandExecutedAsync(results, audit);
@@ -107,7 +107,7 @@ namespace Gang.Demo.Web.Server
             foreach (var result in results)
                 await Controller.SendCommandAsync(
                     result.Command,
-                    result.MemberIds,
+                    result.SendToMemberIds,
                     audit.Version
                     );
         }

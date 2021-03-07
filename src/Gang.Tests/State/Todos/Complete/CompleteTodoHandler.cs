@@ -16,7 +16,7 @@ namespace Gang.Tests.State.Todos.Complete
                 state
                     .Assert(!string.IsNullOrWhiteSpace(command.Audit.UserId), "DENIED")
                     .CompleteTodo(command.Data.Id, DateTimeOffset.Now)
-                    .RaiseNotification(command.Audit.MemberId,
+                    .AddResult(command.Audit.MemberId,
                         new GangNotify("Well done", type: GangNotificationTypes.Success))
                 );
         }

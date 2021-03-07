@@ -1,3 +1,4 @@
+using Gang.Management;
 using Gang.State.Commands;
 using Gang.State.Events;
 using System;
@@ -14,14 +15,14 @@ namespace Gang.State
             TData data,
             uint version = 0,
             IEnumerable<object> uncommitted = null,
-            IEnumerable<GangStateNotification> notifications = null,
+            IEnumerable<IGangStateResult> results = null,
             IEnumerable<string> errors = null
             )
             where TData : class
         {
             return new GangState<TData>(
                 data, version,
-                uncommitted, notifications, errors
+                uncommitted, results, errors
                 );
         }
 
@@ -30,7 +31,7 @@ namespace Gang.State
             TData data = null,
             uint? version = null,
             IEnumerable<object> uncommitted = null,
-            IEnumerable<GangStateNotification> notifications = null,
+            IEnumerable<IGangStateResult> results = null,
             IEnumerable<string> errors = null
             )
             where TData : class
@@ -39,7 +40,7 @@ namespace Gang.State
                 data ?? state.Data,
                 version ?? state.Version,
                 uncommitted ?? state.Uncommitted,
-                notifications ?? state.Notifications,
+                results ?? state.Results,
                 errors ?? state.Errors
                 );
         }
@@ -52,14 +53,14 @@ namespace Gang.State
             TData data,
             uint version = 0,
             IEnumerable<object> uncommitted = null,
-            IEnumerable<GangStateNotification> notifications = null,
+            IEnumerable<IGangStateResult> results = null,
             IEnumerable<string> errors = null
             )
         {
             Data = data ?? throw new ArgumentNullException(nameof(data));
             Version = version;
             Uncommitted = uncommitted.ToImmutableListDefaultEmpty();
-            Notifications = notifications.ToImmutableListDefaultEmpty();
+            Results = results.ToImmutableListDefaultEmpty();
             Errors = errors?.ToImmutableList();
             HasErrors = Errors?.Any() ?? false;
         }
@@ -67,7 +68,7 @@ namespace Gang.State
         public TData Data { get; }
         public uint Version { get; }
         public IImmutableList<object> Uncommitted { get; }
-        public IImmutableList<GangStateNotification> Notifications { get; }
+        public IImmutableList<IGangStateResult> Results { get; }
         public IImmutableList<string> Errors { get; }
         public bool HasErrors { get; }
 
@@ -118,30 +119,30 @@ namespace Gang.State
             return RaiseErrors(errors as IEnumerable<string>);
         }
 
-        public GangState<TData> RaiseNotification(
-            IEnumerable<byte[]> memberIds,
-            GangNotify notify
+        public GangState<TData> AddResult(
+            IEnumerable<byte[]> sendToMemberId,
+            object command
             )
         {
             return GangState.Update(
                 this,
-                notifications: Notifications.Add(
-                        new GangStateNotification(
-                            memberIds,
-                            notify
+                results: Results.Add(
+                        GangStateResult.From(
+                            sendToMemberId,
+                            command
                             )
                     )
                 );
         }
 
-        public GangState<TData> RaiseNotification(
-            byte[] memberId,
-            GangNotify notify
+        public GangState<TData> AddResult(
+            byte[] sendToMemberId,
+            object command
             )
         {
-            return RaiseNotification(
-                new[] { memberId },
-                notify
+            return AddResult(
+                new[] { sendToMemberId },
+                command
                 );
         }
 
@@ -151,18 +152,18 @@ namespace Gang.State
         /// </summary>
         /// <param name="audit">Audit</param>
         /// <returns>List of notification command messages</returns>
-        public IImmutableList<GangStateNotification> GetResults(GangAudit audit)
+        public IImmutableList<IGangStateResult> GetResults(GangAudit audit)
         {
             if (HasErrors)
                 return Errors
-                    .Select(text => new GangStateNotification(
+                    .Select(text => GangStateResult.From(
                             new[] { audit.MemberId },
                             new GangNotify(text, type: GangNotificationTypes.Danger, timeout: 0)
                             )
                     )
                     .ToImmutableList();
 
-            return Notifications;
+            return Results;
         }
 
         public GangState<TData> Apply(

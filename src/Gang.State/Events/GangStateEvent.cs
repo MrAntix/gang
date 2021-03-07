@@ -6,7 +6,8 @@ namespace Gang.State.Events
     {
         public static IGangStateEvent From(
             object data,
-            GangAudit audit)
+            GangAudit audit
+            )
         {
             var type = typeof(GangStateEvent<>)
                 .MakeGenericType(data.GetType());

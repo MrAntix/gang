@@ -106,7 +106,7 @@ namespace Gang.State
         }
 
         protected virtual Task OnCommandExecutedAsync(
-            IEnumerable<GangStateNotification> results,
+            IEnumerable<IGangStateResult> results,
             GangAudit audit
             )
         {

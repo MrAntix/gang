@@ -46,35 +46,35 @@ namespace Gang.Tests.State
         }
 
         [Fact]
-        public void get_result_notifications()
+        public void get_results()
         {
             var state = GangState.Create(TodosState.Initial)
-                .RaiseNotification(MEMBER_ID.GangToBytes(), new GangNotify(NOTIFY_TEXT));
+                .AddResult(MEMBER_ID.GangToBytes(), new GangNotify(NOTIFY_TEXT));
 
             var results = state.GetResults(AUDIT);
 
             Assert.Equal(1, results.Count);
 
-            var result = results[0];
+            var result = Assert.IsType<GangStateResult<GangNotify>>(results[0]);
 
-            Assert.Equal(MEMBER_ID.GangToBytes(), Assert.Single(result.MemberIds));
+            Assert.Equal(MEMBER_ID.GangToBytes(), Assert.Single(result.SendToMemberIds));
             Assert.Equal(NOTIFY_TEXT, result.Command.Text);
         }
 
         [Fact]
-        public void get_result_when_error_no_notifications()
+        public void get_result_when_error_no_notification()
         {
             var state = GangState.Create(TodosState.Initial)
-                .RaiseNotification(MEMBER_ID.GangToBytes(), new GangNotify(NOTIFY_TEXT))
+                .AddResult(MEMBER_ID.GangToBytes(), new GangNotify(NOTIFY_TEXT))
                 .Assert(false, ERROR_TEXT);
 
             var results = state.GetResults(AUDIT);
 
             Assert.Equal(1, results.Count);
 
-            var result = results[0];
+            var result = Assert.IsType<GangStateResult<GangNotify>>(results[0]);
 
-            Assert.Equal(AUDIT.MemberId, Assert.Single(result.MemberIds));
+            Assert.Equal(AUDIT.MemberId, Assert.Single(result.SendToMemberIds));
             Assert.Equal(ERROR_TEXT, result.Command.Text);
             Assert.Equal(GangNotificationTypes.Danger, result.Command.Type);
         }
