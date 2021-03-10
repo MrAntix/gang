@@ -38,14 +38,12 @@ namespace Gang.Tests.State
                 .AddGangState<TodosState>()
                 .BuildServiceProvider();
 
-            var serialization = sp.GetRequiredService<IGangSerializationService>();
             var commandHandler = sp.GetRequiredService<IGangCommandExecutor<TodosState>>();
-            var data = serialization.SerializeCommandData(new AddTodo(TODO_ID));
+            var command = GangCommand.From(new AddTodo(TODO_ID), AUDIT);
 
             var result = await commandHandler.ExecuteAsync(
                 GangState.Create(new TodosState()),
-                data,
-                AUDIT
+                command
                 );
 
             Assert.Single(result.Data.Todos);

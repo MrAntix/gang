@@ -158,7 +158,7 @@ namespace Gang.State
                 return Errors
                     .Select(text => GangStateResult.From(
                             new[] { audit.MemberId },
-                            new GangNotify(text, type: GangNotificationTypes.Danger, timeout: 0)
+                            new GangNotify(text, type: GangNotificationTypes.Danger)
                             )
                     )
                     .ToImmutableList();

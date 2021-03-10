@@ -12,6 +12,7 @@ export * from './clean';
 export * from './GangUrlBuilder';
 export * from './getGangId';
 export * from './getRandomBytes';
+export * from './IView';
 export * from './readString';
 export * from './readUint32';
 export * from './setBytes';

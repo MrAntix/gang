@@ -151,6 +151,8 @@ export class GangService<TState> {
       );
 
       this.webSocket.subscribe((e) => {
+        GangContext.logger('GangService.webSocket.message', e);
+
         switch (e.type) {
           case GangEventTypes.Host:
             this.isHost = true;

@@ -14,34 +14,31 @@ namespace Gang.Tests.State
     {
         const string GANG_ID = "GANG_ID";
         const string TYPE_NAME = "object";
-        readonly object DATA = new();
-        readonly GangAudit AUDIT = new(GANG_ID);
+        readonly static object DATA = new();
+        readonly static GangAudit AUDIT = new(GANG_ID);
+        readonly static IGangCommand COMMAND = GangCommand.From(DATA, AUDIT);
 
         [Fact]
         public async Task throws_when_no_handler()
         {
-            var serialization = GetSerializationService()
-                .SetupDeserialize(new GangCommandWrapper(TYPE_NAME, DATA));
-            var executor = GetExecutor(serialization: serialization);
+            var executor = GetExecutor();
             var state = GangState.Create(new TodosState());
 
             await Assert.ThrowsAsync<GangCommandHandlerNotFoundExcetion>(
-                async () => await executor.ExecuteAsync(state, null, AUDIT)
+                async () => await executor.ExecuteAsync(state, COMMAND)
                 );
         }
 
         [Fact]
         public async Task throws_when_handler_throws()
         {
-            var serialization = GetSerializationService()
-                .SetupDeserialize(new GangCommandWrapper(TYPE_NAME, DATA));
             var handler = new FakeHandler((s, c) => throw new Exception());
-            var executor = GetExecutor(serialization: serialization)
+            var executor = GetExecutor()
                 .RegisterHandlerProvider(() => handler);
             var state = GangState.Create(new TodosState());
 
             await Assert.ThrowsAsync<Exception>(
-                async () => await executor.ExecuteAsync(state, null, AUDIT)
+                async () => await executor.ExecuteAsync(state, COMMAND)
                 );
         }
 
@@ -55,7 +52,7 @@ namespace Gang.Tests.State
                 .RegisterHandlerProvider(() => handler);
             var state = GangState.Create(new TodosState());
 
-            await executor.ExecuteAsync(state, null, AUDIT);
+            await executor.ExecuteAsync(state, COMMAND);
 
             var call = Assert.Single(handler.HandleCalls);
             Assert.IsType<GangCommand<object>>(call.Command);

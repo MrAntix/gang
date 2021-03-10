@@ -12,47 +12,45 @@ namespace Gang.State.Commands
         IGangCommandExecutor<TStateData>
         where TStateData : class
     {
-        readonly IGangSerializationService _serialization;
-
         readonly IImmutableDictionary<string, GangCommandHandler<TStateData>> _handlers;
+        readonly IGangSerializationService _serialization;
 
         public GangCommandExecutor(
             IGangSerializationService serialization,
-            IEnumerable<GangCommandHandler<TStateData>> handlers = null)
+            IEnumerable<GangCommandHandler<TStateData>> handlers = null
+            )
         {
-
             _handlers = handlers
                 ?.ToImmutableDictionary(h => h.DataType.GetCommandTypeName())
                 ?? ImmutableDictionary<string, GangCommandHandler<TStateData>>.Empty;
-
             _serialization = serialization;
         }
 
-        async Task<GangState<TStateData>> IGangCommandExecutor<TStateData>
-            .ExecuteAsync(GangState<TStateData> state, byte[] bytes, GangAudit audit)
+        IGangCommand IGangCommandExecutor<TStateData>.Deserialize(
+            byte[] bytes, GangAudit audit
+            )
         {
             var wrapper = _serialization.Deserialize<GangCommandWrapper>(bytes);
 
             if (!_handlers.ContainsKey(wrapper.Type))
                 throw new GangCommandHandlerNotFoundExcetion();
 
-            var handler = _handlers[wrapper.Type];
+            var type = _handlers[wrapper.Type].DataType;
 
-            var command = GangCommand.From(
-                _serialization.Map(wrapper.Data, handler.DataType),
+            return GangCommand.From(
+                _serialization.Map(wrapper.Data, type),
                 audit);
-
-            return await handler.HandleAsync(state, command);
         }
 
         async Task<GangState<TStateData>> IGangCommandExecutor<TStateData>
-            .ExecuteAsync<TCommandData>(GangState<TStateData> state, TCommandData data, GangAudit audit)
+            .ExecuteAsync(GangState<TStateData> state, IGangCommand command)
         {
-            var handler = _handlers[typeof(TCommandData).GetCommandTypeName()];
+            var dataTypeName = command.GetTypeName();
 
-            var command = GangCommand.From(
-                _serialization.Map(data, handler.DataType),
-                audit);
+            if (!_handlers.ContainsKey(dataTypeName))
+                throw new GangCommandHandlerNotFoundExcetion();
+
+            var handler = _handlers[dataTypeName];
 
             return await handler.HandleAsync(state, command);
         }

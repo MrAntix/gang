@@ -3,21 +3,18 @@ namespace Gang.State.Commands
     public sealed class GangNotify
     {
         public GangNotify(
-            string text = null,
-            string id = null,
+            string id,
             GangNotificationTypes? type = null,
-            int? timeout = null
+            object data = null
             )
         {
-            Text = text;
             Id = id;
             Type = type;
-            Timeout = timeout;
+            Data = data;
         }
 
-        public string Text { get; }
         public string Id { get; }
         public GangNotificationTypes? Type { get; }
-        public int? Timeout { get; }
+        public object Data { get; }
     }
 }

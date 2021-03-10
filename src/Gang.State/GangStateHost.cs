@@ -40,16 +40,16 @@ namespace Gang.State
                 var state = await StateAsync;
 
                 audit ??= new GangAudit(Controller.GangId, state.Version, Id);
+                var command = GangCommand.From(data, audit);
                 var newState = await _executor
-                    .ExecuteAsync(state, data, audit);
+                    .ExecuteAsync(state, command);
 
                 if (newState.Errors?.Any() ?? false)
                     throw new GangStateCommandException(data, audit);
 
                 await SetStateAsync(newState, audit);
 
-                var results = newState.GetResults(audit);
-                await OnCommandExecutedAsync(results, audit);
+                await OnCommandExecutedAsync(command, newState);
             });
         }
 
@@ -94,24 +94,24 @@ namespace Gang.State
             await _tasks.Enqueue(async () =>
             {
                 var state = await StateAsync;
+                var command = _executor.Deserialize(bytes, audit);
 
                 var newState = await _executor
-                    .ExecuteAsync(state, bytes, audit);
+                    .ExecuteAsync(state, command);
 
                 await SetStateAsync(newState, audit);
 
-                var results = newState.GetResults(audit);
-                await OnCommandExecutedAsync(results, audit);
+                await OnCommandExecutedAsync(command, newState);
             });
         }
 
         protected virtual Task OnCommandExecutedAsync(
-            IEnumerable<IGangStateResult> results,
-            GangAudit audit
+            IGangCommand command,
+            GangState<TStateData> state
             )
         {
-            if (results?.Any() == true)
-                Console.WriteLine($"Results:\n{string.Join("\n", results)}");
+            if (state.HasErrors)
+                Console.WriteLine($"Errors:\n{string.Join("\n", state.Errors)}");
 
             return Task.CompletedTask;
         }

@@ -19,22 +19,22 @@ namespace Gang.Tests.State.Fakes
                 ?? (state => state);
         }
 
+        public IGangCommand Deserialize(byte[] bytes, GangAudit audit)
+        {
+            return GangCommand.From(bytes, audit);
+        }
+
         public Task<GangState<TodosState>> ExecuteAsync(
-            GangState<TodosState> state, byte[] bytes, GangAudit audit)
+            GangState<TodosState> state, IGangCommand command)
         {
             ExecuteCalls = ExecuteCalls
                 .Add(new ExecuteCall(
-                    state, bytes, audit
+                    state, command
                 ));
 
             return Task.FromResult(
                 _getResult(state)
                 );
-        }
-
-        public Task<GangState<TodosState>> ExecuteAsync<TCommand>(GangState<TodosState> state, TCommand command, GangAudit audit)
-        {
-            throw new NotImplementedException();
         }
 
         public FakeCommandExecutor WithError()
@@ -47,16 +47,14 @@ namespace Gang.Tests.State.Fakes
         public IImmutableList<ExecuteCall> ExecuteCalls { get; private set; } = ImmutableList<ExecuteCall>.Empty;
         public sealed class ExecuteCall
         {
-            public ExecuteCall(GangState<TodosState> state, byte[] bytes, GangAudit audit)
+            public ExecuteCall(GangState<TodosState> state, IGangCommand command)
             {
                 State = state;
-                Bytes = bytes;
-                Audit = audit;
+                Command = command;
             }
 
             public GangState<TodosState> State { get; }
-            public byte[] Bytes { get; }
-            public GangAudit Audit { get; }
+            public IGangCommand Command { get; }
         }
 
         public IGangCommandExecutor<TodosState> RegisterHandler<TCommandData>(GangCommandHandler<TodosState> handler)

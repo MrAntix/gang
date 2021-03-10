@@ -68,8 +68,7 @@ namespace Gang.Tests.State
 
             var call = Assert.Single(executor.ExecuteCalls);
             Assert.NotNull(call.State);
-            Assert.NotNull(call.Bytes);
-            Assert.NotNull(call.Audit);
+            Assert.NotNull(call.Command);
         }
 
         [Fact]

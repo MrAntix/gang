@@ -99,16 +99,33 @@ namespace Gang.Demo.Web.Server
         }
 
         protected override async Task OnCommandExecutedAsync(
-            IEnumerable<IGangStateResult> results, 
-            GangAudit audit)
+            IGangCommand command,
+            GangState<HostState> state
+            )
         {
-            await base.OnCommandExecutedAsync(results, audit);
+            await base.OnCommandExecutedAsync(command, state);
+
+            if (!state.HasErrors)
+                state = state.AddResult(
+                    command.Audit.MemberId,
+                    new GangNotify(
+                        id: command.GetTypeName(),
+                        type: GangNotificationTypes.Success,
+                        data: new
+                        {
+                            type = command.GetTypeName(),
+                            data = command.Data
+                        }
+                    )
+                );
+
+            var results = state.GetResults(command.Audit);
 
             foreach (var result in results)
                 await Controller.SendCommandAsync(
                     result.Command,
                     result.SendToMemberIds,
-                    audit.Version
+                    command.Audit.Version
                     );
         }
     }

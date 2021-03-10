@@ -127,8 +127,8 @@ namespace Gang.Management
 
                     var sequenceNumber = BitConverter.ToUInt32(data.AsSpan()[0..4]);
 
-                    var audit = new GangAudit(parameters.GangId, sequenceNumber, member.Id, member.Session?.User.Id)
-;
+                    var audit = new GangAudit(parameters.GangId, sequenceNumber, member.Id, member.Session?.User.Id);
+
                     await gang.HostMember
                         .HandleAsync(GangMessageTypes.Command, data[4..], audit);
 

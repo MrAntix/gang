@@ -5,7 +5,8 @@ namespace Gang.Commands
         public GangCommandWrapper(
             string type,
             object data,
-            uint? rsn = null)
+            uint? rsn = null
+            )
         {
             Type = type;
             Data = data;

@@ -13,6 +13,7 @@ export * from './GangWebSocketFactory';
 export * from './IGangAccessDeniedEvent';
 export * from './IGangAuthenticatedHostEvent';
 export * from './IGangAuthenticatedMemberEvent';
+export * from './IGangCommand';
 export * from './IGangCommandEvent';
 export * from './IGangCommandReceiptEvent';
 export * from './IGangCommandSent';

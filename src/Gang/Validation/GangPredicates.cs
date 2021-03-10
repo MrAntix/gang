@@ -39,7 +39,7 @@ namespace Gang.Validation
             return other => string.Compare(value, other, comparison) == 0;
         }
 
-        public static Func<T, bool> Equal<T>(
+        public static Func<T, bool> EqualTo<T>(
            T value
            ) where T : IComparable
         {
@@ -50,28 +50,28 @@ namespace Gang.Validation
             T value
             ) where T : IComparable
         {
-            return other => value.CompareTo(other) > 0;
+            return other => value.CompareTo(other) < 0;
         }
 
         public static Func<T, bool> GreaterThanOrEqualTo<T>(
            T value
            ) where T : IComparable
         {
-            return other => value.CompareTo(other) >= 0;
+            return other => value.CompareTo(other) <= 0;
         }
 
         public static Func<T, bool> LessThan<T>(
             T value
             ) where T : IComparable
         {
-            return other => value.CompareTo(other) < 0;
+            return other => value.CompareTo(other) > 0;
         }
 
         public static Func<T, bool> LessThanOrEqualTo<T>(
            T value
            ) where T : IComparable
         {
-            return other => value.CompareTo(other) <= 0;
+            return other => value.CompareTo(other) >= 0;
         }
 
         public static readonly Regex EMAIL_REGEX = new(

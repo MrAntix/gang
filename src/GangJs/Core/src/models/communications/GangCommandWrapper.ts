@@ -1,5 +1,7 @@
+import { IGangCommand } from './IGangCommand';
+
 /** wraps command data */
-export class GangCommandWrapper<T> {
+export class GangCommandWrapper<T> implements IGangCommand {
   constructor(
     /** command data type */
     public readonly type: string,
@@ -9,5 +11,5 @@ export class GangCommandWrapper<T> {
     public readonly sn: number = undefined,
     /** in reply to sequence number */
     public readonly rsn: number = undefined
-  ) {}
+  ) { }
 }

@@ -41,7 +41,7 @@ export class GangAuthenticationService {
   private _platform: IGangPlatform = {
     hasAuthenticator: true
   }
-  get platform() { return this._platform; };
+  get platform(): IGangPlatform { return this._platform; }
 
   /**
    * Request a link code

@@ -58,7 +58,7 @@ namespace Gang.Tests.State
             var result = Assert.IsType<GangStateResult<GangNotify>>(results[0]);
 
             Assert.Equal(MEMBER_ID.GangToBytes(), Assert.Single(result.SendToMemberIds));
-            Assert.Equal(NOTIFY_TEXT, result.Command.Text);
+            Assert.Equal(NOTIFY_TEXT, result.Command.Id);
         }
 
         [Fact]
@@ -75,7 +75,7 @@ namespace Gang.Tests.State
             var result = Assert.IsType<GangStateResult<GangNotify>>(results[0]);
 
             Assert.Equal(AUDIT.MemberId, Assert.Single(result.SendToMemberIds));
-            Assert.Equal(ERROR_TEXT, result.Command.Text);
+            Assert.Equal(ERROR_TEXT, result.Command.Id);
             Assert.Equal(GangNotificationTypes.Danger, result.Command.Type);
         }
 

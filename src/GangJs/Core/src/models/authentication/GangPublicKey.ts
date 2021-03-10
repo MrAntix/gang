@@ -1,4 +1,4 @@
-import { bytesToBase64Url, CBOR, viewToBuffer } from '../../services/utils';
+import { bytesToBase64Url, CBOR, IView, viewToBuffer } from '../../services/utils';
 
 export class GangPublicKey {
   constructor(
@@ -27,7 +27,7 @@ export class GangPublicKey {
                 p[k] = bytesToBase64Url(data);
 
               else if (ArrayBuffer.isView(data))
-                p[k] = bytesToBase64Url(viewToBuffer(data as any));
+                p[k] = bytesToBase64Url(viewToBuffer(data as IView));
 
               else
                 p[k] = data.toString();

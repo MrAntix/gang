@@ -16,7 +16,7 @@ namespace Gang.Tests.State
             var state = GangState
                 .Create(TodosState.Initial)
                 .AddResult(MEMBER_ID.GangToBytes(),
-                    new GangNotify("Hey", id: NOTIFICATION_ID)
+                    new GangNotify(id: NOTIFICATION_ID)
                     );
 
             Assert.NotEmpty(state.Results);
