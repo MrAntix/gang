@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -6,14 +7,14 @@ namespace Gang.Validation
 {
     public static class GangPredicates
     {
-        public static bool Is<T>(this T value, Func<T, bool> test)
+        public static bool Is<T>(this T value, params Func<T, bool>[] tests)
         {
-            return test(value);
+            return tests.All(test => test(value));
         }
 
-        public static bool IsNot<T>(this T value, Func<T, bool> test)
+        public static bool IsNot<T>(this T value, params Func<T, bool>[] tests)
         {
-            return !test(value);
+            return !tests.All(test => test(value));
         }
 
         public static bool Null<T>(T value)
@@ -40,38 +41,56 @@ namespace Gang.Validation
         }
 
         public static Func<T, bool> EqualTo<T>(
-           T value
-           ) where T : IComparable
+            T value
+            )
         {
-            return other => value.CompareTo(other) == 0;
+            return other => Equals(value, other);
         }
 
         public static Func<T, bool> GreaterThan<T>(
-            T value
+            T value 
             ) where T : IComparable
         {
-            return other => value.CompareTo(other) < 0;
+            return other => value==null || value.CompareTo(other) < 0;
         }
 
         public static Func<T, bool> GreaterThanOrEqualTo<T>(
-           T value
+            T value
            ) where T : IComparable
         {
-            return other => value.CompareTo(other) <= 0;
+            return other => value == null || value.CompareTo(other) <= 0;
         }
 
         public static Func<T, bool> LessThan<T>(
             T value
             ) where T : IComparable
         {
-            return other => value.CompareTo(other) > 0;
+            return other => value == null || value.CompareTo(other) > 0;
         }
 
         public static Func<T, bool> LessThanOrEqualTo<T>(
-           T value
+            T? value
            ) where T : IComparable
         {
-            return other => value.CompareTo(other) >= 0;
+            return other => value == null || value.CompareTo(other) >= 0;
+        }
+
+        public static bool Contains<T>(
+            this IEnumerable<T> items,
+            string id
+            )
+            where T : IHasGangIdString
+        {
+            return items?.Any(i => i.Id == id) ?? false;
+        }
+
+        public static bool DoesNotContain<T>(
+            this IEnumerable<T> items,
+            string id
+            )
+            where T : IHasGangIdString
+        {
+            return items?.All(i => i.Id != id) ?? true;
         }
 
         public static readonly Regex EMAIL_REGEX = new(
