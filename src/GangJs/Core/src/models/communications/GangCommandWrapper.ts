@@ -11,5 +11,5 @@ export class GangCommandWrapper<T> implements IGangCommand {
     public readonly sn: number = undefined,
     /** in reply to sequence number */
     public readonly rsn: number = undefined
-  ) { }
+  ) {}
 }

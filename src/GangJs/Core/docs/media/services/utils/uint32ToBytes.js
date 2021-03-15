@@ -1,0 +1,5 @@
+export function uint32ToBytes(value) {
+    const buffer = new ArrayBuffer(4);
+    new DataView(buffer).setUint32(0, value, true);
+    return buffer;
+}

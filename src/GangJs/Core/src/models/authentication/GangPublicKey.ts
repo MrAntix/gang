@@ -5,46 +5,39 @@ export class GangPublicKey {
     public readonly keyType: number,
     public readonly algorithm: number,
     public readonly parameters: Record<string, unknown>
-  ) { }
+  ) {}
 
   static from(data: ArrayBuffer): GangPublicKey {
     if (data == null) return null;
 
     const cbor = CBOR.decode(data);
-    console.log({ cbor })
+    console.log({ cbor });
 
     let keyType: number;
     let algorithm: number;
-    const parameters = Object.keys(cbor).reduce(
-      (p, k) => {
-        const data = cbor[k];
-        switch (k) {
-          case '1': keyType = data as number; break;
-          case '3': algorithm = data as number; break;
-          default: {
-            if (data != null) {
-              if (data instanceof ArrayBuffer)
-                p[k] = bytesToBase64Url(data);
-
-              else if (ArrayBuffer.isView(data))
-                p[k] = bytesToBase64Url(viewToBuffer(data as IView));
-
-              else
-                p[k] = data.toString();
-            }
-
-            break;
+    const parameters = Object.keys(cbor).reduce((p, k) => {
+      const data = cbor[k];
+      switch (k) {
+        case '1':
+          keyType = data as number;
+          break;
+        case '3':
+          algorithm = data as number;
+          break;
+        default: {
+          if (data != null) {
+            if (data instanceof ArrayBuffer) p[k] = bytesToBase64Url(data);
+            else if (ArrayBuffer.isView(data)) p[k] = bytesToBase64Url(viewToBuffer(data as IView));
+            else p[k] = data.toString();
           }
+
+          break;
         }
+      }
 
-        return p;
-      }, {}
-    );
+      return p;
+    }, {});
 
-    return new GangPublicKey(
-      keyType,
-      algorithm,
-      parameters
-    );
+    return new GangPublicKey(keyType, algorithm, parameters);
   }
 }

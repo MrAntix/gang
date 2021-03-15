@@ -17,7 +17,7 @@
     "prepublishOnly": "npm run format && npm run test && npm run build",
     "barrels": "barrelsby -q --delete --directory src --include \\.ts$ --exclude \"(\\.spec|this)\\.ts$\" --location all",
     "build": "tsc",
-    "build.docs": "typedoc --out docs --mode file src --theme minimal --readme docs.md --media dist",
+    "build.docs": "typedoc src --out docs --theme minimal --readme docs.md --media dist --exclude **/*.spec.ts",
     "clean": "shx rm -rf dist",
     "lint": "npx eslint ./src --ext .ts,.ts",
     "format": "npm run lint && prettier --write \"./src/**/*.{ts,tsx,json}\"",
@@ -32,7 +32,11 @@
   "author": "Anthony Johnston <npm@antix.co.uk> (http://antix.co.uk)",
   "license": "ISC",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "cache": "~/.npm"
+  },
+  "engines": {
+    "node": ">=10"
   },
   "dependencies": {
     "rxjs": "^6.6.3"

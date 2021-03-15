@@ -51,9 +51,7 @@ export class GangUrlBuilder {
   }
 
   getString(key: string): string {
-    return this.parameters[key] === undefined
-      ? undefined
-      : this.parameters[key][0];
+    return this.parameters[key] === undefined ? undefined : this.parameters[key][0];
   }
 
   remove(key: string): GangUrlBuilder {

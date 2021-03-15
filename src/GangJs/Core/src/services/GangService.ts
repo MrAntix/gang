@@ -14,7 +14,7 @@ import {
   IGangApplication,
   IGangSettings,
   IGangConnectionProperties,
-  GangEventTypes
+  GangEventTypes,
 } from '../models';
 import { GangStore } from './storage';
 import { GangUrlBuilder, clean } from './utils';
@@ -194,7 +194,7 @@ export class GangService<TState> {
           case GangEventTypes.State:
             this.stateSubject.next({
               ...this.stateSubject.value,
-              ...e.state
+              ...e.state,
             });
             break;
         }

@@ -10,7 +10,15 @@ import {
   GangAuthentication,
   GangAuthenticationCredential,
 } from '../../models';
-import { GangUrlBuilder, base64UrlToBytes, bytesToBase64Url, bytesToString, CBOR, getRandomBytes, stringToBytes } from '../utils';
+import {
+  GangUrlBuilder,
+  base64UrlToBytes,
+  bytesToBase64Url,
+  bytesToString,
+  CBOR,
+  getRandomBytes,
+  stringToBytes,
+} from '../utils';
 
 export class GangAuthenticationService {
   /**
@@ -27,21 +35,21 @@ export class GangAuthenticationService {
     private location: IGangLocationService,
     private credentials: IGangCredentialsService
   ) {
-
     if (window.PublicKeyCredential)
-      PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
-        .then((value) => {
-          this._platform = {
-            ...this.platform,
-            hasAuthenticator: value
-          }
-        });
+      PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then((value) => {
+        this._platform = {
+          ...this.platform,
+          hasAuthenticator: value,
+        };
+      });
   }
 
   private _platform: IGangPlatform = {
-    hasAuthenticator: true
+    hasAuthenticator: true,
+  };
+  get platform(): IGangPlatform {
+    return this._platform;
   }
-  get platform(): IGangPlatform { return this._platform; }
 
   /**
    * Request a link code
@@ -93,8 +101,8 @@ export class GangAuthenticationService {
       },
       body: JSON.stringify({
         email,
-        code
-      })
+        code,
+      }),
     });
 
     if (!result.ok) return undefined;
@@ -115,7 +123,7 @@ export class GangAuthenticationService {
 
     const result = await this.http.fetch(`/request-challenge`, {
       method: 'POST',
-      headers
+      headers,
     });
 
     if (!result.ok) return null;
@@ -132,10 +140,7 @@ export class GangAuthenticationService {
    *
    * @returns credential, which can be stored and passed to authenticateCredential
    */
-  async registerCredential(
-    token: string,
-    challenge: ArrayBuffer
-  ): Promise<GangAuthenticationCredential> {
+  async registerCredential(token: string, challenge: ArrayBuffer): Promise<GangAuthenticationCredential> {
     const tokenData = this.decodeToken(token);
     if (!tokenData) throw new Error('token is required');
     if (!challenge) throw new Error('challenge is required');
@@ -157,7 +162,7 @@ export class GangAuthenticationService {
       authenticatorSelection: {
         authenticatorAttachment: this.platform.hasAuthenticator ? 'platform' : 'cross-platform',
         userVerification: 'discouraged',
-        requireResidentKey: true // allows user data stored on key
+        requireResidentKey: true, // allows user data stored on key
       },
       attestation: 'none',
     };
@@ -170,10 +175,7 @@ export class GangAuthenticationService {
     const attestationObject = CBOR.decode(response.attestationObject);
     const transports = response['getTransports'] && response['getTransports']();
 
-    const credentialRegistration = GangCredentialRegistration.from(
-      attestationObject.authData,
-      transports, challenge
-    );
+    const credentialRegistration = GangCredentialRegistration.from(attestationObject.authData, transports, challenge);
 
     const result = await this.http.fetch(`/register-credential`, {
       method: 'POST',
@@ -201,10 +203,7 @@ export class GangAuthenticationService {
    *
    * @returns when offline returns null, online will return a new session token
    */
-  async validateCredential(
-    credential: GangAuthenticationCredential
-  ): Promise<string> {
-
+  async validateCredential(credential: GangAuthenticationCredential): Promise<string> {
     GangContext.logger('GangAuthenticationService.validateCredential', { credential });
 
     const challenge = getRandomBytes();
@@ -212,18 +211,18 @@ export class GangAuthenticationService {
     const options: PublicKeyCredentialRequestOptions = {
       challenge,
       userVerification: 'required',
-      allowCredentials: [{
-        id: base64UrlToBytes(credential.id),
-        type: 'public-key',
-        transports: credential.transports,
-      }],
+      allowCredentials: [
+        {
+          id: base64UrlToBytes(credential.id),
+          type: 'public-key',
+          transports: credential.transports,
+        },
+      ],
     };
 
     let publicKey: PublicKeyCredential;
     try {
-
       publicKey = (await this.credentials.get({ publicKey: options })) as PublicKeyCredential;
-
     } catch (err) {
       console.error(err);
 
@@ -262,11 +261,9 @@ export class GangAuthenticationService {
 
     const challengeString = bytesToBase64Url(challenge);
 
-    if (clientData.challenge !== challengeString)
-      throw new Error('Invalid authenticator response challenge');
+    if (clientData.challenge !== challengeString) throw new Error('Invalid authenticator response challenge');
 
-    if (clientData.origin !== this.location.origin)
-      throw new Error('Invalid authenticator response origin');
+    if (clientData.origin !== this.location.origin) throw new Error('Invalid authenticator response origin');
   }
 
   /**

@@ -7,13 +7,9 @@ export class GangCredentialRegistration {
     public readonly publicKey: GangPublicKey,
     public readonly transports: string[],
     public readonly challenge: string
-  ) { }
+  ) {}
 
-  static from(
-    authData: Uint8Array,
-    transports: string[],
-    challenge: ArrayBuffer
-  ): GangCredentialRegistration {
+  static from(authData: Uint8Array, transports: string[], challenge: ArrayBuffer): GangCredentialRegistration {
     const buffer = viewToBuffer(authData);
     const idLength = new DataView(buffer).getInt16(53);
 

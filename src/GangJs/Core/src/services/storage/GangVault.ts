@@ -54,8 +54,10 @@ export class GangVault implements IGangVault {
 
   async setCryptoKey(): Promise<CryptoKey> {
     try {
-      this.cryptoKey = await globalThis.crypto.subtle
-        .generateKey(this.keyParameters, false, ['encrypt', 'decrypt']) as CryptoKey;
+      this.cryptoKey = (await globalThis.crypto.subtle.generateKey(this.keyParameters, false, [
+        'encrypt',
+        'decrypt',
+      ])) as CryptoKey;
 
       await this.set(this.settings.key, this.cryptoKey);
 
