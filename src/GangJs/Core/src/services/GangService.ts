@@ -376,11 +376,11 @@ export class GangService<TState> {
 
     this.unsentCommands = [...this.unsentCommands, wrapper];
 
-    if (!this.isConnected) return;
+    if (!this.isConnected) return this.emptySent(wrapper.sn);
 
     if (this.isHost) {
       this.commandSubject.next(wrapper);
-      return;
+      return this.emptySent(wrapper.sn);
     }
 
     return this.sendCommandWrapper(wrapper);
@@ -414,6 +414,13 @@ export class GangService<TState> {
           }, options?.timeout || 30000);
         }),
     };
+  }
+
+  private emptySent(sn: number): IGangCommandSent {
+    return {
+      sn,
+      wait: null
+    }
   }
 
   sendState(state: TState): void {
