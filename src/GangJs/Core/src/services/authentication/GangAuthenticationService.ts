@@ -167,27 +167,34 @@ export class GangAuthenticationService {
       attestation: 'none',
     };
 
-    const credential = (await this.credentials.create({ publicKey: options })) as PublicKeyCredential;
-    const response = credential.response as AuthenticatorAttestationResponse;
+    try {
+      const credential = (await this.credentials.create({ publicKey: options })) as PublicKeyCredential;
+      const response = credential.response as AuthenticatorAttestationResponse;
 
-    this.validate(response.clientDataJSON, challenge);
+      this.validate(response.clientDataJSON, challenge);
 
-    const attestationObject = CBOR.decode(response.attestationObject);
-    const transports = response['getTransports'] && response['getTransports']();
+      const attestationObject = CBOR.decode(response.attestationObject);
+      const transports = response['getTransports'] && response['getTransports']();
 
-    const credentialRegistration = GangCredentialRegistration.from(attestationObject.authData, transports, challenge);
+      const credentialRegistration = GangCredentialRegistration.from(attestationObject.authData, transports, challenge);
 
-    const result = await this.http.fetch(`/register-credential`, {
-      method: 'POST',
-      headers: {
-        'Content-type': 'application/json',
-        Authorization: token,
-      },
-      body: JSON.stringify(credentialRegistration),
-    });
-    if (!result.ok) throw new Error('Credential was not registered');
+      const result = await this.http.fetch(`/register-credential`, {
+        method: 'POST',
+        headers: {
+          'Content-type': 'application/json',
+          Authorization: token,
+        },
+        body: JSON.stringify(credentialRegistration),
+      });
+      if (!result.ok) throw new Error('Credential was not registered');
 
-    return new GangAuthenticationCredential(credential.id, transports);
+      return new GangAuthenticationCredential(credential.id, transports);
+      
+    } catch (err) {
+      console.debug(err);
+
+      return null;
+    }
   }
 
   /**
@@ -224,7 +231,7 @@ export class GangAuthenticationService {
     try {
       publicKey = (await this.credentials.get({ publicKey: options })) as PublicKeyCredential;
     } catch (err) {
-      console.error(err);
+      console.debug(err);
 
       return null;
     }
