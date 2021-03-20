@@ -189,7 +189,6 @@ export class GangAuthenticationService {
       if (!result.ok) throw new Error('Credential was not registered');
 
       return new GangAuthenticationCredential(credential.id, transports);
-      
     } catch (err) {
       console.debug(err);
 

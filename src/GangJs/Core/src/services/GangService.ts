@@ -419,8 +419,8 @@ export class GangService<TState> {
   private emptySent(sn: number): IGangCommandSent {
     return {
       sn,
-      wait: null
-    }
+      wait: null,
+    };
   }
 
   sendState(state: TState): void {
