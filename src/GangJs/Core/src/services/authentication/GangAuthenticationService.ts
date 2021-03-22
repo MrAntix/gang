@@ -189,8 +189,8 @@ export class GangAuthenticationService {
       if (!result.ok) throw new Error('Credential was not registered');
 
       return new GangAuthenticationCredential(credential.id, transports);
-    } catch (err) {
-      console.debug(err);
+    } catch (error) {
+      GangContext.logger('GangAuthenticationService.registerCredential', { error });
 
       return null;
     }
@@ -229,8 +229,8 @@ export class GangAuthenticationService {
     let publicKey: PublicKeyCredential;
     try {
       publicKey = (await this.credentials.get({ publicKey: options })) as PublicKeyCredential;
-    } catch (err) {
-      console.debug(err);
+    } catch (error) {
+      GangContext.logger('GangAuthenticationService.validateCredential', { error });
 
       return null;
     }
