@@ -59,7 +59,7 @@ namespace Gang.Storage
                 );
         }
 
-        Task IGangStore<TData>
+        Task<TData> IGangStore<TData>
             .SetAsync(string key, TData data, bool overwrite)
         {
             if (key is null)
@@ -76,7 +76,7 @@ namespace Gang.Storage
 
             AddIndexedValues(key, data);
 
-            return Task.CompletedTask;
+            return Task.FromResult(data);
         }
 
         Task<bool> IGangStore<TData>

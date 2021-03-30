@@ -135,8 +135,8 @@ export class GangAuthenticationService {
    * Register a credential from the device on the server
    * shows the authenticator UI e.g. fingerprint, face or pin
    *
-   * @param token valid session token
-   * @param challenge required challenge from the server
+   * @param token required, valid session token
+   * @param challenge required, challenge from the server
    *
    * @returns credential, which can be stored and passed to authenticateCredential
    */

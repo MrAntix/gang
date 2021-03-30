@@ -7,6 +7,6 @@ namespace Gang.Authentication.Users
         Task<GangUserData> TryGetByIdAsync(string id);
         Task<GangUserData> TryGetByCredentialIdAsync(string credentialId);
         Task<GangUserData> TryGetByEmailAddressAsync(string email);
-        Task SetAsync(GangUserData value);
+        Task<GangUserData> SetAsync(GangUserData value);
     }
 }

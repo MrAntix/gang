@@ -66,7 +66,7 @@ namespace Gang.Storage
             return index.ToImmutableArray();
         }
 
-        async Task IGangStore<TData>
+        async Task<TData> IGangStore<TData>
             .SetAsync(string key, TData data, bool overwrite)
         {
             if (key is null)
@@ -79,6 +79,8 @@ namespace Gang.Storage
                 await SaveDataAsync(key, data, overwrite);
                 await RemoveIndexedValues(key);
                 await AddIndexedValues(key, data);
+
+                return data;
             }
             catch (IOException ioex)
             {
