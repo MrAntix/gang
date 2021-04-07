@@ -55,5 +55,23 @@ namespace Gang.Tests.Validation
 
             Assert.Equal(expected, a.Is(LessThanOrEqualTo(b)));
         }
+
+        [Theory]
+        [InlineData(new[] { 1 }, 0, false)]
+        [InlineData(new[] { 1 }, 1, true)]
+        public void contains(int[] items, int item, bool expected)
+        {
+
+            Assert.Equal(expected, items.Contains(item));
+        }
+
+        [Theory]
+        [InlineData(new[] { 1 }, 0, true)]
+        [InlineData(new[] { 1 }, 1, false)]
+        public void does_not_contain(int[] items, int item, bool expected)
+        {
+
+            Assert.Equal(expected, items.DoesNotContain(item));
+        }
     }
 }

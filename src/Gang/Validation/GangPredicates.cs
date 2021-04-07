@@ -48,10 +48,10 @@ namespace Gang.Validation
         }
 
         public static Func<T, bool> GreaterThan<T>(
-            T value 
+            T value
             ) where T : IComparable
         {
-            return other => value==null || value.CompareTo(other) < 0;
+            return other => value == null || value.CompareTo(other) < 0;
         }
 
         public static Func<T, bool> GreaterThanOrEqualTo<T>(
@@ -73,6 +73,22 @@ namespace Gang.Validation
            ) where T : IComparable
         {
             return other => value == null || value.CompareTo(other) >= 0;
+        }
+
+        public static bool Contains<T>(
+            this IEnumerable<T> items,
+            T item
+            )
+        {
+            return items?.Any(i => Equals(i, item)) ?? false;
+        }
+
+        public static bool DoesNotContain<T>(
+            this IEnumerable<T> items,
+            T item
+            )
+        {
+            return items?.All(i => !Equals(i, item)) ?? false;
         }
 
         public static bool Contains<T>(
