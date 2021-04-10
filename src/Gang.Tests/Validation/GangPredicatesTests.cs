@@ -57,6 +57,8 @@ namespace Gang.Tests.Validation
         }
 
         [Theory]
+        [InlineData(null, 0, false)]
+        [InlineData(new int[] {  }, 0, false)]
         [InlineData(new[] { 1 }, 0, false)]
         [InlineData(new[] { 1 }, 1, true)]
         public void contains(int[] items, int item, bool expected)
@@ -66,6 +68,8 @@ namespace Gang.Tests.Validation
         }
 
         [Theory]
+        [InlineData(null, 0, true)]
+        [InlineData(new int[] { }, 0, true)]
         [InlineData(new[] { 1 }, 0, true)]
         [InlineData(new[] { 1 }, 1, false)]
         public void does_not_contain(int[] items, int item, bool expected)

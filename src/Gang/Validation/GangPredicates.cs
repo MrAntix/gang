@@ -88,7 +88,7 @@ namespace Gang.Validation
             T item
             )
         {
-            return items?.All(i => !Equals(i, item)) ?? false;
+            return items?.All(i => !Equals(i, item)) ?? true;
         }
 
         public static bool Contains<T>(
