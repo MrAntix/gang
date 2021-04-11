@@ -58,10 +58,11 @@ namespace Gang.Tests.Validation
 
         [Theory]
         [InlineData(null, 0, false)]
-        [InlineData(new int[] {  }, 0, false)]
-        [InlineData(new[] { 1 }, 0, false)]
-        [InlineData(new[] { 1 }, 1, true)]
-        public void contains(int[] items, int item, bool expected)
+        [InlineData(new object[] {  }, 0, false)]
+        [InlineData(new object[] { 1 }, null, true)]
+        [InlineData(new object[] { 1 }, 0, false)]
+        [InlineData(new object[] { 1 }, 1, true)]
+        public void contains(object[] items, object item, bool expected)
         {
 
             Assert.Equal(expected, items.Contains(item));
@@ -69,10 +70,11 @@ namespace Gang.Tests.Validation
 
         [Theory]
         [InlineData(null, 0, true)]
-        [InlineData(new int[] { }, 0, true)]
-        [InlineData(new[] { 1 }, 0, true)]
-        [InlineData(new[] { 1 }, 1, false)]
-        public void does_not_contain(int[] items, int item, bool expected)
+        [InlineData(new object[] { }, 0, true)]
+        [InlineData(new object[] { 1 }, null, true)]
+        [InlineData(new object[] { 1 }, 0, true)]
+        [InlineData(new object[] { 1 }, 1, false)]
+        public void does_not_contain(object[] items, object item, bool expected)
         {
 
             Assert.Equal(expected, items.DoesNotContain(item));

@@ -80,7 +80,7 @@ namespace Gang.Validation
             T item
             )
         {
-            return items?.Any(i => Equals(i, item)) ?? false;
+            return item == null || (items?.Any(i => Equals(i, item)) ?? false);
         }
 
         public static bool DoesNotContain<T>(
@@ -88,7 +88,7 @@ namespace Gang.Validation
             T item
             )
         {
-            return items?.All(i => !Equals(i, item)) ?? true;
+            return item == null || (items?.All(i => !Equals(i, item)) ?? true);
         }
 
         public static bool Contains<T>(
@@ -97,7 +97,7 @@ namespace Gang.Validation
             )
             where T : IHasGangIdString
         {
-            return items?.Any(i => i.Id == id) ?? false;
+            return id == null || (items?.Any(i => i.Id == id) ?? false);
         }
 
         public static bool DoesNotContain<T>(
@@ -106,7 +106,7 @@ namespace Gang.Validation
             )
             where T : IHasGangIdString
         {
-            return items?.All(i => i.Id != id) ?? true;
+            return id == null || (items?.All(i => i.Id != id) ?? true);
         }
 
         public static readonly Regex EMAIL_REGEX = new(
