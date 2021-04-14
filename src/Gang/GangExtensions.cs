@@ -115,5 +115,23 @@ namespace Gang
 
             return value.Substring(0, value.Length - trimBy);
         }
+
+        public static bool Contains<T>(
+            this IEnumerable<T> items,
+            byte[] id
+            )
+            where T : IHasGangId
+        {
+            return items.Any(item => Enumerable.SequenceEqual(item.Id, id));
+        }
+
+        public static bool Contains<T>(
+            this IEnumerable<T> items,
+            string id
+            )
+            where T : IHasGangIdString
+        {
+            return items.Any(item => string.Equals(item.Id, id, StringComparison.InvariantCultureIgnoreCase));
+        }
     }
 }
