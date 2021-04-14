@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using static Gang.Validation.GangPredicates;
+using static Gang.Validation.GangLiterals;
 
 namespace Gang.Authentication.Api
 {
@@ -22,8 +22,10 @@ namespace Gang.Authentication.Api
             [FromBody] string identity
             )
         {
-            if (identity.Is(NullOrWhiteSpace)
-                || identity.IsNot(EmailAddress))
+            if (
+                identity == NullOrWhiteSpace
+                    || identity != EmailAddress
+                )
                 return BadRequest("invalid email address");
 
             await _auth.RequestLinkAsync(identity);
@@ -37,9 +39,9 @@ namespace Gang.Authentication.Api
             [FromBody] GangLink data
             )
         {
-            if ((data?.Email).Is(NullOrWhiteSpace))
+            if (data?.Email == NullOrWhiteSpace)
                 return BadRequest("invalid email");
-            if ((data?.Code).Is(NullOrWhiteSpace))
+            if (data?.Code == NullOrWhiteSpace)
                 return BadRequest("invalid code");
 
             var sessionToken = await _auth.ValidateLinkAsync(data);
@@ -67,7 +69,7 @@ namespace Gang.Authentication.Api
             [FromBody] GangCredentialRegistration data
             )
         {
-            if (authorization.Is(NullOrWhiteSpace))
+            if (authorization == NullOrWhiteSpace)
                 return BadRequest("invalid token");
 
             return await _auth.RegisterCredentialAsync(authorization, data)
