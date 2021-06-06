@@ -86,7 +86,8 @@ namespace Gang.State.Storage
             )
             where TStateData : class
         {
-            var state = await _cache.TryGetAsync(gangId) as GangState<TStateData>;
+            var data = await _cache.TryGetAsync(gangId);
+            var state = _serializer.Map<GangState<TStateData>>(data);
 
             return state ?? await RehydrateAsync(gangId, initial);
         }
