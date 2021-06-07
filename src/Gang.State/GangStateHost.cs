@@ -32,8 +32,10 @@ namespace Gang.State
             StateAsync = _stateLoaded.Task;
         }
 
-        protected async Task QueueCommandAsync<TCommandData>(
-            TCommandData data, GangAudit audit = null)
+        public async Task QueueCommandAsync<TCommandData>(
+            TCommandData data,
+            GangAudit? audit = null
+            )
         {
             await _tasks.Enqueue(async () =>
             {
@@ -56,7 +58,9 @@ namespace Gang.State
         public Task<GangState<TStateData>> StateAsync { get; private set; }
 
         public async Task SetStateAsync(
-            GangState<TStateData> state, GangAudit audit = null)
+            GangState<TStateData> state,
+            GangAudit audit = null
+            )
         {
             if (state == null) return; // state not loaded yet
 
@@ -73,7 +77,8 @@ namespace Gang.State
         }
 
         protected virtual Task<GangState<TStateData>> OnStateAsync(
-            GangState<TStateData> state)
+            GangState<TStateData> state
+            )
         {
             return Task.FromResult(
                     state
@@ -89,7 +94,9 @@ namespace Gang.State
         }
 
         protected override async Task OnCommandAsync(
-            byte[] bytes, GangAudit audit)
+            byte[] bytes,
+            GangAudit audit
+            )
         {
             await _tasks.Enqueue(async () =>
             {
