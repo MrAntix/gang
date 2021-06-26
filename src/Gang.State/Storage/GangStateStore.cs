@@ -131,11 +131,11 @@ namespace Gang.State.Storage
                 progress.Increment(1);
             }
 
-            progress.End();
-
             var state = GangState.Create(data, version);
 
             await SaveToCacheAsync(gangId, state);
+
+            progress.End();
 
             return state;
         }
