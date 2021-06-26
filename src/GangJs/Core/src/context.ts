@@ -25,7 +25,7 @@ export class GangContext {
       id: null,
       name: 'Gang App',
     },
-    rootUrl: `${location.protocol.replace('http', 'ws')}//${location.host}`,
+    rootUrl: `${location?.protocol.replace('http', 'ws')}//${location?.host}`,
     authRootPath: '/api/gang/auth',
     vault: {
       name: 'Gang',

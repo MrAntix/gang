@@ -1,1 +1,1 @@
-window.crypto = require('@trust/webcrypto')
+globalThis.crypto = require('@trust/webcrypto')

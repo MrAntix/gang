@@ -263,7 +263,7 @@ export class GangAuthenticationService {
   }
 
   private validate(clientDataJSON: ArrayBuffer, challenge: ArrayBuffer): void {
-    const clientData = JSON.parse(bytesToString(clientDataJSON)) as ClientData;
+    const clientData = JSON.parse(bytesToString(clientDataJSON));
 
     const challengeString = bytesToBase64Url(challenge);
 

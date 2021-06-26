@@ -2,6 +2,7 @@ using Gang.State;
 using Gang.State.Events;
 using Gang.State.Storage;
 using Gang.Storage;
+using Gang.Tests.Management.Fakes;
 using Gang.Tests.State.Todos;
 using Gang.WebSockets.Serialization;
 using System;
@@ -25,7 +26,8 @@ namespace Gang.Tests.State
             return new GangStateStore(
                 new WebSocketGangJsonSerializationService(),
                 new GangStateEventMap().Add<TodosState>(),
-                GetStoreFactory()
+                GetStoreFactory(),
+                new FakeGangManager()
             );
         }
 

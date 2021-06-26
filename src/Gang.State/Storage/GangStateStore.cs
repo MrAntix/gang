@@ -1,3 +1,4 @@
+using Gang.Management;
 using Gang.Serialization;
 using Gang.State.Events;
 using Gang.Storage;
@@ -17,6 +18,7 @@ namespace Gang.State.Storage
 
         readonly IGangSerializationService _serializer;
         readonly GangStateEventMap _eventMap;
+        readonly IGangManager _gangManager;
         readonly Subject<IGangStateEvent> _events;
         readonly IGangStore<GangStateEventWrapper> _eventStore;
         readonly IGangStore<uint> _sequenceNumberStore;
@@ -27,7 +29,8 @@ namespace Gang.State.Storage
         public GangStateStore(
             IGangSerializationService serializer,
             GangStateEventMap eventMap,
-            IGangStoreFactory storeFactory
+            IGangStoreFactory storeFactory,
+            IGangManager gangManager
             )
         {
             _events = new Subject<IGangStateEvent>();
@@ -44,6 +47,7 @@ namespace Gang.State.Storage
                 .Create(STORE_CACHE);
             _serializer = serializer;
             _eventMap = eventMap;
+            _gangManager = gangManager;
             _sequenceNumber = _sequenceNumberStore
                 .TryGetAsync(KEY_SEQUENCE_NUMBER)
                 .GetAwaiter().GetResult();
@@ -101,6 +105,11 @@ namespace Gang.State.Storage
             var version = 0U;
 
             var keys = await _eventStore.TryGetIndexedKeys(gangId);
+            var progress = GangProgress.Start(
+                _gangManager, gangId,
+                "Loading", keys.Count
+                );
+
             foreach (var key in keys)
             {
                 var e = await GetEventAsync(key);
@@ -110,7 +119,11 @@ namespace Gang.State.Storage
 
                 var method = GangState<TStateData>.ApplyMethods[e.Data.GetType()];
                 data = method(data, e.Data);
+
+                progress.Increment(1);
             }
+
+            progress.End();
 
             return GangState.Create(data, version);
         }

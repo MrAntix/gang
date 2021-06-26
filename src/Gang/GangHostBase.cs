@@ -10,7 +10,7 @@ namespace Gang
         public byte[] Id { get; } = "HOST".GangToBytes();
         public GangSession Session { get; } = GangSession.Default;
 
-        protected IGangController Controller { get; private set; }
+        public IGangController Controller { get; private set; }
 
         protected virtual Task OnConnectAsync()
         {

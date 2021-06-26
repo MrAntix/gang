@@ -5,16 +5,16 @@ import { IGangLocationService } from '../models';
  */
 export class GangLocationService implements IGangLocationService {
   get host(): string {
-    return window.location.host;
+    return location.host;
   }
   get origin(): string {
-    return `${window.location.protocol}//${window.location.host}`;
+    return `${location.protocol}//${location.host}`;
   }
   get href(): string {
-    return window.location.href;
+    return location.href;
   }
   pushState(url: string): void {
-    window.history.pushState(null, document.title, url);
+    history.pushState(null, document.title, url);
   }
 
   private static _instance: GangLocationService;

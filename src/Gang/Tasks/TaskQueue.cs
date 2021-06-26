@@ -26,5 +26,4 @@ namespace Gang.Tasks
             }
         }
     }
-
 }

@@ -10,6 +10,8 @@ namespace Gang
         byte[] Id { get; }
         GangSession Session { get; }
 
+        IGangController Controller { get; }
+
         Task ConnectAsync(IGangController controller, Func<Task> onDisconnectAsync);
         Task DisconnectAsync(string reason = "disconnected");
 

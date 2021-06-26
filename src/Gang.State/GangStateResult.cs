@@ -8,7 +8,7 @@ namespace Gang.State
     {
         public static IGangStateResult From(
             IEnumerable<byte[]> sendToMemberId,
-            object command            
+            object command
             )
         {
             var type = typeof(GangStateResult<>)
@@ -26,7 +26,7 @@ namespace Gang.State
     {
         public GangStateResult(
             IEnumerable<byte[]> sendToMemberId,
-            TCommand command            
+            TCommand command
             )
         {
             SendToMemberIds = sendToMemberId.ToImmutableListDefaultEmpty();

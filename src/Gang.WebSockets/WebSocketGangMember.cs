@@ -30,9 +30,13 @@ namespace Gang.WebSockets
         public byte[] Id { get; }
         public GangSession Session { get; }
 
+        public IGangController Controller { get; private set; }
+
         Task IGangMember.ConnectAsync(
             IGangController controller, Func<Task> _onDisconnectAsync)
         {
+            Controller = controller;
+
             return Task.Run(async () =>
             {
                 do
