@@ -76,12 +76,20 @@ namespace Gang.State.Storage
                     );
             }
 
-            await _cache.SetAsync(gangId,
-                new { state.Data, state.Version }
-                );
+            await SaveToCacheAsync(gangId, state);
             await _sequenceNumberStore.SetAsync(KEY_SEQUENCE_NUMBER, _sequenceNumber);
 
             return GangState.Create(state.Data, state.Version);
+        }
+
+        async Task SaveToCacheAsync<TStateData>(
+            string gangId,
+            GangState<TStateData> state)
+            where TStateData : class
+        {
+            await _cache.SetAsync(gangId,
+                new { state.Data, state.Version }
+                );
         }
 
         async Task<GangState<TStateData>> IGangStateStore
@@ -125,8 +133,13 @@ namespace Gang.State.Storage
 
             progress.End();
 
-            return GangState.Create(data, version);
+            var state = GangState.Create(data, version);
+
+            await SaveToCacheAsync(gangId, state);
+
+            return state;
         }
+
 
         IDisposable IGangStateStore
             .Subscribe(Func<IGangStateEvent, Task> observer, uint? startSequenceNumber)
