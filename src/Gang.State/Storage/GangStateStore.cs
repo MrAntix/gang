@@ -163,6 +163,8 @@ namespace Gang.State.Storage
         async Task<IGangStateEvent> GetEventAsync(string key)
         {
             var wrapper = await _eventStore.TryGetAsync(key);
+            if (wrapper == null) throw new GangStateEventNotFoundException(key);
+
             var type = _eventMap.GetType(wrapper.Type);
 
             return GangStateEvent.From(
